@@ -2,8 +2,10 @@ using Discord;
 using Discord.Addons.Hosting;
 using Discord.Commands;
 using Discord.WebSocket;
-using NLog;
+using Microsoft.EntityFrameworkCore;
 using NLog.Extensions.Logging;
+using TenberBot.Data;
+using TenberBot.Data.Services;
 using TenberBot.Handlers;
 using TenberBot.Services;
 
@@ -27,7 +29,7 @@ public class Program
                      AlwaysDownloadUsers = true,
                  };
 
-                 config.Token = context.Configuration["token"];
+                 config.Token = context.Configuration["app-token"];
              })
             .UseCommandService((context, config) =>
             {
@@ -40,18 +42,30 @@ public class Program
                 config.LogLevel = LogSeverity.Info;
                 config.UseCompiledLambda = true;
             })
-            .ConfigureLogging((host, options) =>
+            .ConfigureLogging((host, config) =>
             {
-                options.ClearProviders();
-                options.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
-                options.AddNLog(host.Configuration);
+                config.ClearProviders();
+                config.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
+                config.AddNLog(host.Configuration);
             })
-            .ConfigureServices(services =>
+            .ConfigureServices((context, services) =>
             {
+                services.AddSingleton<GlobalSettingService>();
+                services.AddHostedService(provider => provider.GetRequiredService<GlobalSettingService>());
+
                 services.AddHostedService<BotStatusService>();
 
                 services.AddHostedService<CommandHandler>();
                 services.AddHostedService<InteractionHandler>();
+
+                services.AddDbContext<DataContext>(builder =>
+                    builder.UseSqlServer(context.Configuration["app-database"], options =>
+                    {
+                        options.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                    }), ServiceLifetime.Transient, ServiceLifetime.Singleton);
+
+                services.AddTransient<IGlobalSettingDataService, GlobalSettingDataService>();
+                services.AddTransient<IBotStatusDataService, BotStatusDataService>();
             })
             .Build();
 

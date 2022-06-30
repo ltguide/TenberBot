@@ -1,10 +1,11 @@
-﻿using System.Reflection;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Hosting;
 using Discord.Commands;
 using Discord.WebSocket;
+using System.Reflection;
 using TenberBot.Extensions;
 using TenberBot.Parameters;
+using TenberBot.Services;
 
 namespace TenberBot.Handlers;
 
@@ -12,13 +13,13 @@ public class CommandHandler : DiscordClientService
 {
     private readonly IServiceProvider _provider;
     private readonly CommandService _commandService;
-    private readonly IConfiguration _config;
+    private readonly GlobalSettingService globalSettingService;
 
-    public CommandHandler(DiscordSocketClient client, ILogger<CommandHandler> logger, IServiceProvider provider, CommandService commandService, IConfiguration config) : base(client, logger)
+    public CommandHandler(DiscordSocketClient client, ILogger<CommandHandler> logger, IServiceProvider provider, CommandService commandService, GlobalSettingService globalSettingService) : base(client, logger)
     {
         _provider = provider;
         _commandService = commandService;
-        _config = config;
+        this.globalSettingService = globalSettingService;
     }
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -38,8 +39,13 @@ public class CommandHandler : DiscordClientService
         if (message.Source != MessageSource.User)
             return;
 
+        var prefix = globalSettingService.Get<string>("prefix");
+
+        if (string.IsNullOrWhiteSpace(prefix))
+            return;
+
         int argPos = 0;
-        if (!message.HasStringPrefix("!", ref argPos) && !message.HasMentionPrefix(Client.CurrentUser, ref argPos))
+        if (!message.HasStringPrefix(prefix, ref argPos) && !message.HasMentionPrefix(Client.CurrentUser, ref argPos))
             return;
 
         var context = new SocketCommandContext(Client, message);

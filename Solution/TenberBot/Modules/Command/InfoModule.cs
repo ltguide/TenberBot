@@ -1,11 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TenberBot.Extensions;
 
 namespace TenberBot.Modules;
@@ -52,7 +47,7 @@ public class InfoModule : ModuleBase<SocketCommandContext>
     [Summary("Echoes a message.")]
     public async Task Say([Remainder][Summary("The text to echo")] string echo)
     {
-        await ReplyAsync(echo, messageReference: Context.Message.GetReferenceTo());
+        await ReplyAsync($"{Context.User.GetDisplayName()} or {Context.User.Mention} told me to say: {echo}", messageReference: Context.Message.GetReferenceTo());
     }
 
     [Command("purge")]

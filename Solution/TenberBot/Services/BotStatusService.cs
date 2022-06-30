@@ -1,14 +1,20 @@
-﻿using Discord;
-using Discord.Addons.Hosting;
+﻿using Discord.Addons.Hosting;
 using Discord.Addons.Hosting.Util;
 using Discord.WebSocket;
+using TenberBot.Data.Services;
 
 namespace TenberBot.Services;
 
 public class BotStatusService : DiscordClientService
 {
-    public BotStatusService(DiscordSocketClient client, ILogger<DiscordClientService> logger) : base(client, logger)
+    private readonly IBotStatusDataService botStatusDataService;
+
+    public BotStatusService(
+        IBotStatusDataService botStatusDataService,
+        DiscordSocketClient client,
+        ILogger<DiscordClientService> logger) : base(client, logger)
     {
+        this.botStatusDataService = botStatusDataService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -18,7 +24,12 @@ public class BotStatusService : DiscordClientService
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            await Client.SetGameAsync($"whatevs yo {new Random().Next()}");
+            var botStatus = await botStatusDataService.GetRandom();
+
+            if (botStatus != null)
+                await Client.SetGameAsync(botStatus.Text);
+            else
+                await Client.SetGameAsync("");
 
             await Task.Delay(2 * 60 * 1000, stoppingToken);
         }

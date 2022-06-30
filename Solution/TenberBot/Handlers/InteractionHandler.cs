@@ -1,9 +1,9 @@
-﻿using System.Reflection;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Hosting;
 using Discord.Addons.Hosting.Util;
 using Discord.Interactions;
 using Discord.WebSocket;
+using System.Reflection;
 using TenberBot.Parameters;
 
 namespace TenberBot.Handlers;
