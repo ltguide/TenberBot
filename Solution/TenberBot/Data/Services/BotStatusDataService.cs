@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Discord;
+using Microsoft.EntityFrameworkCore;
 using TenberBot.Data.Models;
 
 namespace TenberBot.Data.Services;
@@ -6,6 +7,8 @@ namespace TenberBot.Data.Services;
 public interface IBotStatusDataService
 {
     Task<IList<BotStatus>> GetAll();
+
+    Task<EmbedBuilder> GetAllAsEmbed();
 
     Task<BotStatus?> GetRandom();
 
@@ -23,7 +26,6 @@ public class BotStatusDataService : IBotStatusDataService
     public BotStatusDataService(DataContext dbContext)
     {
         this.dbContext = dbContext;
-        Console.WriteLine("BotStatusDataService hola");
     }
 
     public async Task<IList<BotStatus>> GetAll()
@@ -32,6 +34,20 @@ public class BotStatusDataService : IBotStatusDataService
             .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
+    }
+
+    public async Task<EmbedBuilder> GetAllAsEmbed()
+    {
+        var botStatuses = (await GetAll()).Select(x => $"`{x.BotStatusId,4}` {x.Text}");
+
+        var embedBuilder = new EmbedBuilder
+        {
+            Title = "Bot Statuses",
+            Color = Color.Blue,
+            Description = $"**`  Id` Text**\n{string.Join("\n", botStatuses)}",
+        };
+
+        return embedBuilder;
     }
 
     public async Task<BotStatus?> GetRandom()

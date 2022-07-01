@@ -1,12 +1,11 @@
-﻿using TenberBot.Data.Models;
+﻿using Discord;
+using TenberBot.Data;
 using TenberBot.Data.Services;
 
 namespace TenberBot.Services;
 
 public class GlobalSettingService : BackgroundService
 {
-    private IReadOnlyList<GlobalSetting> Settings { get; set; } = new List<GlobalSetting>().AsReadOnly();
-
     private readonly IGlobalSettingDataService globalSettingDataService;
     private readonly ILogger<GlobalSettingService> logger;
 
@@ -16,33 +15,29 @@ public class GlobalSettingService : BackgroundService
     {
         this.globalSettingDataService = globalSettingDataService;
         this.logger = logger;
-
-        Console.WriteLine("wtf?");
     }
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        return Load();
-    }
-
-    public async Task Load()
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try
         {
-            Settings = await globalSettingDataService.GetAllRO().ConfigureAwait(false);
+            var settings = (await globalSettingDataService.GetAll().ConfigureAwait(false)).ToDictionary(x => x.Name, x => x.Value);
+
+            if (settings.TryGetValue("prefix", out var value))
+                GlobalSettings.Prefix = value;
+
+            if (settings.TryGetValue("emote-success", out value) && Emote.TryParse(value, out var emote))
+                GlobalSettings.EmoteSuccess = emote;
+
+            if (settings.TryGetValue("emote-fail", out value) && Emote.TryParse(value, out emote))
+                GlobalSettings.EmoteFail = emote;
+
+            if (settings.TryGetValue("emote-unknown", out value) && Emote.TryParse(value, out emote))
+                GlobalSettings.EmoteUnknown = emote;
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "GlobalSettingService startup");
         }
-    }
-
-    public T? Get<T>(string name)
-    {
-        var setting = Settings.FirstOrDefault(x => x.Name == name);
-        if (setting == null)
-            return default;
-
-        return (T)(object)setting.Value;
     }
 }

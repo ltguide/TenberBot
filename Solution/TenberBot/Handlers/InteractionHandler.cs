@@ -41,10 +41,10 @@ internal class InteractionHandler : DiscordClientService
         await Client.WaitForReadyAsync(stoppingToken);
 
         // If DOTNET_ENVIRONMENT is set to development, only register the commands to a single guild
-        //if (_environment.IsDevelopment())
-        //    await _interactionService.RegisterCommandsToGuildAsync(_configuration.GetValue<ulong>("DevGuild"));
-        //else
-        //    await _interactionService.RegisterCommandsGloballyAsync();
+        if (_environment.IsDevelopment())
+            await _interactionService.RegisterCommandsToGuildAsync(_configuration.GetValue<ulong>("devguild"));
+        else
+            await _interactionService.RegisterCommandsGloballyAsync();
 
     }
 

@@ -13,45 +13,50 @@ namespace TenberBot;
 
 public class Program
 {
-    public static Emote EmoteSuccess { get; private set; } = Emote.Parse("<:tenber_success:991838580961976440>");
-    public static Emote EmoteFail { get; private set; } = Emote.Parse("<:tenber_fail:991838580093767760>");
-    public static Emote EmoteUnknown { get; private set; } = Emote.Parse("<:tenber_unknown:991839617487749172>");
-
     public static async Task Main(string[] args)
     {
-        var host = Host.CreateDefaultBuilder(args)
-             .ConfigureDiscordHost((context, config) =>
-             {
-                 config.SocketConfig = new DiscordSocketConfig
-                 {
-                     LogLevel = LogSeverity.Info,
-                     MessageCacheSize = 200,
-                     AlwaysDownloadUsers = true,
-                 };
+        var logLevel = LogSeverity.Info;
+        //var logLevel = LogSeverity.Verbose;
 
-                 config.Token = context.Configuration["app-token"];
-             })
+        var host = Host.CreateDefaultBuilder(args)
+            .ConfigureAppConfiguration(config =>
+            {
+                config.AddEnvironmentVariables("TenberBot-");
+            })
+            .ConfigureDiscordHost((context, config) =>
+            {
+                config.SocketConfig = new DiscordSocketConfig
+                {
+                    LogLevel = logLevel,
+                    MessageCacheSize = 200,
+                    AlwaysDownloadUsers = true,
+                };
+
+                config.Token = context.Configuration["app-token"];
+            })
             .UseCommandService((context, config) =>
             {
-                config.LogLevel = LogSeverity.Info;
+                config.LogLevel = logLevel;
                 config.DefaultRunMode = RunMode.Async;
                 config.CaseSensitiveCommands = false;
             })
             .UseInteractionService((context, config) =>
             {
-                config.LogLevel = LogSeverity.Info;
+                config.LogLevel = logLevel;
                 config.UseCompiledLambda = true;
             })
             .ConfigureLogging((host, config) =>
             {
                 config.ClearProviders();
-                config.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
+                config.SetMinimumLevel(LogLevel.Trace);
                 config.AddNLog(host.Configuration);
             })
             .ConfigureServices((context, services) =>
             {
-                services.AddSingleton<GlobalSettingService>();
-                services.AddHostedService(provider => provider.GetRequiredService<GlobalSettingService>());
+                //services.AddSingleton<GlobalSettingService>();
+                //services.AddHostedService(provider => provider.GetRequiredService<GlobalSettingService>());
+
+                services.AddHostedService<GlobalSettingService>();
 
                 services.AddHostedService<BotStatusService>();
 
@@ -66,9 +71,35 @@ public class Program
 
                 services.AddTransient<IGlobalSettingDataService, GlobalSettingDataService>();
                 services.AddTransient<IBotStatusDataService, BotStatusDataService>();
+                services.AddTransient<IGreetingDataService, GreetingDataService>();
             })
             .Build();
 
         await host.RunAsync();
     }
 }
+
+
+
+// Embed markdown support
+//  Title
+//  Description
+//  Field name / Field value
+
+
+
+// DM:
+//  Author is SocketGlobalUser - Username, Discriminator
+//  Channel is SocketDMChannel
+
+// Text:
+//  Author is SocketGuildUser - DisplayName, Username, Discriminator, Mention, Guild
+//  Channel is SocketTextChannel - Name, IsNsfw, Mention, Guild
+
+// Voice:
+//  Author is SocketGuildUser
+//  Channel is SocketVoiceChannel
+
+// Thread:
+//  Author is SocketGuildUser
+//  Channel is SocketThreadChannel - Name, Owner, ParentChannel

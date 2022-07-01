@@ -9,7 +9,6 @@ public class DataContext : DbContext
 {
     public DataContext(DbContextOptions<DataContext> options) : base(options)
     {
-        Console.WriteLine("DataContext hola");
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -19,7 +18,9 @@ public class DataContext : DbContext
 #endif
     }
 
-    public DbSet<GlobalSetting> Settings { get; set; }
+    public DbSet<GlobalSetting> GlobalSettings { get; set; }
 
     public DbSet<BotStatus> BotStatuses { get; set; }
+
+    public DbSet<Greeting> Greetings { get; set; }
 }
