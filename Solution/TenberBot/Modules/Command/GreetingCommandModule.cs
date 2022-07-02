@@ -7,7 +7,6 @@ using TenberBot.Extensions;
 
 namespace TenberBot.Modules.Command;
 
-[RequireUserPermission(ChannelPermission.SendMessages)]
 [RequireBotPermission(ChannelPermission.SendMessages)]
 public class GreetingCommandModule : ModuleBase<SocketCommandContext>
 {
@@ -32,8 +31,8 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
     }
 
     [Command("hi")]
-    [Alias("hello", "sup", "hola", "hey", "test")]
-    [Summary("Hi there!")]
+    [Alias("hello", "hey", "test")]
+    [Summary("Say a Hello greeting.")]
     public async Task Hello()
     {
         await SendRandom(GreetingType.Hello, VisualType.Hello);
@@ -41,7 +40,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
 
     [Command("gb")]
     [Alias("goodbye", "bye", "cya")]
-    [Summary("Good Bye :)")]
+    [Summary("Say a Good Bye greeting.")]
     public async Task Bye()
     {
         await SendRandom(GreetingType.Bye);
@@ -49,7 +48,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
 
     [Command("gm")]
     [Alias("goodmorning", "morning")]
-    [Summary("Good Morning :)")]
+    [Summary("Say a Good Morning greeting.")]
     public async Task Morning()
     {
         await SendRandom(GreetingType.Morning);
@@ -57,7 +56,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
 
     [Command("ga")]
     [Alias("goodafternoon", "afternoon")]
-    [Summary("Good Afternoon :)")]
+    [Summary("Say a Good Afternoon greeting.")]
     public async Task Afternoon()
     {
         await SendRandom(GreetingType.Afternoon);
@@ -65,7 +64,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
 
     [Command("ge")]
     [Alias("goodevening", "evening")]
-    [Summary("Good Evening :)")]
+    [Summary("Say a Good Evening greeting.")]
     public async Task Evening()
     {
         await SendRandom(GreetingType.Evening);
@@ -73,7 +72,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
 
     [Command("gn")]
     [Alias("goodnight", "night")]
-    [Summary("Good Night :)")]
+    [Summary("Say a Good Night greeting.")]
     public async Task Night()
     {
         await SendRandom(GreetingType.Night);

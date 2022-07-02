@@ -27,7 +27,7 @@ public class ManageGuildVisualCommandModule : ModuleBase<SocketCommandContext>
         this.logger = logger;
     }
 
-    [Command]
+    [Command("", ignoreExtraArgs: true)]
     [Summary("Manage random visuals.")]
     public Task<RuntimeResult> NoSubCommand()
     {
@@ -35,7 +35,6 @@ public class ManageGuildVisualCommandModule : ModuleBase<SocketCommandContext>
     }
 
     [Command("add")]
-    [Summary("Add random visual.")]
     public async Task<RuntimeResult> Add(VisualType? visualType = null, [Remainder] string? url = null)
     {
         if (visualType == null)
@@ -64,7 +63,6 @@ public class ManageGuildVisualCommandModule : ModuleBase<SocketCommandContext>
     }
 
     [Command("delete")]
-    [Summary("Delete random visual.")]
     public async Task<RuntimeResult> Delete(VisualType? visualType = null, int? id = null)
     {
         if (visualType == null)

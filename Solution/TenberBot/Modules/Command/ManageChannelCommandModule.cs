@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using TenberBot.Data;
+using TenberBot.Extensions;
 
 namespace TenberBot.Modules.Command;
 
@@ -16,35 +17,31 @@ public class ManageChannelCommandModule : ModuleBase<SocketCommandContext>
     }
 
     [Command("purge")]
-    [Summary("Purge messages from channel.")]
+    [Summary("Remove messages from channel history.")]
     [RequireUserPermission(ChannelPermission.ManageMessages)]
     [RequireBotPermission(ChannelPermission.ManageMessages)]
-    public async Task Purge(int count, bool quiet = false)
+    public async Task Purge(int count)
     {
         if (Context.Channel is not SocketTextChannel channel)
             return;
 
-        count = Math.Min(Math.Max(1, count), 100);
-
         await Context.Message.AddReactionAsync(GlobalSettings.EmoteUnknown);
 
-        var messages = await Context.Channel.GetMessagesAsync(limit: count + 1).FlattenAsync();
+        _ = Task.Run(() => Process(channel, count));
+    }
 
-        count = messages.Count() - 1;
+    private async Task Process(SocketTextChannel channel, int count)
+    {
+        var messages = (await channel.GetMessagesAsync(limit: Math.Min(Math.Max(1, count), 100) + 1).FlattenAsync()).Where(x => x.IsPinned == false).ToList();
 
-        var content = $"Deleting {count} message{(count != 1 ? "s" : "")}...";
-        var reply = await ReplyAsync(content);
+        count = messages.Count - 1;
+
+        var reply = await ReplyAsync($"I found {count} message{(count != 1 ? "s" : "")} to clean up...");
 
         await channel.DeleteMessagesAsync(messages);
 
-        if (quiet)
-            await reply.DeleteAsync();
-        else
-        {
-            await reply.ModifyAsync(x => x.Content = $"{content} all done!");
-            await reply.AddReactionAsync(GlobalSettings.EmoteSuccess);
-        }
+        await reply.ModifyAsync(x => x.Content = $"💥 {reply.Content} and I'm all done! 💥");
+
+        reply.DeleteSoon();
     }
-
-
 }

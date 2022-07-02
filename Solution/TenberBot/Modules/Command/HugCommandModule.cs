@@ -9,7 +9,6 @@ using TenberBot.Extensions;
 
 namespace TenberBot.Modules.Command;
 
-[RequireUserPermission(ChannelPermission.SendMessages)]
 [RequireBotPermission(ChannelPermission.SendMessages)]
 public class HugCommandModule : ModuleBase<SocketCommandContext>
 {
