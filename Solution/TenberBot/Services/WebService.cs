@@ -1,5 +1,4 @@
 ﻿using Discord;
-using System.Net.Http.Headers;
 namespace TenberBot.Services;
 
 public class WebService
@@ -26,6 +25,14 @@ public class WebService
             if (response.IsSuccessStatusCode == false)
                 return null;
 
+            var mediaType = response.Content.Headers.ContentType?.MediaType ?? "";
+
+            if (mediaType.StartsWith("image/") == false)
+            {
+                logger.LogInformation($"Got {mediaType} (not an image) from: {url}");
+                return null;
+            }
+
             return new FileAttachment(await response.Content.ReadAsStreamAsync(), GetFilename(response));
         }
         catch (Exception ex)
@@ -37,11 +44,6 @@ public class WebService
 
     private static string GetFilename(HttpResponseMessage response)
     {
-        if (response.Headers.TryGetValues("content-disposition", out var values)
-            && ContentDispositionHeaderValue.TryParse(values.FirstOrDefault(), out var contentDisposition)
-            && contentDisposition.FileNameStar != null)
-            return contentDisposition.FileNameStar;
-
-        return Path.GetFileName(response.RequestMessage?.RequestUri?.AbsolutePath ?? "filename");
+        return response.Content.Headers.ContentDisposition?.FileNameStar ?? Path.GetFileName(response.RequestMessage?.RequestUri?.AbsolutePath ?? "unknown");
     }
 }

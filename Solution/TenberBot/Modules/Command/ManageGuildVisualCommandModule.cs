@@ -36,27 +36,26 @@ public class ManageGuildVisualCommandModule : ModuleBase<SocketCommandContext>
 
     [Command("add")]
     [Summary("Add random visual.")]
-    public async Task<RuntimeResult> Add(VisualType? visualType = null, [Remainder] string? _ = null)
+    public async Task<RuntimeResult> Add(VisualType? visualType = null, [Remainder] string? url = null)
     {
         if (visualType == null)
             return CustomResult.FromError($"Provide an option of: {string.Join(", ", Enum.GetNames<VisualType>())}");
 
-        string? url = Context.Message.Attachments.FirstOrDefault()?.Url ?? Context.Message.Embeds.FirstOrDefault()?.Url;
+        url = Context.Message.Attachments.FirstOrDefault()?.Url ?? Context.Message.Embeds.FirstOrDefault()?.Url ?? url;
 
         if (url == null)
-            return CustomResult.FromError($"I couldn't locate an attachment or embed.");
+            return CustomResult.FromError($"I couldn't locate a file in your message.");
 
         var file = await webService.GetFileAttachment(url);
         if (file == null)
-            return CustomResult.FromError($"I failed to download the file. 😦");
+            return CustomResult.FromError($"I failed to download the file. Is it an image? 😦");
 
         var visual = new Visual(file.Value) { VisualType = visualType.Value, Url = url };
 
         await visualDataService.Add(visual);
 
         await Context.Channel.SendFileAsync(
-            visual.Stream,
-            visual.AttachmentFilename,
+            visual.AsAttachment(),
             $"Added {visualType} visual #{visual.VisualId} - {visual.Filename.SanitizeMD()}",
             messageReference: Context.Message.GetReferenceTo()
         );

@@ -2,7 +2,7 @@
 
 public enum GreetingType
 {
-    Generic,
+    Hello,
     Bye,
     Morning,
     Afternoon,

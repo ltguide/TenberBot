@@ -19,7 +19,6 @@ public class Visual
 
     public byte[] Data { get; set; } = Array.Empty<byte>();
 
-    [NotMapped]
     public string AttachmentFilename => $"{VisualId}_{Filename}";
 
     [NotMapped]
@@ -45,4 +44,6 @@ public class Visual
         Filename = value.FileName;
         Stream = value.Stream;
     }
+
+    public FileAttachment AsAttachment() => new(Stream, AttachmentFilename);
 }

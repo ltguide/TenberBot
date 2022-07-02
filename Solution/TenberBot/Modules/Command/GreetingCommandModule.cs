@@ -13,15 +13,19 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
 {
     private readonly static Regex Variables = new(@"%random%|%user%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+    private readonly IVisualDataService visualDataService;
     private readonly IGreetingDataService greetingDataService;
     private readonly IUserStatDataService userStatDataService;
     private readonly ILogger<GreetingCommandModule> logger;
 
     public GreetingCommandModule(
+        IVisualDataService visualDataService,
         IGreetingDataService greetingDataService,
         IUserStatDataService userStatDataService,
+
         ILogger<GreetingCommandModule> logger)
     {
+        this.visualDataService = visualDataService;
         this.greetingDataService = greetingDataService;
         this.userStatDataService = userStatDataService;
         this.logger = logger;
@@ -30,9 +34,9 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
     [Command("hi")]
     [Alias("hello", "sup", "hola", "hey", "test")]
     [Summary("Hi there!")]
-    public async Task Generic()
+    public async Task Hello()
     {
-        await SendRandomText(GreetingType.Generic);
+        await SendRandom(GreetingType.Hello, VisualType.Hello);
     }
 
     [Command("gb")]
@@ -40,7 +44,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
     [Summary("Good Bye :)")]
     public async Task Bye()
     {
-        await SendRandomText(GreetingType.Bye);
+        await SendRandom(GreetingType.Bye);
     }
 
     [Command("gm")]
@@ -48,7 +52,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
     [Summary("Good Morning :)")]
     public async Task Morning()
     {
-        await SendRandomText(GreetingType.Morning);
+        await SendRandom(GreetingType.Morning);
     }
 
     [Command("ga")]
@@ -56,7 +60,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
     [Summary("Good Afternoon :)")]
     public async Task Afternoon()
     {
-        await SendRandomText(GreetingType.Afternoon);
+        await SendRandom(GreetingType.Afternoon);
     }
 
     [Command("ge")]
@@ -64,7 +68,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
     [Summary("Good Evening :)")]
     public async Task Evening()
     {
-        await SendRandomText(GreetingType.Evening);
+        await SendRandom(GreetingType.Evening);
     }
 
     [Command("gn")]
@@ -72,10 +76,10 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
     [Summary("Good Night :)")]
     public async Task Night()
     {
-        await SendRandomText(GreetingType.Night);
+        await SendRandom(GreetingType.Night);
     }
 
-    private async Task SendRandomText(GreetingType greetingType)
+    private async Task SendRandom(GreetingType greetingType, VisualType? visualType = null)
     {
         var greeting = await greetingDataService.GetRandom(greetingType);
         if (greeting == null)
@@ -95,6 +99,11 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
             };
         });
 
-        await ReplyAsync(message);
+        var visual = visualType != null ? await visualDataService.GetRandom(visualType.Value) : null;
+
+        if (visual == null)
+            await ReplyAsync(message);
+        else
+            await Context.Channel.SendFileAsync(visual.AsAttachment(), message);
     }
 }

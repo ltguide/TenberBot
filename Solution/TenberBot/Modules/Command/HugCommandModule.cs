@@ -15,7 +15,7 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
 {
     private readonly static Regex RecipientVariables = new(@"%user%|%recipient%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private readonly static Regex SelfVariables = new(@"%user%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-    private readonly static Regex StatVariables = new(@"%count%|%s%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private readonly static Regex StatVariables = new(@"%count%|%s%|%es%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private readonly IHugDataService hugDataService;
     private readonly IVisualDataService visualDataService;
@@ -109,6 +109,7 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
             {
                 "%count%" => count.ToString("N0"),
                 "%s%" => count != 1 ? "s" : "",
+                "%es%" => count != 1 ? "es" : "",
                 _ => match.Value,
             };
         });

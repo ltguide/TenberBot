@@ -3,4 +3,5 @@
 public enum VisualType
 {
     Hug,
+    Hello,
 }
