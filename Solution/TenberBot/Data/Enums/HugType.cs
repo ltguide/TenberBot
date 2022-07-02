@@ -1,4 +1,6 @@
-﻿namespace TenberBot.Data.Enums;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TenberBot.Data.Enums;
 
 public enum HugType
 {

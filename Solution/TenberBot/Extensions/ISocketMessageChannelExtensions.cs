@@ -16,4 +16,15 @@ public static class ISocketMessageChannelExtensions
         if (message is SocketUserMessage socketUserMessage)
             await socketUserMessage.ModifyAsync(x => x.Embed = embedBuilder.Build());
     }
+
+    public static async Task ModifyComponents(this ISocketMessageChannel socketMessageChannel, ulong messageId, ComponentBuilder componentBuilder)
+    {
+        var message = await socketMessageChannel.GetMessageAsync(messageId);
+
+        if (message is RestUserMessage restUserMessage)
+            await restUserMessage.ModifyAsync(x => x.Components = componentBuilder.Build());
+
+        if (message is SocketUserMessage socketUserMessage)
+            await socketUserMessage.ModifyAsync(x => x.Components = componentBuilder.Build());
+    }
 }

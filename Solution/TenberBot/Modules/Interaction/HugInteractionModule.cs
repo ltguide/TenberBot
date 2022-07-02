@@ -32,7 +32,7 @@ public class HugInteractionModule : InteractionModuleBase<SocketInteractionConte
 
         await hugDataService.Add(hug);
 
-        await RespondAsync($"Added {hugType} hug #{hug.HugId} - {hug.Text.SanitizeMD()}");
+        await RespondAsync($"{Context.User.Mention} added {hugType} hug #{hug.HugId} - {hug.Text.SanitizeMD()}", allowedMentions: AllowedMentions.None);
 
         await UpdateOriginalMessage(hugType, messageId);
     }
@@ -55,7 +55,7 @@ public class HugInteractionModule : InteractionModuleBase<SocketInteractionConte
 
         await hugDataService.Delete(hug);
 
-        await RespondAsync($"Deleted {hugType} hug #{hug.HugId} - {hug.Text.SanitizeMD()}");
+        await RespondAsync($"{Context.User.Mention} deleted {hugType} hug #{hug.HugId} - {hug.Text.SanitizeMD()}", allowedMentions: AllowedMentions.None);
 
         await UpdateOriginalMessage(hugType, messageId);
     }

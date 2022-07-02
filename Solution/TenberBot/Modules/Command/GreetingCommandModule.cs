@@ -84,7 +84,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         if (greeting == null)
             return;
 
-        (await userStatDataService.GetOrAddById(Context)).Greetings++;
+        (await userStatDataService.GetOrAddByContext(Context)).Greetings++;
 
         await userStatDataService.Save();
 

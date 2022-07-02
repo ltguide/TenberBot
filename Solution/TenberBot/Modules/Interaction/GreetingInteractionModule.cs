@@ -32,7 +32,7 @@ public class GreetingInteractionModule : InteractionModuleBase<SocketInteraction
 
         await greetingDataService.Add(greeting);
 
-        await RespondAsync($"Added {greetingType} greeting #{greeting.GreetingId} - {greeting.Text.SanitizeMD()}");
+        await RespondAsync($"{Context.User.Mention} added {greetingType} greeting #{greeting.GreetingId} - {greeting.Text.SanitizeMD()}", allowedMentions: AllowedMentions.None);
 
         await UpdateOriginalMessage(greetingType, messageId);
     }
@@ -55,7 +55,7 @@ public class GreetingInteractionModule : InteractionModuleBase<SocketInteraction
 
         await greetingDataService.Delete(greeting);
 
-        await RespondAsync($"Deleted {greetingType} greeting #{greeting.GreetingId} - {greeting.Text.SanitizeMD()}");
+        await RespondAsync($"{Context.User.Mention} deleted {greetingType} greeting #{greeting.GreetingId} - {greeting.Text.SanitizeMD()}", allowedMentions: AllowedMentions.None);
 
         await UpdateOriginalMessage(greetingType, messageId);
     }

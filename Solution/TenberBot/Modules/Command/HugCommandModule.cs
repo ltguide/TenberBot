@@ -62,9 +62,9 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
             if (hug == null || stat == null)
                 return;
 
-            ++(await userStatDataService.GetOrAddById(Context)).HugsGiven;
+            ++(await userStatDataService.GetOrAddByContext(Context)).HugsGiven;
 
-            var received = ++(await userStatDataService.GetOrAddById(Context.Guild.Id, recipient.Id)).HugsReceived;
+            var received = ++(await userStatDataService.GetOrAddByIds(Context.Guild.Id, recipient.Id)).HugsReceived;
 
             await userStatDataService.Save();
 

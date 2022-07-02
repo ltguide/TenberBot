@@ -31,7 +31,7 @@ public class BotStatusInteractionModule : InteractionModuleBase<SocketInteractio
 
         await botStatusDataService.Add(botStatus);
 
-        await RespondAsync($"Added bot status #{botStatus.BotStatusId} - {botStatus.Text}");
+        await RespondAsync($"{Context.User.Mention} added bot status #{botStatus.BotStatusId} - {botStatus.Text}", allowedMentions: AllowedMentions.None);
 
         await UpdateOriginalMessage(messageId);
     }
@@ -54,7 +54,7 @@ public class BotStatusInteractionModule : InteractionModuleBase<SocketInteractio
 
         await botStatusDataService.Delete(botStatus);
 
-        await RespondAsync($"Deleted bot status #{botStatus.BotStatusId} - {botStatus.Text}");
+        await RespondAsync($"{Context.User.Mention} deleted bot status #{botStatus.BotStatusId} - {botStatus.Text}", allowedMentions: AllowedMentions.None);
 
         await UpdateOriginalMessage(messageId);
     }

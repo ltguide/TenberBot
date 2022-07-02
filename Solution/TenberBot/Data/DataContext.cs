@@ -24,9 +24,11 @@ public class DataContext : DbContext
 
     public DbSet<UserStat> UserStats { get; set; }
 
-    public DbSet<Visual> Visuals { get; set; }
+    public DbSet<InteractionParent> InteractionParents { get; set; }
 
     public DbSet<BotStatus> BotStatuses { get; set; }
+
+    public DbSet<Visual> Visuals { get; set; }
 
     public DbSet<Greeting> Greetings { get; set; }
 

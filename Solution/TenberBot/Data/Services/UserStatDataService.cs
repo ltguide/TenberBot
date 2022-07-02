@@ -6,11 +6,11 @@ namespace TenberBot.Data.Services;
 
 public interface IUserStatDataService
 {
-    Task<UserStat?> GetById(SocketCommandContext context);
-    Task<UserStat?> GetById(ulong guildId, ulong userId);
+    Task<UserStat?> GetByContext(SocketCommandContext context);
+    Task<UserStat?> GetByIds(ulong guildId, ulong userId);
 
-    Task<UserStat> GetOrAddById(SocketCommandContext context);
-    Task<UserStat> GetOrAddById(ulong guildId, ulong userId);
+    Task<UserStat> GetOrAddByContext(SocketCommandContext context);
+    Task<UserStat> GetOrAddByIds(ulong guildId, ulong userId);
 
     Task Add(UserStat newObject);
 
@@ -28,26 +28,26 @@ public class UserStatDataService : IUserStatDataService
         this.dbContext = dbContext;
     }
 
-    public Task<UserStat?> GetById(SocketCommandContext context)
+    public Task<UserStat?> GetByContext(SocketCommandContext context)
     {
-        return GetById(context.Guild.Id, context.User.Id);
+        return GetByIds(context.Guild.Id, context.User.Id);
     }
 
-    public async Task<UserStat?> GetById(ulong guildId, ulong userId)
+    public async Task<UserStat?> GetByIds(ulong guildId, ulong userId)
     {
         return await dbContext.UserStats
             .FirstOrDefaultAsync(x => x.GuildId == guildId && x.UserId == userId)
             .ConfigureAwait(false);
     }
 
-    public Task<UserStat> GetOrAddById(SocketCommandContext context)
+    public Task<UserStat> GetOrAddByContext(SocketCommandContext context)
     {
-        return GetOrAddById(context.Guild.Id, context.User.Id);
+        return GetOrAddByIds(context.Guild.Id, context.User.Id);
     }
 
-    public async Task<UserStat> GetOrAddById(ulong guildId, ulong userId)
+    public async Task<UserStat> GetOrAddByIds(ulong guildId, ulong userId)
     {
-        var dbObject = await GetById(userId, guildId);
+        var dbObject = await GetByIds(userId, guildId);
 
         if (dbObject == null)
         {
@@ -68,7 +68,7 @@ public class UserStatDataService : IUserStatDataService
 
         dbContext.Add(newObject);
 
-        await Save();
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task Delete(UserStat dbObject)
@@ -78,7 +78,7 @@ public class UserStatDataService : IUserStatDataService
 
         dbContext.Remove(dbObject);
 
-        await Save();
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task Save()
