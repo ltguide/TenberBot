@@ -47,15 +47,21 @@ public class CommandHandler : DiscordClientService
             return;
 
         var context = new SocketCommandContext(Client, message);
-        var result = await _commandService.ExecuteAsync(context, argPos, _provider);
+        await _commandService.ExecuteAsync(context, argPos, _provider);
     }
 
     public async Task CommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
     {
-        Logger.LogInformation("User {user} attempted to use command {command}", context.User, command.Value.Name);
-
-        if (!command.IsSpecified || result.IsSuccess)
+        if (command.IsSpecified == false)
             return;
+
+        if (result.IsSuccess)
+        {
+            Logger.LogDebug($"User {context.User.Username}#{context.User.Discriminator} successfully used command: {command.Value.Name}");
+            return;
+        }
+
+        Logger.LogInformation($"User {context.User.Username}#{context.User.Discriminator} failed to use command: {command.Value.Name}");
 
         await context.Message.ReplyAsync(result.ErrorReason);
         await context.Message.AddReactionAsync(GlobalSettings.EmoteFail);

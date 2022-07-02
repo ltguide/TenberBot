@@ -1,6 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
+using System.Text.RegularExpressions;
 using TenberBot.Data.Enums;
 using TenberBot.Data.Services;
 using TenberBot.Extensions;
@@ -8,16 +8,22 @@ using TenberBot.Extensions;
 namespace TenberBot.Modules.Command;
 
 [RequireUserPermission(ChannelPermission.SendMessages)]
+[RequireBotPermission(ChannelPermission.SendMessages)]
 public class GreetingCommandModule : ModuleBase<SocketCommandContext>
 {
+    private readonly static Regex Variables = new(@"%random%|%user%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     private readonly IGreetingDataService greetingDataService;
+    private readonly IUserStatDataService userStatDataService;
     private readonly ILogger<GreetingCommandModule> logger;
 
     public GreetingCommandModule(
         IGreetingDataService greetingDataService,
+        IUserStatDataService userStatDataService,
         ILogger<GreetingCommandModule> logger)
     {
         this.greetingDataService = greetingDataService;
+        this.userStatDataService = userStatDataService;
         this.logger = logger;
     }
 
@@ -26,11 +32,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
     [Summary("Hi there!")]
     public async Task Generic()
     {
-        var greeting = await greetingDataService.GetRandom(GreetingType.Generic);
-        if (greeting == null)
-            return;
-
-        await ReplyAsync(FormatMessage(greeting.Text));
+        await SendRandomText(GreetingType.Generic);
     }
 
     [Command("gb")]
@@ -38,11 +40,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
     [Summary("Good Bye :)")]
     public async Task Bye()
     {
-        var greeting = await greetingDataService.GetRandom(GreetingType.Bye);
-        if (greeting == null)
-            return;
-
-        await ReplyAsync(FormatMessage(greeting.Text));
+        await SendRandomText(GreetingType.Bye);
     }
 
     [Command("gm")]
@@ -50,11 +48,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
     [Summary("Good Morning :)")]
     public async Task Morning()
     {
-        var greeting = await greetingDataService.GetRandom(GreetingType.Morning);
-        if (greeting == null)
-            return;
-
-        await ReplyAsync(FormatMessage(greeting.Text));
+        await SendRandomText(GreetingType.Morning);
     }
 
     [Command("ga")]
@@ -62,11 +56,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
     [Summary("Good Afternoon :)")]
     public async Task Afternoon()
     {
-        var greeting = await greetingDataService.GetRandom(GreetingType.Afternoon);
-        if (greeting == null)
-            return;
-
-        await ReplyAsync(FormatMessage(greeting.Text));
+        await SendRandomText(GreetingType.Afternoon);
     }
 
     [Command("ge")]
@@ -74,11 +64,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
     [Summary("Good Evening :)")]
     public async Task Evening()
     {
-        var greeting = await greetingDataService.GetRandom(GreetingType.Evening);
-        if (greeting == null)
-            return;
-
-        await ReplyAsync(FormatMessage(greeting.Text));
+        await SendRandomText(GreetingType.Evening);
     }
 
     [Command("gn")]
@@ -86,22 +72,29 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
     [Summary("Good Night :)")]
     public async Task Night()
     {
-        var greeting = await greetingDataService.GetRandom(GreetingType.Night);
+        await SendRandomText(GreetingType.Night);
+    }
+
+    private async Task SendRandomText(GreetingType greetingType)
+    {
+        var greeting = await greetingDataService.GetRandom(greetingType);
         if (greeting == null)
             return;
 
-        await ReplyAsync(FormatMessage(greeting.Text));
-    }
+        (await userStatDataService.GetOrAddById(Context)).Greetings++;
 
-    private string FormatMessage(string message)
-    {
-        if (message.Contains("%random%") && Context.Channel is SocketTextChannel channel)
+        await userStatDataService.Save();
+
+        var message = Variables.Replace(greeting.Text, (match) =>
         {
-            var randomUser = channel.Users.Where(x => x.IsBot == false && x != Context.User).OrderBy(x => Guid.NewGuid()).FirstOrDefault();
-            if (randomUser != null)
-                message = message.Replace("%random%", randomUser.GetDisplayNameSanitized());
-        }
+            return match.Value switch
+            {
+                "%random%" => Context.GetRandomUser()?.GetDisplayNameSanitized() ?? "Random User",
+                "%user%" => Context.User.GetDisplayNameSanitized(),
+                _ => match.Value,
+            };
+        });
 
-        return message;
+        await ReplyAsync(message);
     }
 }

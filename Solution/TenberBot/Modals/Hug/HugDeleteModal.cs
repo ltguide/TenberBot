@@ -1,10 +1,10 @@
 ﻿using Discord.Interactions;
 
-namespace TenberBot.Modals.Greeting;
+namespace TenberBot.Modals.Hug;
 
-public class GreetingDeleteModal : IModal
+public class HugDeleteModal : IModal
 {
-    public string Title => "Delete Greeting: ";
+    public string Title => "Delete Hug: ";
 
     [InputLabel("Id")]
     [ModalTextInput("text", maxLength: 20)]

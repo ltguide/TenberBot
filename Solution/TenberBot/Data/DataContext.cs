@@ -20,7 +20,15 @@ public class DataContext : DbContext
 
     public DbSet<GlobalSetting> GlobalSettings { get; set; }
 
+    public DbSet<UserLevel> UserLevels { get; set; }
+
+    public DbSet<UserStat> UserStats { get; set; }
+
+    public DbSet<Visual> Visuals { get; set; }
+
     public DbSet<BotStatus> BotStatuses { get; set; }
 
     public DbSet<Greeting> Greetings { get; set; }
+
+    public DbSet<Hug> Hugs { get; set; }
 }

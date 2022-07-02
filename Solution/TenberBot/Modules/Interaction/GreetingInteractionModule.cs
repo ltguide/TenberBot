@@ -22,7 +22,7 @@ public class GreetingInteractionModule : InteractionModuleBase<SocketInteraction
     [ComponentInteraction("greeting:add,*,*")]
     public async Task GreetingAdd(GreetingType greetingType, ulong messageId)
     {
-        await Context.Interaction.RespondWithModalAsync<GreetingAddModal>($"greeting:add,{greetingType},{messageId}");
+        await Context.Interaction.RespondWithModalAsync<GreetingAddModal>($"greeting:add,{greetingType},{messageId}", modifyModal: (builder) => builder.Title += greetingType);
     }
 
     [ModalInteraction("greeting:add,*,*")]
@@ -40,7 +40,7 @@ public class GreetingInteractionModule : InteractionModuleBase<SocketInteraction
     [ComponentInteraction("greeting:delete,*,*")]
     public async Task GreetingDelete(GreetingType greetingType, ulong messageId)
     {
-        await Context.Interaction.RespondWithModalAsync<GreetingDeleteModal>($"greeting:delete,{greetingType},{messageId}");
+        await Context.Interaction.RespondWithModalAsync<GreetingDeleteModal>($"greeting:delete,{greetingType},{messageId}", modifyModal: (builder) => builder.Title += greetingType);
     }
 
     [ModalInteraction("greeting:delete,*,*")]

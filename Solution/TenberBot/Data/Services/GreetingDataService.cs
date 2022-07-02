@@ -41,13 +41,13 @@ public class GreetingDataService : IGreetingDataService
 
     public async Task<EmbedBuilder> GetAllAsEmbed(GreetingType greetingType)
     {
-        var botStatuses = (await GetAll(greetingType)).Select(x => $"`{x.GreetingId,4}` {x.Text.SanitizeMD()}");
+        var lines = (await GetAll(greetingType)).Select(x => $"`{x.GreetingId,4}` {x.Text.SanitizeMD()}");
 
         var embedBuilder = new EmbedBuilder
         {
             Title = $"Greeting: {greetingType}",
             Color = Color.Blue,
-            Description = $"**`  Id` Text**\n{string.Join("\n", botStatuses)}",
+            Description = $"**`  Id` Text**\n{string.Join("\n", lines)}",
         };
 
         return embedBuilder;

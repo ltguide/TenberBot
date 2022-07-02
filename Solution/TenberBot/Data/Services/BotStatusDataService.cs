@@ -38,13 +38,13 @@ public class BotStatusDataService : IBotStatusDataService
 
     public async Task<EmbedBuilder> GetAllAsEmbed()
     {
-        var botStatuses = (await GetAll()).Select(x => $"`{x.BotStatusId,4}` {x.Text}");
+        var lines = (await GetAll()).Select(x => $"`{x.BotStatusId,4}` {x.Text}");
 
         var embedBuilder = new EmbedBuilder
         {
             Title = "Bot Statuses",
             Color = Color.Blue,
-            Description = $"**`  Id` Text**\n{string.Join("\n", botStatuses)}",
+            Description = $"**`  Id` Text**\n{string.Join("\n", lines)}",
         };
 
         return embedBuilder;

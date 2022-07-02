@@ -70,8 +70,16 @@ public class Program
                     }), ServiceLifetime.Transient, ServiceLifetime.Singleton);
 
                 services.AddTransient<IGlobalSettingDataService, GlobalSettingDataService>();
+
+                //services.AddTransient<IUserLevelDataService, UserLevelDataService>();
+                services.AddTransient<IUserStatDataService, UserStatDataService>();
+
+                services.AddTransient<IVisualDataService, VisualDataService>();
                 services.AddTransient<IBotStatusDataService, BotStatusDataService>();
                 services.AddTransient<IGreetingDataService, GreetingDataService>();
+                services.AddTransient<IHugDataService, HugDataService>();
+
+                services.AddHttpClient<WebService>();
             })
             .Build();
 

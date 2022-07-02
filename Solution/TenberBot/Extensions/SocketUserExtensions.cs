@@ -5,6 +5,11 @@ namespace TenberBot.Extensions;
 
 public static class SocketUserExtensions
 {
+    public static string GetMention(this SocketUser socketUser)
+    {
+        return $"<@{socketUser.Id}>";
+    }
+
     public static string GetDisplayName(this SocketUser socketUser)
     {
         if (socketUser is SocketGuildUser socketGuildUser)
