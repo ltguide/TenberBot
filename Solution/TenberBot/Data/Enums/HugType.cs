@@ -2,7 +2,7 @@
 
 public enum HugType
 {
-    User,
+    Recipient,
     Self,
     Stat,
 }

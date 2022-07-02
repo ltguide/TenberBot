@@ -19,6 +19,10 @@ public class Program
         //var logLevel = LogSeverity.Verbose;
 
         var host = Host.CreateDefaultBuilder(args)
+            .UseWindowsService(options =>
+            {
+                options.ServiceName = "TenberBot";
+            })
             .ConfigureAppConfiguration(config =>
             {
                 config.AddEnvironmentVariables("TenberBot-");
