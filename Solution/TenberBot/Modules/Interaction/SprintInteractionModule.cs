@@ -79,10 +79,10 @@ public class SprintInteractionModule : InteractionModuleBase<SocketInteractionCo
         if (sprint == null)
             return;
 
-        if (Context.User.Id == sprint.UserId)
+        if (sprint.Users.Any(x => x.UserId == Context.User.Id))
             await Context.Interaction.RespondWithModalAsync<SprintStopModal>($"sprint:stop,{messageId}");
         else
-            await RespondAsync("Only the initiator of a sprint can stop it.", ephemeral: true);
+            await RespondAsync("You are not a member of this sprint.", ephemeral: true);
     }
 
     [ModalInteraction("sprint:stop,*")]
@@ -96,21 +96,38 @@ public class SprintInteractionModule : InteractionModuleBase<SocketInteractionCo
             return;
 
         var sprint = await sprintDataService.GetById(parent.Reference!.Value);
-        if (sprint == null || Context.User.Id != sprint.UserId)
+        if (sprint == null)
             return;
 
-        await sprintDataService.Update(sprint, new Sprint { SprintStatus = SprintStatus.Stopped, });
+        var userSprint = sprint.Users.FirstOrDefault(x => x.UserId == Context.User.Id);
+        if (userSprint == null)
+            return;
 
-        await RespondAsync($"Hey, {sprint.UserMentions}, the sprint has been stopped early.");
-
-        await Context.Channel.GetAndModify(parent.MessageId, (x) =>
+        if (sprint.UserId == Context.User.Id)
         {
-            x.Content = null;
-            x.Embed = sprint.GetAsEmbed();
-            x.Components = new ComponentBuilder().Build();
-        });
+            await sprintDataService.Update(sprint, new Sprint { SprintStatus = SprintStatus.Stopped, });
 
-        await interactionParentDataService.Delete(parent);
+            await RespondAsync($"Hey, {sprint.UserMentions}, the sprint has been stopped early.");
+
+            await Context.Channel.GetAndModify(parent.MessageId, (x) =>
+            {
+                x.Content = null;
+                x.Embed = sprint.GetAsEmbed();
+                x.Components = new ComponentBuilder().Build();
+            });
+
+            await interactionParentDataService.Delete(parent);
+        }
+        else
+        {
+            sprint.Users.Remove(userSprint);
+
+            await sprintDataService.Update(sprint, null!);
+
+            await RespondAsync($"{Context.User.GetDisplayNameSanitized()} has left the sprint early.");
+
+            await Context.Channel.GetAndModify(parent.MessageId, (x) => x.Embed = sprint.GetAsEmbed());
+        }
 
         _ = Task.Delay(TimeSpan.FromSeconds(5)).ContinueWith(_ => Context.Interaction.DeleteOriginalResponseAsync());
     }
