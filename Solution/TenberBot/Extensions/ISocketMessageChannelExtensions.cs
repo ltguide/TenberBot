@@ -6,25 +6,19 @@ namespace TenberBot.Extensions;
 
 public static class ISocketMessageChannelExtensions
 {
-    public static async Task ModifyEmbed(this ISocketMessageChannel socketMessageChannel, ulong messageId, EmbedBuilder embedBuilder)
+    public static async Task GetAndModify(this ISocketMessageChannel socketMessageChannel, ulong? messageId, Action<MessageProperties> action)
     {
-        var message = await socketMessageChannel.GetMessageAsync(messageId);
+        if (messageId == null)
+            return;
+
+        var message = await socketMessageChannel.GetMessageAsync(messageId.Value);
+        if (message == null)
+            return;
 
         if (message is RestUserMessage restUserMessage)
-            await restUserMessage.ModifyAsync(x => x.Embed = embedBuilder.Build());
+            await restUserMessage.ModifyAsync(action);
 
         if (message is SocketUserMessage socketUserMessage)
-            await socketUserMessage.ModifyAsync(x => x.Embed = embedBuilder.Build());
-    }
-
-    public static async Task ModifyComponents(this ISocketMessageChannel socketMessageChannel, ulong messageId, ComponentBuilder componentBuilder)
-    {
-        var message = await socketMessageChannel.GetMessageAsync(messageId);
-
-        if (message is RestUserMessage restUserMessage)
-            await restUserMessage.ModifyAsync(x => x.Components = componentBuilder.Build());
-
-        if (message is SocketUserMessage socketUserMessage)
-            await socketUserMessage.ModifyAsync(x => x.Components = componentBuilder.Build());
+            await socketUserMessage.ModifyAsync(action);
     }
 }

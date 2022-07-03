@@ -12,56 +12,79 @@ namespace TenberBot.Modules.Interaction;
 public class HugInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IHugDataService hugDataService;
+    private readonly IInteractionParentDataService interactionParentDataService;
 
     public HugInteractionModule(
-        IHugDataService hugDataService)
+        IHugDataService hugDataService,
+        IInteractionParentDataService interactionParentDataService)
     {
         this.hugDataService = hugDataService;
+        this.interactionParentDataService = interactionParentDataService;
     }
 
-    [ComponentInteraction("hug:add,*,*")]
-    public async Task HugAdd(HugType hugType, ulong messageId)
+    [ComponentInteraction("hug:add,*")]
+    public async Task HugAdd(ulong messageId)
     {
-        await Context.Interaction.RespondWithModalAsync<HugAddModal>($"hug:add,{hugType},{messageId}", modifyModal: (builder) => builder.Title += hugType);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Hug, messageId);
+        if (parent == null)
+            return;
+
+        await Context.Interaction.RespondWithModalAsync<HugAddModal>($"hug:add,{messageId}", modifyModal: (builder) => builder.Title += parent.Reference);
     }
 
-    [ModalInteraction("hug:add,*,*")]
-    public async Task HugAddModalResponse(HugType hugType, ulong messageId, HugAddModal modal)
+    [ModalInteraction("hug:add,*")]
+    public async Task HugAddModalResponse(ulong messageId, HugAddModal modal)
     {
-        var hug = new Hug { HugType = hugType, Text = modal.Text };
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Hug, messageId);
+        if (parent == null)
+            return;
+
+        var reference = (HugType)parent.Reference!;
+
+        var hug = new Hug { HugType = reference, Text = modal.Text };
 
         await hugDataService.Add(hug);
 
-        await RespondAsync($"{Context.User.Mention} added {hugType} hug #{hug.HugId} - {hug.Text.SanitizeMD()}", allowedMentions: AllowedMentions.None);
+        await RespondAsync($"{Context.User.Mention} added {reference} hug #{hug.HugId} - {hug.Text.SanitizeMD()}", allowedMentions: AllowedMentions.None);
 
-        await UpdateOriginalMessage(hugType, messageId);
+        await UpdateOriginalMessage(reference, messageId);
     }
 
-    [ComponentInteraction("hug:delete,*,*")]
-    public async Task HugDelete(HugType hugType, ulong messageId)
+    [ComponentInteraction("hug:delete,*")]
+    public async Task HugDelete(ulong messageId)
     {
-        await Context.Interaction.RespondWithModalAsync<HugDeleteModal>($"hug:delete,{hugType},{messageId}", modifyModal: (builder) => builder.Title += hugType);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Hug, messageId);
+        if (parent == null)
+            return;
+
+        await Context.Interaction.RespondWithModalAsync<HugDeleteModal>($"hug:delete,{messageId}", modifyModal: (builder) => builder.Title += parent.Reference);
     }
 
-    [ModalInteraction("hug:delete,*,*")]
-    public async Task HugDeleteModalResponse(HugType hugType, ulong messageId, HugDeleteModal modal)
+    [ModalInteraction("hug:delete,*")]
+    public async Task HugDeleteModalResponse(ulong messageId, HugDeleteModal modal)
     {
-        var hug = await hugDataService.GetById(hugType, modal.Text);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Hug, messageId);
+        if (parent == null)
+            return;
+
+        var reference = (HugType)parent.Reference!;
+
+        var hug = await hugDataService.GetById(reference, modal.Text);
         if (hug == null)
         {
-            await RespondAsync($"I couldn't find {hugType} hug #{modal.Text}.", ephemeral: true);
+            await RespondAsync($"I couldn't find {reference} hug #{modal.Text}.", ephemeral: true);
             return;
         }
 
         await hugDataService.Delete(hug);
 
-        await RespondAsync($"{Context.User.Mention} deleted {hugType} hug #{hug.HugId} - {hug.Text.SanitizeMD()}", allowedMentions: AllowedMentions.None);
+        await RespondAsync($"{Context.User.Mention} deleted {reference} hug #{hug.HugId} - {hug.Text.SanitizeMD()}", allowedMentions: AllowedMentions.None);
 
-        await UpdateOriginalMessage(hugType, messageId);
+        await UpdateOriginalMessage(reference, messageId);
     }
 
     private async Task UpdateOriginalMessage(HugType hugType, ulong messageId)
     {
-        await Context.Channel.ModifyEmbed(messageId, await hugDataService.GetAllAsEmbed(hugType));
+        await Context.Channel.GetAndModify(messageId, async (x) => x.Embed = await hugDataService.GetAllAsEmbed(hugType));
     }
 }

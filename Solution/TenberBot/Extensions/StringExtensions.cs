@@ -8,4 +8,19 @@ public static class StringExtensions
     {
         return Format.Sanitize(value);
     }
+
+    public static string GetUserMention(this string value)
+    {
+        return $"<@{value}>";
+    }
+
+    public static string GetChannelMention(this string value)
+    {
+        return $"<#{value}>";
+    }
+
+    public static string GetRoleMention(this string value)
+    {
+        return $"<@&{value}>";
+    }
 }

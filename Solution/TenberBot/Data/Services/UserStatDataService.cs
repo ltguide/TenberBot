@@ -1,4 +1,5 @@
 ﻿using Discord.Commands;
+using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 using TenberBot.Data.Models;
 
@@ -6,9 +7,11 @@ namespace TenberBot.Data.Services;
 
 public interface IUserStatDataService
 {
+    Task<UserStat?> GetByContext(SocketInteractionContext context);
     Task<UserStat?> GetByContext(SocketCommandContext context);
     Task<UserStat?> GetByIds(ulong guildId, ulong userId);
 
+    Task<UserStat> GetOrAddByContext(SocketInteractionContext context);
     Task<UserStat> GetOrAddByContext(SocketCommandContext context);
     Task<UserStat> GetOrAddByIds(ulong guildId, ulong userId);
 
@@ -28,6 +31,11 @@ public class UserStatDataService : IUserStatDataService
         this.dbContext = dbContext;
     }
 
+    public Task<UserStat?> GetByContext(SocketInteractionContext context)
+    {
+        return GetByIds(context.Guild.Id, context.User.Id);
+    }
+
     public Task<UserStat?> GetByContext(SocketCommandContext context)
     {
         return GetByIds(context.Guild.Id, context.User.Id);
@@ -40,6 +48,11 @@ public class UserStatDataService : IUserStatDataService
             .ConfigureAwait(false);
     }
 
+    public Task<UserStat> GetOrAddByContext(SocketInteractionContext context)
+    {
+        return GetOrAddByIds(context.Guild.Id, context.User.Id);
+    }
+
     public Task<UserStat> GetOrAddByContext(SocketCommandContext context)
     {
         return GetOrAddByIds(context.Guild.Id, context.User.Id);
@@ -47,11 +60,11 @@ public class UserStatDataService : IUserStatDataService
 
     public async Task<UserStat> GetOrAddByIds(ulong guildId, ulong userId)
     {
-        var dbObject = await GetByIds(userId, guildId);
+        var dbObject = await GetByIds(guildId, userId);
 
         if (dbObject == null)
         {
-            dbObject = new UserStat { UserId = userId, GuildId = guildId };
+            dbObject = new UserStat { GuildId = guildId, UserId = userId };
 
             await Add(dbObject);
         }

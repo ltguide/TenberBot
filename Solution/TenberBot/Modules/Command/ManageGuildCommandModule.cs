@@ -11,6 +11,7 @@ namespace TenberBot.Modules.Command;
 [RequireUserPermission(GuildPermission.ManageGuild)]
 public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
 {
+    private readonly ISprintSnippetDataService sprintSnippetDataService;
     private readonly IHugDataService hugDataService;
     private readonly IGreetingDataService greetingDataService;
     private readonly IBotStatusDataService botStatusDataService;
@@ -18,12 +19,14 @@ public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
     private readonly ILogger<ManageGuildCommandModule> logger;
 
     public ManageGuildCommandModule(
+        ISprintSnippetDataService sprintSnippetDataService,
         IHugDataService hugDataService,
         IGreetingDataService greetingDataService,
         IBotStatusDataService botStatusDataService,
         IInteractionParentDataService interactionParentDataService,
         ILogger<ManageGuildCommandModule> logger)
     {
+        this.sprintSnippetDataService = sprintSnippetDataService;
         this.hugDataService = hugDataService;
         this.greetingDataService = greetingDataService;
         this.botStatusDataService = botStatusDataService;
@@ -35,13 +38,13 @@ public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
     [Summary("Manage random bot statuses.")]
     public async Task BotStatusesList()
     {
-        var reply = await Context.Message.ReplyAsync(embed: (await botStatusDataService.GetAllAsEmbed()).Build());
+        var reply = await Context.Message.ReplyAsync(embed: await botStatusDataService.GetAllAsEmbed());
 
-        await SetInteractionParent(InteractionParentType.BotStatus, reply.Id);
+        await SetParent(InteractionParentType.BotStatus, reply.Id, null);
 
         var components = new ComponentBuilder()
-            .WithButton("Add", $"botstatus:add,{reply.Id}", ButtonStyle.Success, new Emoji("➕"))
-            .WithButton("Delete", $"botstatus:delete,{reply.Id}", ButtonStyle.Danger, new Emoji("🗑"));
+            .WithButton("Add", $"bot-status:add,{reply.Id}", ButtonStyle.Success, new Emoji("➕"))
+            .WithButton("Delete", $"bot-status:delete,{reply.Id}", ButtonStyle.Danger, new Emoji("🗑"));
 
         await reply.ModifyAsync(x => x.Components = components.Build());
     }
@@ -53,13 +56,13 @@ public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
         if (greetingType == null)
             return CustomResult.FromError($"Provide an option of: {string.Join(", ", Enum.GetNames<GreetingType>())}");
 
-        var reply = await Context.Message.ReplyAsync(embed: (await greetingDataService.GetAllAsEmbed(greetingType.Value)).Build());
+        var reply = await Context.Message.ReplyAsync(embed: await greetingDataService.GetAllAsEmbed(greetingType.Value));
 
-        await SetInteractionParent(InteractionParentType.Greeting, reply.Id);
+        await SetParent(InteractionParentType.Greeting, reply.Id, greetingType);
 
         var components = new ComponentBuilder()
-            .WithButton("Add", $"greeting:add,{greetingType},{reply.Id}", ButtonStyle.Success, new Emoji("➕"))
-            .WithButton("Delete", $"greeting:delete,{greetingType},{reply.Id}", ButtonStyle.Danger, new Emoji("🗑"));
+            .WithButton("Add", $"greeting:add,{reply.Id}", ButtonStyle.Success, new Emoji("➕"))
+            .WithButton("Delete", $"greeting:delete,{reply.Id}", ButtonStyle.Danger, new Emoji("🗑"));
 
         await reply.ModifyAsync(x => x.Components = components.Build());
 
@@ -73,29 +76,50 @@ public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
         if (hugType == null)
             return CustomResult.FromError($"Provide an option of: {string.Join(", ", Enum.GetNames<HugType>())}");
 
-        var reply = await Context.Message.ReplyAsync(embed: (await hugDataService.GetAllAsEmbed(hugType.Value)).Build());
+        var reply = await Context.Message.ReplyAsync(embed: await hugDataService.GetAllAsEmbed(hugType.Value));
 
-        await SetInteractionParent(InteractionParentType.Hug, reply.Id);
+        await SetParent(InteractionParentType.Hug, reply.Id, hugType);
 
         var components = new ComponentBuilder()
-            .WithButton("Add", $"hug:add,{hugType},{reply.Id}", ButtonStyle.Success, new Emoji("➕"))
-            .WithButton("Delete", $"hug:delete,{hugType},{reply.Id}", ButtonStyle.Danger, new Emoji("🗑"));
+            .WithButton("Add", $"hug:add,{reply.Id}", ButtonStyle.Success, new Emoji("➕"))
+            .WithButton("Delete", $"hug:delete,{reply.Id}", ButtonStyle.Danger, new Emoji("🗑"));
 
         await reply.ModifyAsync(x => x.Components = components.Build());
 
         return CustomResult.FromSuccess();
     }
 
-    private async Task SetInteractionParent(InteractionParentType parentType, ulong messageId)
+    [Command("sprint-snippets")]
+    [Summary("Manage random sprint snippets.")]
+    public async Task<RuntimeResult> SprintSnippetsList(SprintSnippetType? sprintSnippetType = null)
     {
-        var parent = await interactionParentDataService.GetByContext(parentType, Context);
-        if (parent != null)
-        {
-            await Context.Channel.ModifyComponents(parent.MessageId, new ComponentBuilder());
+        if (sprintSnippetType == null)
+            return CustomResult.FromError($"Provide an option of: {string.Join(", ", Enum.GetNames<SprintSnippetType>())}");
 
-            await interactionParentDataService.Update(parent, messageId, Context.User.Id);
-        }
-        else
-            await interactionParentDataService.Add(new InteractionParent(Context) { InteractionParentType = parentType, MessageId = messageId, });
+        var reply = await Context.Message.ReplyAsync(embed: await sprintSnippetDataService.GetAllAsEmbed(sprintSnippetType.Value));
+
+        await SetParent(InteractionParentType.SprintSnippet, reply.Id, sprintSnippetType);
+
+        var components = new ComponentBuilder()
+            .WithButton("Add", $"sprint-snippet:add,{reply.Id}", ButtonStyle.Success, new Emoji("➕"))
+            .WithButton("Delete", $"sprint-snippet:delete,{reply.Id}", ButtonStyle.Danger, new Emoji("🗑"));
+
+        await reply.ModifyAsync(x => x.Components = components.Build());
+
+        return CustomResult.FromSuccess();
+    }
+
+    private async Task SetParent(InteractionParentType parentType, ulong messageId, Enum? reference)
+    {
+        var previousParent = await interactionParentDataService.Set(new InteractionParent
+        {
+            ChannelId = Context.Channel.Id,
+            UserId = null,
+            InteractionParentType = parentType,
+            MessageId = messageId,
+            Reference = reference == null ? null : Convert.ToInt32(reference),
+        });
+
+        await Context.Channel.GetAndModify(previousParent, (x) => x.Components = new ComponentBuilder().Build());
     }
 }

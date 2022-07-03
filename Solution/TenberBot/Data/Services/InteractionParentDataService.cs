@@ -1,21 +1,22 @@
-﻿using Discord.Commands;
-using Microsoft.EntityFrameworkCore;
-using TenberBot.Data.Models;
+﻿using Microsoft.EntityFrameworkCore;
 using TenberBot.Data.Enums;
-using TenberBot.Extensions;
+using TenberBot.Data.Models;
 
 namespace TenberBot.Data.Services;
 
 public interface IInteractionParentDataService
 {
-    Task<InteractionParent?> GetByContext(InteractionParentType parentType, SocketCommandContext context);
-    Task<InteractionParent?> GetByIds(InteractionParentType parentType, ulong guildId, ulong channelId, ulong? userId);
+    Task<InteractionParent?> GetById(InteractionParentType parentType, ulong channelId, ulong? userId);
+
+    Task<InteractionParent?> GetByMessageId(InteractionParentType parentType, ulong messageId);
 
     Task Add(InteractionParent newObject);
 
-    Task Update(InteractionParent dbObject, ulong messageId, ulong userId);
+    Task Update(InteractionParent dbObject, InteractionParent newObject);
 
     Task Delete(InteractionParent dbObject);
+
+    Task<ulong?> Set(InteractionParent newObject);
 }
 
 public class InteractionParentDataService : IInteractionParentDataService
@@ -27,21 +28,17 @@ public class InteractionParentDataService : IInteractionParentDataService
         this.dbContext = dbContext;
     }
 
-    public Task<InteractionParent?> GetByContext(InteractionParentType parentType, SocketCommandContext context)
+    public async Task<InteractionParent?> GetById(InteractionParentType parentType, ulong channelId, ulong? userId)
     {
-        return GetByIds(parentType, context.Guild.Id, context.Channel.Id, context.User.Id);
+        return await dbContext.InteractionParents
+            .FirstOrDefaultAsync(x => x.InteractionParentType == parentType && x.ChannelId == channelId && x.UserId == userId)
+            .ConfigureAwait(false);
     }
 
-    public async Task<InteractionParent?> GetByIds(InteractionParentType parentType, ulong guildId, ulong channelId, ulong? userId)
+    public async Task<InteractionParent?> GetByMessageId(InteractionParentType parentType, ulong messageId)
     {
-        var query = dbContext.InteractionParents
-            .Where(x => x.InteractionParentType == parentType && x.GuildId == guildId && x.ChannelId == channelId);
-
-        if (parentType.GetLink() == InteractionParentLink.ChannelUser)
-            query = query.Where(x => x.UserId == userId);
-
-        return await query
-            .FirstOrDefaultAsync()
+        return await dbContext.InteractionParents
+            .FirstOrDefaultAsync(x => x.InteractionParentType == parentType && x.MessageId == messageId)
             .ConfigureAwait(false);
     }
 
@@ -57,13 +54,17 @@ public class InteractionParentDataService : IInteractionParentDataService
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task Update(InteractionParent dbObject, ulong messageId, ulong userId)
+    public async Task Update(InteractionParent dbObject, InteractionParent newObject)
     {
         if (dbObject == null)
             throw new ArgumentNullException(nameof(dbObject));
 
-        dbObject.MessageId = messageId;
-        dbObject.UserId = userId;
+        if (newObject != null)
+        {
+            dbObject.UserId = newObject.UserId;
+            dbObject.MessageId = newObject.MessageId;
+            dbObject.Reference = newObject.Reference;
+        }
 
         await dbContext.SaveChangesAsync();
     }
@@ -75,6 +76,24 @@ public class InteractionParentDataService : IInteractionParentDataService
 
         dbContext.Remove(dbObject);
 
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync().ConfigureAwait(false);
+    }
+
+    public async Task<ulong?> Set(InteractionParent newObject)
+    {
+        ulong? previousParent = null;
+
+        var dbObject = await GetById(newObject.InteractionParentType, newObject.ChannelId, newObject.UserId);
+
+        if (dbObject != null)
+        {
+            previousParent = dbObject.MessageId;
+
+            await Update(dbObject, newObject);
+        }
+        else
+            await Add(newObject);
+
+        return previousParent;
     }
 }

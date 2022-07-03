@@ -10,7 +10,7 @@ public interface IHugDataService
 {
     Task<IList<Hug>> GetAll(HugType hugType);
 
-    Task<EmbedBuilder> GetAllAsEmbed(HugType hugType);
+    Task<Embed> GetAllAsEmbed(HugType hugType);
 
     Task<Hug?> GetRandom(HugType hugType);
 
@@ -39,7 +39,7 @@ public class HugDataService : IHugDataService
             .ConfigureAwait(false);
     }
 
-    public async Task<EmbedBuilder> GetAllAsEmbed(HugType hugType)
+    public async Task<Embed> GetAllAsEmbed(HugType hugType)
     {
         var lines = (await GetAll(hugType)).Select(x => $"`{x.HugId,4}` {x.Text.SanitizeMD()}");
 
@@ -50,7 +50,7 @@ public class HugDataService : IHugDataService
             Description = $"**`  Id` Text**\n{string.Join("\n", lines)}",
         };
 
-        return embedBuilder;
+        return embedBuilder.Build();
     }
 
     public async Task<Hug?> GetRandom(HugType hugType)

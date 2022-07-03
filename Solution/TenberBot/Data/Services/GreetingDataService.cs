@@ -10,7 +10,7 @@ public interface IGreetingDataService
 {
     Task<IList<Greeting>> GetAll(GreetingType greetingType);
 
-    Task<EmbedBuilder> GetAllAsEmbed(GreetingType greetingType);
+    Task<Embed> GetAllAsEmbed(GreetingType greetingType);
 
     Task<Greeting?> GetRandom(GreetingType greetingType);
 
@@ -39,7 +39,7 @@ public class GreetingDataService : IGreetingDataService
             .ConfigureAwait(false);
     }
 
-    public async Task<EmbedBuilder> GetAllAsEmbed(GreetingType greetingType)
+    public async Task<Embed> GetAllAsEmbed(GreetingType greetingType)
     {
         var lines = (await GetAll(greetingType)).Select(x => $"`{x.GreetingId,4}` {x.Text.SanitizeMD()}");
 
@@ -50,7 +50,7 @@ public class GreetingDataService : IGreetingDataService
             Description = $"**`  Id` Text**\n{string.Join("\n", lines)}",
         };
 
-        return embedBuilder;
+        return embedBuilder.Build();
     }
 
     public async Task<Greeting?> GetRandom(GreetingType greetingType)

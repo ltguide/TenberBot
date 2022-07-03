@@ -27,10 +27,11 @@ public class GlobalSettingInteractionModule : InteractionModuleBase<SocketIntera
         GlobalSettings.Prefix = value;
         await globalSettingDataService.Set("prefix", value);
 
+
         if (value == "")
-            await RespondAsync($"Cleared prefix. I can no longer respond to message commands.");
+            await RespondAsync($"Global setting updated.\n\n> **Prefix**: *none* I can no longer respond to chat messages.");
         else
-            await RespondAsync($"Prefix set to **{value}**");
+            await RespondAsync($"Global setting updated.\n\n> **Prefix**: {value}");
     }
 
     [SlashCommand("emote", "Set the reaction emotes.")]
@@ -66,6 +67,6 @@ public class GlobalSettingInteractionModule : InteractionModuleBase<SocketIntera
                 break;
         }
 
-        await RespondAsync($"{type} emote set to {newEmote}");
+        await RespondAsync($"Global setting for *emote* updated.\n\n> **{type}**: {newEmote}");
     }
 }

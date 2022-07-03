@@ -33,4 +33,12 @@ public class DataContext : DbContext
     public DbSet<Greeting> Greetings { get; set; }
 
     public DbSet<Hug> Hugs { get; set; }
+
+    public DbSet<SprintSnippet> SprintSnippets { get; set; }
+
+    public DbSet<SprintChannel> SprintChannels { get; set; }
+
+    public DbSet<Sprint> Sprints { get; set; }
+
+    public DbSet<UserSprint> UserSprints { get; set; }
 }

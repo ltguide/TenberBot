@@ -8,7 +8,7 @@ public interface IBotStatusDataService
 {
     Task<IList<BotStatus>> GetAll();
 
-    Task<EmbedBuilder> GetAllAsEmbed();
+    Task<Embed> GetAllAsEmbed();
 
     Task<BotStatus?> GetRandom();
 
@@ -36,7 +36,7 @@ public class BotStatusDataService : IBotStatusDataService
             .ConfigureAwait(false);
     }
 
-    public async Task<EmbedBuilder> GetAllAsEmbed()
+    public async Task<Embed> GetAllAsEmbed()
     {
         var lines = (await GetAll()).Select(x => $"`{x.BotStatusId,4}` {x.Text}");
 
@@ -47,7 +47,7 @@ public class BotStatusDataService : IBotStatusDataService
             Description = $"**`  Id` Text**\n{string.Join("\n", lines)}",
         };
 
-        return embedBuilder;
+        return embedBuilder.Build();
     }
 
     public async Task<BotStatus?> GetRandom()

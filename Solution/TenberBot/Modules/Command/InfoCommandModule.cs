@@ -86,28 +86,6 @@ public class InfoCommandModule : ModuleBase<SocketCommandContext>
     }
 #endif
 
-    //[Command("sprint")]
-    //[Summary("Create a sprint that others can join! Get stuff done!")]
-    //public async Task Sprint(TimeSpan duration, [Remainder] string task)
-    //{
-    //    // duration > 3 minutes?
-    //    // did user start a sprint?
-    //    // did user join a sprint?
-
-    //    var embed = new EmbedBuilder
-    //    {
-    //        Title = task,
-    //        Description = $"In one minute, a sprint will begin for {duration}.",
-    //        Color = Color.Blue,
-    //        Author = Context.User.GetEmbedAuthor("is starting a sprint!"),
-    //    };
-
-    //    var component = new ComponentBuilder()
-    //        .WithButton("Join Sprint", "custom-id:idhere");
-
-    //    await Context.Message.ReplyAsync(embed: embed.Build(), components: component.Build());
-    //}
-
     private async Task<EmbedBuilder?> HelpPage(int page, int perPage, IList<CommandInfo> commands)
     {
         page = Math.Max(1, page);

@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using TenberBot.Data.Enums;
 using TenberBot.Data.Models;
 using TenberBot.Data.Services;
 using TenberBot.Extensions;
@@ -11,22 +12,33 @@ namespace TenberBot.Modules.Interaction;
 public class BotStatusInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IBotStatusDataService botStatusDataService;
+    private readonly IInteractionParentDataService interactionParentDataService;
 
     public BotStatusInteractionModule(
-        IBotStatusDataService botStatusDataService)
+        IBotStatusDataService botStatusDataService,
+        IInteractionParentDataService interactionParentDataService)
     {
         this.botStatusDataService = botStatusDataService;
+        this.interactionParentDataService = interactionParentDataService;
     }
 
-    [ComponentInteraction("botstatus:add,*")]
+    [ComponentInteraction("bot-status:add,*")]
     public async Task BotStatusAdd(ulong messageId)
     {
-        await Context.Interaction.RespondWithModalAsync<BotStatusAddModal>($"botstatus:add,{messageId}");
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.BotStatus, messageId);
+        if (parent == null)
+            return;
+
+        await Context.Interaction.RespondWithModalAsync<BotStatusAddModal>($"bot-status:add,{messageId}");
     }
 
-    [ModalInteraction("botstatus:add,*")]
+    [ModalInteraction("bot-status:add,*")]
     public async Task BotStatusAddModalResponse(ulong messageId, BotStatusAddModal modal)
     {
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.BotStatus, messageId);
+        if (parent == null)
+            return;
+
         var botStatus = new BotStatus { Text = modal.Text.SanitizeMD() };
 
         await botStatusDataService.Add(botStatus);
@@ -36,15 +48,23 @@ public class BotStatusInteractionModule : InteractionModuleBase<SocketInteractio
         await UpdateOriginalMessage(messageId);
     }
 
-    [ComponentInteraction("botstatus:delete,*")]
+    [ComponentInteraction("bot-status:delete,*")]
     public async Task BotStatusDelete(ulong messageId)
     {
-        await Context.Interaction.RespondWithModalAsync<BotStatusDeleteModal>($"botstatus:delete,{messageId}");
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.BotStatus, messageId);
+        if (parent == null)
+            return;
+
+        await Context.Interaction.RespondWithModalAsync<BotStatusDeleteModal>($"bot-status:delete,{messageId}");
     }
 
-    [ModalInteraction("botstatus:delete,*")]
+    [ModalInteraction("bot-status:delete,*")]
     public async Task BotStatusDeleteModalResponse(ulong messageId, BotStatusDeleteModal modal)
     {
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.BotStatus, messageId);
+        if (parent == null)
+            return;
+
         var botStatus = await botStatusDataService.GetById(modal.Text);
         if (botStatus == null)
         {
@@ -61,6 +81,6 @@ public class BotStatusInteractionModule : InteractionModuleBase<SocketInteractio
 
     private async Task UpdateOriginalMessage(ulong messageId)
     {
-        await Context.Channel.ModifyEmbed(messageId, await botStatusDataService.GetAllAsEmbed());
+        await Context.Channel.GetAndModify(messageId, async (x) => x.Embed = await botStatusDataService.GetAllAsEmbed());
     }
 }

@@ -7,7 +7,7 @@ public static class SocketUserExtensions
 {
     public static string GetMention(this SocketUser socketUser)
     {
-        return $"<@{socketUser.Id}>";
+        return socketUser.Id.GetUserMention();
     }
 
     public static string GetDisplayName(this SocketUser socketUser)

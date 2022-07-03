@@ -4,6 +4,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using System.Reflection;
 using TenberBot.Data;
+using TenberBot.Extensions;
 using TenberBot.Parameters;
 
 namespace TenberBot.Handlers;
@@ -63,7 +64,10 @@ public class CommandHandler : DiscordClientService
 
         Logger.LogInformation($"User {context.User.Username}#{context.User.Discriminator} failed to use command: {command.Value.Name}");
 
-        await context.Message.ReplyAsync(result.ErrorReason);
+        var reply = await context.Message.ReplyAsync(result.ErrorReason);
+
         await context.Message.AddReactionAsync(GlobalSettings.EmoteFail);
+
+        reply.DeleteSoon(TimeSpan.FromSeconds(15));
     }
 }

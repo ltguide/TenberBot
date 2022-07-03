@@ -63,6 +63,7 @@ public class Program
                 services.AddHostedService<GlobalSettingService>();
 
                 services.AddHostedService<BotStatusService>();
+                services.AddHostedService<SprintService>();
 
                 services.AddHostedService<CommandHandler>();
                 services.AddHostedService<InteractionHandler>();
@@ -82,6 +83,9 @@ public class Program
                 services.AddTransient<IBotStatusDataService, BotStatusDataService>();
                 services.AddTransient<IGreetingDataService, GreetingDataService>();
                 services.AddTransient<IHugDataService, HugDataService>();
+                services.AddTransient<ISprintSnippetDataService, SprintSnippetDataService>();
+
+                services.AddTransient<ISprintDataService, SprintDataService>();
 
                 //services.AddTransient<IUserLevelDataService, UserLevelDataService>();
                 services.AddTransient<IUserStatDataService, UserStatDataService>();
