@@ -29,7 +29,7 @@ public class GreetingInteractionModule : InteractionModuleBase<SocketInteraction
         if (parent == null)
             return;
 
-        await Context.Interaction.RespondWithModalAsync<GreetingAddModal>($"greeting:add,{messageId}", modifyModal: (builder) => builder.Title += parent.Reference);
+        await Context.Interaction.RespondWithModalAsync<GreetingAddModal>($"greeting:add,{messageId}", modifyModal: (builder) => builder.Title += (GreetingType)parent.Reference!);
     }
 
     [ModalInteraction("greeting:add,*")]
@@ -57,7 +57,7 @@ public class GreetingInteractionModule : InteractionModuleBase<SocketInteraction
         if (parent == null)
             return;
 
-        await Context.Interaction.RespondWithModalAsync<GreetingDeleteModal>($"greeting:delete,{messageId}", modifyModal: (builder) => builder.Title += parent.Reference);
+        await Context.Interaction.RespondWithModalAsync<GreetingDeleteModal>($"greeting:delete,{messageId}", modifyModal: (builder) => builder.Title += (GreetingType)parent.Reference!);
     }
 
     [ModalInteraction("greeting:delete,*")]
@@ -85,6 +85,8 @@ public class GreetingInteractionModule : InteractionModuleBase<SocketInteraction
 
     private async Task UpdateOriginalMessage(GreetingType greetingType, ulong messageId)
     {
-        await Context.Channel.GetAndModify(messageId, async (x) => x.Embed = await greetingDataService.GetAllAsEmbed(greetingType));
+        var embed = await greetingDataService.GetAllAsEmbed(greetingType);
+
+        await Context.Channel.GetAndModify(messageId, (x) => x.Embed = embed);
     }
 }

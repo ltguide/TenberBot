@@ -29,7 +29,7 @@ public class HugInteractionModule : InteractionModuleBase<SocketInteractionConte
         if (parent == null)
             return;
 
-        await Context.Interaction.RespondWithModalAsync<HugAddModal>($"hug:add,{messageId}", modifyModal: (builder) => builder.Title += parent.Reference);
+        await Context.Interaction.RespondWithModalAsync<HugAddModal>($"hug:add,{messageId}", modifyModal: (builder) => builder.Title += (HugType)parent.Reference!);
     }
 
     [ModalInteraction("hug:add,*")]
@@ -57,7 +57,7 @@ public class HugInteractionModule : InteractionModuleBase<SocketInteractionConte
         if (parent == null)
             return;
 
-        await Context.Interaction.RespondWithModalAsync<HugDeleteModal>($"hug:delete,{messageId}", modifyModal: (builder) => builder.Title += parent.Reference);
+        await Context.Interaction.RespondWithModalAsync<HugDeleteModal>($"hug:delete,{messageId}", modifyModal: (builder) => builder.Title += (HugType)parent.Reference!);
     }
 
     [ModalInteraction("hug:delete,*")]
@@ -85,6 +85,8 @@ public class HugInteractionModule : InteractionModuleBase<SocketInteractionConte
 
     private async Task UpdateOriginalMessage(HugType hugType, ulong messageId)
     {
-        await Context.Channel.GetAndModify(messageId, async (x) => x.Embed = await hugDataService.GetAllAsEmbed(hugType));
+        var embed = await hugDataService.GetAllAsEmbed(hugType);
+
+        await Context.Channel.GetAndModify(messageId, (x) => x.Embed = embed);
     }
 }

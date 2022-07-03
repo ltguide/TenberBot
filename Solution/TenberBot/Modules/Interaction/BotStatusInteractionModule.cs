@@ -81,6 +81,8 @@ public class BotStatusInteractionModule : InteractionModuleBase<SocketInteractio
 
     private async Task UpdateOriginalMessage(ulong messageId)
     {
-        await Context.Channel.GetAndModify(messageId, async (x) => x.Embed = await botStatusDataService.GetAllAsEmbed());
+        var embed = await botStatusDataService.GetAllAsEmbed();
+
+        await Context.Channel.GetAndModify(messageId, (x) => x.Embed = embed);
     }
 }

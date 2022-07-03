@@ -29,7 +29,7 @@ public class SprintSnippetInteractionModule : InteractionModuleBase<SocketIntera
         if (parent == null)
             return;
 
-        await Context.Interaction.RespondWithModalAsync<SprintSnippetAddModal>($"sprint-snippet:add,{messageId}", modifyModal: (builder) => builder.Title += parent.Reference);
+        await Context.Interaction.RespondWithModalAsync<SprintSnippetAddModal>($"sprint-snippet:add,{messageId}", modifyModal: (builder) => builder.Title += (SprintSnippetType)parent.Reference!);
     }
 
     [ModalInteraction("sprint-snippet:add,*")]
@@ -57,7 +57,7 @@ public class SprintSnippetInteractionModule : InteractionModuleBase<SocketIntera
         if (parent == null)
             return;
 
-        await Context.Interaction.RespondWithModalAsync<SprintSnippetDeleteModal>($"sprint-snippet:delete,{messageId}", modifyModal: (builder) => builder.Title += parent.Reference);
+        await Context.Interaction.RespondWithModalAsync<SprintSnippetDeleteModal>($"sprint-snippet:delete,{messageId}", modifyModal: (builder) => builder.Title += (SprintSnippetType)parent.Reference!);
     }
 
     [ModalInteraction("sprint-snippet:delete,*")]
@@ -85,6 +85,8 @@ public class SprintSnippetInteractionModule : InteractionModuleBase<SocketIntera
 
     private async Task UpdateOriginalMessage(SprintSnippetType sprintSnippetType, ulong messageId)
     {
-        await Context.Channel.GetAndModify(messageId, async (x) => x.Embed = await sprintSnippetDataService.GetAllAsEmbed(sprintSnippetType));
+        var embed = await sprintSnippetDataService.GetAllAsEmbed(sprintSnippetType);
+
+        await Context.Channel.GetAndModify(messageId, (x) => x.Embed = embed);
     }
 }
