@@ -30,7 +30,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         this.logger = logger;
     }
 
-    [Command("hi")]
+    [Command("hi", ignoreExtraArgs: true)]
     [Alias("hello", "hey", "test")]
     [Summary("Say a Hello greeting.")]
     public async Task Hello()
@@ -38,7 +38,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         await SendRandom(GreetingType.Hello, VisualType.Hello);
     }
 
-    [Command("gb")]
+    [Command("gb", ignoreExtraArgs: true)]
     [Alias("goodbye", "bye", "cya")]
     [Summary("Say a Good Bye greeting.")]
     public async Task Bye()
@@ -46,7 +46,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         await SendRandom(GreetingType.Bye);
     }
 
-    [Command("gm")]
+    [Command("gm", ignoreExtraArgs: true)]
     [Alias("goodmorning", "morning")]
     [Summary("Say a Good Morning greeting.")]
     public async Task Morning()
@@ -54,7 +54,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         await SendRandom(GreetingType.Morning);
     }
 
-    [Command("ga")]
+    [Command("ga", ignoreExtraArgs: true)]
     [Alias("goodafternoon", "afternoon")]
     [Summary("Say a Good Afternoon greeting.")]
     public async Task Afternoon()
@@ -62,7 +62,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         await SendRandom(GreetingType.Afternoon);
     }
 
-    [Command("ge")]
+    [Command("ge", ignoreExtraArgs: true)]
     [Alias("goodevening", "evening")]
     [Summary("Say a Good Evening greeting.")]
     public async Task Evening()
@@ -70,7 +70,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         await SendRandom(GreetingType.Evening);
     }
 
-    [Command("gn")]
+    [Command("gn", ignoreExtraArgs: true)]
     [Alias("goodnight", "night")]
     [Summary("Say a Good Night greeting.")]
     public async Task Night()

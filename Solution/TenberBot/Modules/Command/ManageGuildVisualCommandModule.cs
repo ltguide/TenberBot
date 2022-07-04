@@ -62,7 +62,7 @@ public class ManageGuildVisualCommandModule : ModuleBase<SocketCommandContext>
         return CustomResult.FromSuccess();
     }
 
-    [Command("delete")]
+    [Command("delete", ignoreExtraArgs: true)]
     public async Task<RuntimeResult> Delete(VisualType? visualType = null, int? id = null)
     {
         if (visualType == null)

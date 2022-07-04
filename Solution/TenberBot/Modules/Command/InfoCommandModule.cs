@@ -74,7 +74,7 @@ public class InfoCommandModule : ModuleBase<SocketCommandContext>
     }
 
 #if DEBUG
-    [Command("react")]
+    [Command("react", ignoreExtraArgs: true)]
     public Task AddReaction()
     {
         _ = Task.Run(async () =>

@@ -1,6 +1,4 @@
-﻿using Discord;
-
-namespace TenberBot.Extensions;
+﻿namespace TenberBot.Extensions;
 
 public static class UlongExtensions
 {

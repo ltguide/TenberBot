@@ -16,7 +16,7 @@ public class ManageChannelCommandModule : ModuleBase<SocketCommandContext>
         this.logger = logger;
     }
 
-    [Command("purge")]
+    [Command("purge", ignoreExtraArgs: true)]
     [Summary("Remove messages from channel history.")]
     [RequireUserPermission(ChannelPermission.ManageMessages)]
     [RequireBotPermission(ChannelPermission.ManageMessages)]

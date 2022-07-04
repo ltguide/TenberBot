@@ -34,7 +34,7 @@ public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
         this.logger = logger;
     }
 
-    [Command("botstatuses")]
+    [Command("botstatuses", ignoreExtraArgs: true)]
     [Summary("Manage random bot statuses.")]
     public async Task BotStatusesList()
     {
@@ -49,7 +49,7 @@ public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
         await reply.ModifyAsync(x => x.Components = components.Build());
     }
 
-    [Command("greetings")]
+    [Command("greetings", ignoreExtraArgs: true)]
     [Summary("Manage random greetings.")]
     public async Task<RuntimeResult> GreetingsList(GreetingType? greetingType = null)
     {
@@ -69,7 +69,7 @@ public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
         return CustomResult.FromSuccess();
     }
 
-    [Command("hugs")]
+    [Command("hugs", ignoreExtraArgs: true)]
     [Summary("Manage random hugs.")]
     public async Task<RuntimeResult> HugsList(HugType? hugType = null)
     {
@@ -89,7 +89,7 @@ public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
         return CustomResult.FromSuccess();
     }
 
-    [Command("sprint-snippets")]
+    [Command("sprint-snippets", ignoreExtraArgs: true)]
     [Summary("Manage random sprint snippets.")]
     public async Task<RuntimeResult> SprintSnippetsList(SprintSnippetType? sprintSnippetType = null)
     {
