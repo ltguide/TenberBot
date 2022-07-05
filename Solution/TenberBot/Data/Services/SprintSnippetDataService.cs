@@ -34,6 +34,7 @@ public class SprintSnippetDataService : ISprintSnippetDataService
     {
         return await dbContext.SprintSnippets
             .Where(x => x.SprintSnippetType == sprintSnippetType)
+            .OrderBy(x => x.Text)
             .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);

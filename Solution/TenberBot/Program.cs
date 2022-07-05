@@ -94,6 +94,10 @@ public class Program
             })
             .Build();
 
+        //await host.Services.GetRequiredService<DataContext>()
+        //    .Database.MigrateAsync()
+        //    .ConfigureAwait(false);
+
         await host.RunAsync();
     }
 }

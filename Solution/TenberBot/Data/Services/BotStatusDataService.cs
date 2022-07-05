@@ -31,6 +31,7 @@ public class BotStatusDataService : IBotStatusDataService
     public async Task<IList<BotStatus>> GetAll()
     {
         return await dbContext.BotStatuses
+            .OrderBy(x => x.Text)
             .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);

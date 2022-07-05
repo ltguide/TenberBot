@@ -34,6 +34,7 @@ public class GreetingDataService : IGreetingDataService
     {
         return await dbContext.Greetings
             .Where(x => x.GreetingType == greetingType)
+            .OrderBy(x => x.Text)
             .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);

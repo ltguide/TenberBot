@@ -34,6 +34,7 @@ public class HugDataService : IHugDataService
     {
         return await dbContext.Hugs
             .Where(x => x.HugType == hugType)
+            .OrderBy(x => x.Text)
             .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
