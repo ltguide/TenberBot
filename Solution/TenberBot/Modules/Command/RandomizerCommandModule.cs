@@ -24,9 +24,10 @@ public class RandomizedCommandModule : ModuleBase<SocketCommandContext>
         this.logger = logger;
     }
 
-    [Command("coinflip", ignoreExtraArgs: true)]
+    [Command("coin", ignoreExtraArgs: true)]
+    [Alias("coinflip", "coinflips")]
     [Summary("Flips a coin. Are you feeling lucky?")]
-    public async Task CoinFlip()
+    public async Task Coin()
     {
         var footer = "No streak 😓";
 
