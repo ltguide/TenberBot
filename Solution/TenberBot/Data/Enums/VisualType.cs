@@ -6,4 +6,5 @@ public enum VisualType
     Hello,
     CoinHead,
     CoinTail,
+    EightBall,
 }

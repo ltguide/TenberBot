@@ -65,6 +65,32 @@ public class RandomizedCommandModule : ModuleBase<SocketCommandContext>
             messageReference: Context.Message.GetReferenceTo());
     }
 
+    [Command("8ball")]
+    [Summary("Shakes the Magic 8 Ball.")]
+    [Remarks("`[yes/no question]`")]
+    public async Task EightBall([Remainder] string? question = null)
+    {
+        var visual = await visualDataService.GetRandom(VisualType.EightBall);
+        if (visual == null)
+            return;
+
+        var embedBuilder = new EmbedBuilder
+        {
+            Author = Context.User.GetEmbedAuthor("shook the Magic 8 Ball"),
+            Description = @"*\*Magic 8 Ball ponders\**",
+            ImageUrl = $"attachment://{visual.AttachmentFilename}",
+        };
+
+        if (question != null)
+            embedBuilder.WithTitle($"You ask: {question}{(question.EndsWith("?") ? "" : "?")}");
+
+        await Context.Channel.SendFileAsync(
+            visual.Stream,
+            visual.AttachmentFilename,
+            embed: embedBuilder.Build(),
+            messageReference: Context.Message.GetReferenceTo());
+    }
+
     /*
 !choose <value 1, value 2, value 3 ... | value1 value2 value3... >
 Chooses one thing out of a list of many - useful for making hard decisions, but I can't guarantee I'll make the right ones!
