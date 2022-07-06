@@ -7,6 +7,7 @@ using TenberBot.Extensions;
 
 namespace TenberBot.Modules.Command;
 
+[Remarks("Greetings")]
 [RequireBotPermission(ChannelPermission.SendMessages)]
 public class GreetingCommandModule : ModuleBase<SocketCommandContext>
 {
@@ -31,7 +32,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
     }
 
     [Command("hi", ignoreExtraArgs: true)]
-    [Alias("hello", "hey", "test")]
+    [Alias("hello", "hey")]
     [Summary("Say a Hello greeting.")]
     public async Task Hello()
     {

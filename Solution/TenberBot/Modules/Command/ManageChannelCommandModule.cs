@@ -6,6 +6,7 @@ using TenberBot.Extensions;
 
 namespace TenberBot.Modules.Command;
 
+[Remarks("Channel Management")]
 public class ManageChannelCommandModule : ModuleBase<SocketCommandContext>
 {
     private readonly ILogger<ManageChannelCommandModule> logger;
@@ -18,6 +19,7 @@ public class ManageChannelCommandModule : ModuleBase<SocketCommandContext>
 
     [Command("purge", ignoreExtraArgs: true)]
     [Summary("Remove messages from channel history.")]
+    [Remarks("`<count>`")]
     [RequireUserPermission(ChannelPermission.ManageMessages)]
     [RequireBotPermission(ChannelPermission.ManageMessages)]
     public async Task Purge(int count)

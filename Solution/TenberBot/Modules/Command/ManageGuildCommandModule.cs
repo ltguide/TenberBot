@@ -8,6 +8,7 @@ using TenberBot.Results.Command;
 
 namespace TenberBot.Modules.Command;
 
+[Remarks("Server Management")]
 [RequireUserPermission(GuildPermission.ManageGuild)]
 public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
 {
@@ -51,10 +52,11 @@ public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
 
     [Command("greetings", ignoreExtraArgs: true)]
     [Summary("Manage random greetings.")]
+    [Remarks("`<GreetingType>`")]
     public async Task<RuntimeResult> GreetingsList(GreetingType? greetingType = null)
     {
         if (greetingType == null)
-            return CustomResult.FromError($"Provide an option of: {string.Join(", ", Enum.GetNames<GreetingType>())}");
+            return RemainResult.FromError($"Provide an option of: {string.Join(", ", Enum.GetNames<GreetingType>())}");
 
         var reply = await Context.Message.ReplyAsync(embed: await greetingDataService.GetAllAsEmbed(greetingType.Value));
 
@@ -66,15 +68,16 @@ public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
 
         await reply.ModifyAsync(x => x.Components = components.Build());
 
-        return CustomResult.FromSuccess();
+        return DeleteResult.FromSuccess();
     }
 
     [Command("hugs", ignoreExtraArgs: true)]
     [Summary("Manage random hugs.")]
+    [Remarks("`<HugType>`")]
     public async Task<RuntimeResult> HugsList(HugType? hugType = null)
     {
         if (hugType == null)
-            return CustomResult.FromError($"Provide an option of: {string.Join(", ", Enum.GetNames<HugType>())}");
+            return RemainResult.FromError($"Provide an option of: {string.Join(", ", Enum.GetNames<HugType>())}");
 
         var reply = await Context.Message.ReplyAsync(embed: await hugDataService.GetAllAsEmbed(hugType.Value));
 
@@ -86,15 +89,16 @@ public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
 
         await reply.ModifyAsync(x => x.Components = components.Build());
 
-        return CustomResult.FromSuccess();
+        return DeleteResult.FromSuccess();
     }
 
     [Command("sprint-snippets", ignoreExtraArgs: true)]
     [Summary("Manage random sprint snippets.")]
+    [Remarks("`<SprintSnippetType>`")]
     public async Task<RuntimeResult> SprintSnippetsList(SprintSnippetType? sprintSnippetType = null)
     {
         if (sprintSnippetType == null)
-            return CustomResult.FromError($"Provide an option of: {string.Join(", ", Enum.GetNames<SprintSnippetType>())}");
+            return RemainResult.FromError($"Provide an option of: {string.Join(", ", Enum.GetNames<SprintSnippetType>())}");
 
         var reply = await Context.Message.ReplyAsync(embed: await sprintSnippetDataService.GetAllAsEmbed(sprintSnippetType.Value));
 
@@ -106,7 +110,7 @@ public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
 
         await reply.ModifyAsync(x => x.Components = components.Build());
 
-        return CustomResult.FromSuccess();
+        return DeleteResult.FromSuccess();
     }
 
     private async Task SetParent(InteractionParentType parentType, ulong messageId, Enum? reference)

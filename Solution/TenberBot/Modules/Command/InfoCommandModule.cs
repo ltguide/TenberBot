@@ -1,23 +1,28 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using TenberBot.Data;
 using TenberBot.Extensions;
 
 namespace TenberBot.Modules.Command;
 
+[Remarks("Information")]
 public class InfoCommandModule : ModuleBase<SocketCommandContext>
 {
     private readonly IServiceProvider serviceProvider;
     private readonly CommandService commandService;
+    private readonly DiscordSocketClient client;
     private readonly ILogger<InfoCommandModule> logger;
 
     public InfoCommandModule(
         IServiceProvider serviceProvider,
         CommandService commandService,
+        DiscordSocketClient client,
         ILogger<InfoCommandModule> logger)
     {
         this.serviceProvider = serviceProvider;
         this.commandService = commandService;
+        this.client = client;
         this.logger = logger;
     }
 
@@ -31,14 +36,14 @@ public class InfoCommandModule : ModuleBase<SocketCommandContext>
             return;
 
         embedBuilder
-            .WithTitle("Available Commands")
-            .WithAuthor(Context.User.GetEmbedAuthor());
+            .WithAuthor(Context.User.GetEmbedAuthor("'s Available Commands"));
 
         await ReplyAsync(embed: embedBuilder.Build());
     }
 
     [Command("help-everyone", ignoreExtraArgs: true)]
     [Summary("Show commands that have no permissions.")]
+    [Remarks("`[page#]`")]
     [RequireUserPermission(GuildPermission.ManageGuild)]
     [RequireBotPermission(ChannelPermission.ManageMessages)]
     public async Task HelpEveryone(int page = 1)
@@ -58,7 +63,9 @@ public class InfoCommandModule : ModuleBase<SocketCommandContext>
         if (embedBuilder == null)
             return;
 
-        embedBuilder.WithTitle("Commands for Everyone");
+
+        embedBuilder
+            .WithAuthor("Commands for Everyone", client.GetCurrentAvatarUrl());
 
         await ReplyAsync(embed: embedBuilder.Build());
 
@@ -67,6 +74,7 @@ public class InfoCommandModule : ModuleBase<SocketCommandContext>
 
     [Command("say")]
     [Summary("Echo a message.")]
+    [Remarks("`<message>`")]
     [RequireUserPermission(GuildPermission.ManageChannels)]
     public async Task Say([Remainder] string text)
     {
@@ -100,7 +108,7 @@ public class InfoCommandModule : ModuleBase<SocketCommandContext>
         }
 
         commands = commands
-            .OrderBy(x => x.Module.Name)
+            .OrderBy(x => x.Module.Remarks)
             .ThenBy(x => x.Aliases[0])
             .Skip((page - 1) * perPage)
             .Take(perPage)
@@ -111,13 +119,23 @@ public class InfoCommandModule : ModuleBase<SocketCommandContext>
         var embedBuilder = new EmbedBuilder()
             .WithFooter($"Page {page} of {pages}");
 
-        foreach (var command in commands)
+        if (page == 1)
+            embedBuilder.WithDescription("An option surrounded with `[]` means it is **not** required.\nAn option surrounded with `<>` is *usually* required.\nA `|` symbol means provide one of the values if applicable.");
+
+        foreach (var q in commands.GroupBy(x => x.Module.Remarks))
         {
-            var aliases = command.Aliases.Skip(1).ToList();
+            embedBuilder.AddField("\u200B", $"__**{q.Key ?? "General"}**__");
 
-            var additionally = aliases.Count > 0 ? $" or `{string.Join("`, `", aliases)}`" : "";
+            foreach (var command in q)
+            {
+                var aliases = command.Aliases.Skip(1).ToList();
 
-            embedBuilder.AddField($"`{prefix}{command.Aliases[0]}`{additionally}", command.Summary);
+                var additionally = "";
+                if (aliases.Count > 0)
+                    additionally = $"*Alias{(aliases.Count != 1 ? "es" :"")}*: `{prefix}{string.Join($"`, `{prefix}", aliases)}`\n";
+
+                embedBuilder.AddField($"`{prefix}{command.Aliases[0]}` {command.Remarks}", additionally + command.Summary);
+            }
         }
 
         return embedBuilder;

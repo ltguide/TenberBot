@@ -35,32 +35,33 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
     {
         var userSprint = await sprintDataService.GetUserById(Context.User.Id, active: true);
         if (userSprint == null)
-            return CustomResult.FromError("Please provide a duration for the sprint, e.g. `30m` or `1.5h`. You can include a message as well if you'd like.");
+            return DeleteResult.FromError("Please provide a duration for the sprint, e.g. `30m` or `1.5h`. You can include a message as well if you'd like.");
 
         var sprint = userSprint.Sprint;
 
         if (sprint.ChannelId != Context.Channel.Id)
-            return CustomResult.FromError($"Sorry, I can't refresh your sprint status card. Your sprint is in {sprint.ChannelId.GetChannelMention()}.");
+            return DeleteResult.FromError($"Sorry, I can't refresh your sprint status card. Your sprint is in {sprint.ChannelId.GetChannelMention()}.");
 
         await SendEmbed(sprint, null);
 
-        return CustomResult.FromSuccess();
+        return DeleteResult.FromSuccess();
     }
 
     [Command("sprint")]
-    [Summary("Sprint to Get Stuff Done™")]
+    [Summary("Sprint to Get Stuff Done™\nDurations should be in a short form, e.g. `30m` or `1.5h`")]
+    [Remarks("`<duration>` `[message]`")]
     public async Task<RuntimeResult> Sprint(TimeSpan duration, [Remainder] string? message = null)
     {
         var sprintChannel = await sprintDataService.GetChannelById(Context.Channel.Id);
         if (sprintChannel == null || sprintChannel.SprintMode == SprintMode.Disabled)
-            return CustomResult.FromError("The sprint feature isn't configured for this channel.");
+            return RemainResult.FromError("The sprint feature isn't configured for this channel.");
 
         var userSprint = await sprintDataService.GetUserById(Context.User.Id, active: true);
         if (userSprint != null)
-            return CustomResult.FromError($"You are already a member of a sprint that will finish in {TimestampTag.FromDateTime(userSprint.Sprint.FinishDate.ToUniversalTime(), TimestampTagStyles.Relative)}");
+            return DeleteResult.FromError($"You are already a member of a sprint that will finish in {TimestampTag.FromDateTime(userSprint.Sprint.FinishDate.ToUniversalTime(), TimestampTagStyles.Relative)}");
 
         if (duration.TotalSeconds < 60 || duration.TotalSeconds > 86400)
-            return CustomResult.FromError("Sorry, the duration of a sprint must be at least a **minute** and no more than a **day**.");
+            return DeleteResult.FromError("Sorry, the duration of a sprint must be at least a **minute** and no more than a **day**.");
 
         var sprint = new Sprint
         {
@@ -79,7 +80,7 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
             var prompt = await sprintSnippetDataService.GetRandom(SprintSnippetType.Prompt);
 
             if (characters == null || prompt == null)
-                return CustomResult.FromError("I wasn't able to find the random details.");
+                return DeleteResult.FromError("I wasn't able to find the random details.");
 
             sprint.Detail = $"> **Character(s)/Pairing**: {characters.Text}\n> **Prompt**: {prompt.Text}\n\n";
         }
@@ -92,7 +93,7 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
 
         await SendEmbed(sprint, $"Get ready, {sprintChannel.Role}! There's a new sprint starting soon.");
 
-        return CustomResult.FromSuccess();
+        return DeleteResult.FromSuccess();
     }
 
     private async Task SendEmbed(Sprint sprint, string? message)

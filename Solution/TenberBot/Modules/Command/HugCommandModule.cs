@@ -34,7 +34,8 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
     }
 
     [Command("hug")]
-    [Summary("Spreads the love.")]
+    [Summary("Spreads the love.\n*If you reply to a user, `<user>` is no longer required.*")]
+    [Remarks("`<user>` `[message]`")]
     public async Task Hug([Remainder] string? message = null)
     {
         var visual = await visualDataService.GetRandom(VisualType.Hug);

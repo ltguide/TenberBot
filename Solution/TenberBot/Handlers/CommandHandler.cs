@@ -6,6 +6,7 @@ using System.Reflection;
 using TenberBot.Data;
 using TenberBot.Extensions;
 using TenberBot.Parameters;
+using TenberBot.Results.Command;
 
 namespace TenberBot.Handlers;
 
@@ -68,6 +69,7 @@ public class CommandHandler : DiscordClientService
 
         await context.Message.AddReactionAsync(GlobalSettings.EmoteFail);
 
-        reply.DeleteSoon(TimeSpan.FromSeconds(15));
+        if (result is DeleteResult)
+            reply.DeleteSoon(TimeSpan.FromSeconds(15));
     }
 }
