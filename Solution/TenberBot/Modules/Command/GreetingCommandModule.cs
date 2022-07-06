@@ -2,6 +2,7 @@
 using Discord.Commands;
 using System.Text.RegularExpressions;
 using TenberBot.Data.Enums;
+using TenberBot.Data.Models;
 using TenberBot.Data.Services;
 using TenberBot.Extensions;
 
@@ -89,21 +90,25 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
 
         await userStatDataService.Save();
 
-        var message = Variables.Replace(greeting.Text, (match) =>
-        {
-            return match.Value switch
-            {
-                "%random%" => Context.GetRandomUser()?.GetDisplayNameSanitized() ?? "Random User",
-                "%user%" => Context.User.GetDisplayNameSanitized(),
-                _ => match.Value,
-            };
-        });
-
-        var visual = visualType != null ? await visualDataService.GetRandom(visualType.Value) : null;
+        Visual? visual = visualType != null && Random.Shared.Next(2) == 0
+            ? visual = await visualDataService.GetRandom(visualType.Value)
+            : null;
 
         if (visual == null)
+        {
+            var message = Variables.Replace(greeting.Text, (match) =>
+            {
+                return match.Value switch
+                {
+                    "%random%" => Context.GetRandomUser()?.GetDisplayNameSanitized() ?? "Random User",
+                    "%user%" => Context.User.GetDisplayNameSanitized(),
+                    _ => match.Value,
+                };
+            });
+
             await ReplyAsync(message);
+        }
         else
-            await Context.Channel.SendFileAsync(visual.AsAttachment(), message);
+            await Context.Channel.SendFileAsync(visual.AsAttachment());
     }
 }

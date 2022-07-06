@@ -132,9 +132,9 @@ public class InfoCommandModule : ModuleBase<SocketCommandContext>
 
                 var additionally = "";
                 if (aliases.Count > 0)
-                    additionally = $"*Alias{(aliases.Count != 1 ? "es" :"")}*: `{prefix}{string.Join($"`, `{prefix}", aliases)}`\n";
+                    additionally = $"\n*Alias{(aliases.Count != 1 ? "es" : "")}*: `{prefix}{string.Join($"`, `{prefix}", aliases)}`";
 
-                embedBuilder.AddField($"`{prefix}{command.Aliases[0]}` {command.Remarks}", additionally + command.Summary);
+                embedBuilder.AddField($"`{prefix}{command.Aliases[0]}` {command.Remarks}", $"> {command.Summary}{additionally}");
             }
         }
 

@@ -4,4 +4,6 @@ public enum VisualType
 {
     Hug,
     Hello,
+    CoinHead,
+    CoinTail,
 }
