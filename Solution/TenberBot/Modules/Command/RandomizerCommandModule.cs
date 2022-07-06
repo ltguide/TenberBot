@@ -76,13 +76,13 @@ public class RandomizedCommandModule : ModuleBase<SocketCommandContext>
 
         var embedBuilder = new EmbedBuilder
         {
-            Author = Context.User.GetEmbedAuthor("shook the Magic 8 Ball"),
-            Description = @"*\*Magic 8 Ball ponders\**",
+            Author = Context.User.GetEmbedAuthor("shakes the Magic 8 Ball"),
+            Description = "\\**Magic 8 Ball ponders*\\*\n",
             ImageUrl = $"attachment://{visual.AttachmentFilename}",
         };
 
         if (question != null)
-            embedBuilder.WithTitle($"You ask: {question}{(question.EndsWith("?") ? "" : "?")}");
+            embedBuilder.Description = $"> {question}{(question.EndsWith("?") ? "" : "?")}\n\n{embedBuilder.Description}";
 
         await Context.Channel.SendFileAsync(
             visual.Stream,

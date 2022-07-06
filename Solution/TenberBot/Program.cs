@@ -105,9 +105,10 @@ public class Program
 
 
 // Embed markdown support
-//  Title
+//  Title (no mentions)
 //  Description
-//  Field name / Field value
+//  Field name (no mentions)
+//  Field value
 
 
 
