@@ -5,11 +5,13 @@ using TenberBot.Data.Models;
 using TenberBot.Data.Services;
 using TenberBot.Extensions;
 using TenberBot.Results.Command;
+using TenberBot.Services;
 
 namespace TenberBot.Modules.Command;
 
 public class SprintCommandModule : ModuleBase<SocketCommandContext>
 {
+    private readonly SprintService sprintService;
     private readonly ISprintSnippetDataService sprintSnippetDataService;
     private readonly ISprintDataService sprintDataService;
     private readonly IInteractionParentDataService interactionParentDataService;
@@ -17,12 +19,14 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
     private readonly ILogger<SprintCommandModule> logger;
 
     public SprintCommandModule(
+        SprintService sprintService,
         ISprintSnippetDataService sprintSnippetDataService,
         ISprintDataService sprintDataService,
         IInteractionParentDataService interactionParentDataService,
         IUserStatDataService userStatDataService,
         ILogger<SprintCommandModule> logger)
     {
+        this.sprintService = sprintService;
         this.sprintSnippetDataService = sprintSnippetDataService;
         this.sprintDataService = sprintDataService;
         this.interactionParentDataService = interactionParentDataService;
@@ -92,6 +96,8 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
         await userStatDataService.Save();
 
         await SendEmbed(sprint, $"Get ready, {sprintChannel.Role}! There's a new sprint starting soon.");
+
+        sprintService.Cycle();
 
         return DeleteResult.FromSuccess();
     }

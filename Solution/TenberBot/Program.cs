@@ -57,13 +57,12 @@ public class Program
             })
             .ConfigureServices((context, services) =>
             {
-                //services.AddSingleton<GlobalSettingService>();
-                //services.AddHostedService(provider => provider.GetRequiredService<GlobalSettingService>());
-
                 services.AddHostedService<GlobalSettingService>();
 
                 services.AddHostedService<BotStatusService>();
-                services.AddHostedService<SprintService>();
+
+                services.AddSingleton<SprintService>();
+                services.AddHostedService(provider => provider.GetRequiredService<SprintService>());
 
                 services.AddHostedService<CommandHandler>();
                 services.AddHostedService<InteractionHandler>();

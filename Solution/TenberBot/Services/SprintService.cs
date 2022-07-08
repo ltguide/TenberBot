@@ -11,6 +11,8 @@ namespace TenberBot.Services;
 
 public class SprintService : DiscordClientService
 {
+    private TaskCompletionSource taskCompletionSource = null!;
+
     private readonly IInteractionParentDataService interactionParentDataService;
     private readonly ISprintDataService sprintDataService;
 
@@ -77,7 +79,49 @@ public class SprintService : DiscordClientService
                     });
             }
 
-            await Task.Delay(8 * 1000, stoppingToken);
+            taskCompletionSource = new();
+
+            try
+            {
+                var delay = GetDelay(sprints);
+
+                if (delay != 0)
+                {
+                    Logger.LogInformation($"SprintService next delay: {delay}");
+
+                    await taskCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(delay), stoppingToken).ConfigureAwait(false);
+                }
+                else
+                    await taskCompletionSource.Task.WaitAsync(stoppingToken).ConfigureAwait(false);
+            }
+            catch (TimeoutException)
+            {
+            }
         }
+    }
+
+    public void Cycle()
+    {
+        taskCompletionSource?.TrySetResult();
+    }
+
+    private int GetDelay(IList<Sprint> sprints)
+    {
+        var nextDates = new List<DateTime>();
+
+        var startDate = sprints.Where(x => x.SprintStatus == SprintStatus.Waiting).OrderBy(x => x.StartDate).FirstOrDefault()?.StartDate;
+        if (startDate != null)
+            nextDates.Add(startDate.Value);
+
+        var finishDate = sprints.Where(x => x.SprintStatus == SprintStatus.Started).OrderBy(x => x.FinishDate).FirstOrDefault()?.FinishDate;
+        if (finishDate != null)
+            nextDates.Add(finishDate.Value);
+
+        if (nextDates.Count == 0)
+            return 0;
+
+        nextDates.Sort();
+
+        return (int)Math.Ceiling(nextDates[0].Subtract(DateTime.Now).TotalSeconds) + 1;
     }
 }
