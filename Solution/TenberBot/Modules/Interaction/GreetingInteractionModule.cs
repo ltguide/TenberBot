@@ -29,7 +29,7 @@ public class GreetingInteractionModule : InteractionModuleBase<SocketInteraction
         if (parent == null)
             return;
 
-        await Context.Interaction.RespondWithModalAsync<GreetingAddModal>($"greeting:add,{messageId}", modifyModal: (builder) => builder.Title += (GreetingType)parent.Reference!);
+        await Context.Interaction.RespondWithModalAsync<GreetingAddModal>($"greeting:add,{messageId}", modifyModal: (builder) => builder.Title += parent.GetReference<GreetingType>());
     }
 
     [ModalInteraction("greeting:add,*")]
@@ -39,7 +39,7 @@ public class GreetingInteractionModule : InteractionModuleBase<SocketInteraction
         if (parent == null)
             return;
 
-        var reference = (GreetingType)parent.Reference!;
+        var reference = parent.GetReference<GreetingType>();
 
         var greeting = new Greeting { GreetingType = reference, Text = modal.Text };
 
@@ -57,7 +57,7 @@ public class GreetingInteractionModule : InteractionModuleBase<SocketInteraction
         if (parent == null)
             return;
 
-        await Context.Interaction.RespondWithModalAsync<GreetingDeleteModal>($"greeting:delete,{messageId}", modifyModal: (builder) => builder.Title += (GreetingType)parent.Reference!);
+        await Context.Interaction.RespondWithModalAsync<GreetingDeleteModal>($"greeting:delete,{messageId}", modifyModal: (builder) => builder.Title += parent.GetReference<GreetingType>());
     }
 
     [ModalInteraction("greeting:delete,*")]
@@ -67,7 +67,7 @@ public class GreetingInteractionModule : InteractionModuleBase<SocketInteraction
         if (parent == null)
             return;
 
-        var reference = (GreetingType)parent.Reference!;
+        var reference = parent.GetReference<GreetingType>();
 
         var greeting = await greetingDataService.GetById(reference, modal.Text);
         if (greeting == null)

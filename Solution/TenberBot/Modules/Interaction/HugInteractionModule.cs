@@ -29,7 +29,7 @@ public class HugInteractionModule : InteractionModuleBase<SocketInteractionConte
         if (parent == null)
             return;
 
-        await Context.Interaction.RespondWithModalAsync<HugAddModal>($"hug:add,{messageId}", modifyModal: (builder) => builder.Title += (HugType)parent.Reference!);
+        await Context.Interaction.RespondWithModalAsync<HugAddModal>($"hug:add,{messageId}", modifyModal: (builder) => builder.Title += parent.GetReference<HugType>());
     }
 
     [ModalInteraction("hug:add,*")]
@@ -39,7 +39,7 @@ public class HugInteractionModule : InteractionModuleBase<SocketInteractionConte
         if (parent == null)
             return;
 
-        var reference = (HugType)parent.Reference!;
+        var reference = parent.GetReference<HugType>();
 
         var hug = new Hug { HugType = reference, Text = modal.Text };
 
@@ -57,7 +57,7 @@ public class HugInteractionModule : InteractionModuleBase<SocketInteractionConte
         if (parent == null)
             return;
 
-        await Context.Interaction.RespondWithModalAsync<HugDeleteModal>($"hug:delete,{messageId}", modifyModal: (builder) => builder.Title += (HugType)parent.Reference!);
+        await Context.Interaction.RespondWithModalAsync<HugDeleteModal>($"hug:delete,{messageId}", modifyModal: (builder) => builder.Title += parent.GetReference<HugType>());
     }
 
     [ModalInteraction("hug:delete,*")]
@@ -67,7 +67,7 @@ public class HugInteractionModule : InteractionModuleBase<SocketInteractionConte
         if (parent == null)
             return;
 
-        var reference = (HugType)parent.Reference!;
+        var reference = parent.GetReference<HugType>();
 
         var hug = await hugDataService.GetById(reference, modal.Text);
         if (hug == null)

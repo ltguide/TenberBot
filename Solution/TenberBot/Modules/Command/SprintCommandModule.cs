@@ -106,8 +106,8 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
             UserId = sprint.UserId,
             InteractionParentType = InteractionParentType.Sprint,
             MessageId = reply.Id,
-            Reference = sprint.SprintId,
-        });
+        }
+        .SetReference(sprint.SprintId));
 
         var components = new ComponentBuilder()
             .WithButton("Join", $"sprint:join,{reply.Id}", ButtonStyle.Primary, new Emoji("🤼"))

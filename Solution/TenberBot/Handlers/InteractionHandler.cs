@@ -11,17 +11,17 @@ namespace TenberBot.Handlers;
 // NOTE: This command handler is specifically for using InteractionService-based commands
 internal class InteractionHandler : DiscordClientService
 {
-    private readonly IServiceProvider _provider;
-    private readonly InteractionService _interactionService;
-    private readonly IHostEnvironment _environment;
-    private readonly IConfiguration _configuration;
+    private readonly IServiceProvider provider;
+    private readonly InteractionService interactionService;
+    private readonly IHostEnvironment environment;
+    private readonly IConfiguration configuration;
 
     public InteractionHandler(DiscordSocketClient client, ILogger<DiscordClientService> logger, IServiceProvider provider, InteractionService interactionService, IHostEnvironment environment, IConfiguration configuration) : base(client, logger)
     {
-        _provider = provider;
-        _interactionService = interactionService;
-        _environment = environment;
-        _configuration = configuration;
+        this.provider = provider;
+        this.interactionService = interactionService;
+        this.environment = environment;
+        this.configuration = configuration;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -34,17 +34,17 @@ internal class InteractionHandler : DiscordClientService
         //_interactionService.ContextCommandExecuted += ContextCommandExecuted;
         //_interactionService.ComponentCommandExecuted += ComponentCommandExecuted;
 
-        _interactionService.AddTypeConverter<TimeSpan>(new TimeSpanConverter());
+        interactionService.AddTypeConverter<TimeSpan>(new TimeSpanConverter());
 
-        await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
+        await interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), provider);
 
         await Client.WaitForReadyAsync(stoppingToken);
 
         // If DOTNET_ENVIRONMENT is set to development, only register the commands to a single guild
-        if (_environment.IsDevelopment())
-            await _interactionService.RegisterCommandsToGuildAsync(_configuration.GetValue<ulong>("devguild"));
+        if (environment.IsDevelopment())
+            await interactionService.RegisterCommandsToGuildAsync(configuration.GetValue<ulong>("devguild"));
         else
-            await _interactionService.RegisterCommandsGloballyAsync();
+            await interactionService.RegisterCommandsGloballyAsync();
 
     }
 
@@ -141,7 +141,7 @@ internal class InteractionHandler : DiscordClientService
         {
             // Create an execution context that matches the generic type parameter of your InteractionModuleBase<T> modules
             var ctx = new SocketInteractionContext(Client, arg);
-            await _interactionService.ExecuteCommandAsync(ctx, _provider);
+            await interactionService.ExecuteCommandAsync(ctx, provider);
         }
         catch (Exception ex)
         {

@@ -31,7 +31,7 @@ public class SprintInteractionModule : InteractionModuleBase<SocketInteractionCo
         if (parent == null)
             return;
 
-        var sprint = await sprintDataService.GetById(parent.Reference!.Value);
+        var sprint = await sprintDataService.GetById(parent.GetReference<int>());
         if (sprint == null)
             return;
 
@@ -49,7 +49,7 @@ public class SprintInteractionModule : InteractionModuleBase<SocketInteractionCo
         if (parent == null)
             return;
 
-        var sprint = await sprintDataService.GetById(parent.Reference!.Value);
+        var sprint = await sprintDataService.GetById(parent.GetReference<int>());
         if (sprint == null)
             return;
 
@@ -75,7 +75,7 @@ public class SprintInteractionModule : InteractionModuleBase<SocketInteractionCo
         if (parent == null)
             return;
 
-        var sprint = await sprintDataService.GetById(parent.Reference!.Value);
+        var sprint = await sprintDataService.GetById(parent.GetReference<int>());
         if (sprint == null)
             return;
 
@@ -95,7 +95,7 @@ public class SprintInteractionModule : InteractionModuleBase<SocketInteractionCo
         if (parent == null)
             return;
 
-        var sprint = await sprintDataService.GetById(parent.Reference!.Value);
+        var sprint = await sprintDataService.GetById(parent.GetReference<int>());
         if (sprint == null)
             return;
 

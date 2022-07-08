@@ -29,7 +29,7 @@ public class SprintSnippetInteractionModule : InteractionModuleBase<SocketIntera
         if (parent == null)
             return;
 
-        await Context.Interaction.RespondWithModalAsync<SprintSnippetAddModal>($"sprint-snippet:add,{messageId}", modifyModal: (builder) => builder.Title += (SprintSnippetType)parent.Reference!);
+        await Context.Interaction.RespondWithModalAsync<SprintSnippetAddModal>($"sprint-snippet:add,{messageId}", modifyModal: (builder) => builder.Title += parent.GetReference<SprintSnippetType>());
     }
 
     [ModalInteraction("sprint-snippet:add,*")]
@@ -39,7 +39,7 @@ public class SprintSnippetInteractionModule : InteractionModuleBase<SocketIntera
         if (parent == null)
             return;
 
-        var reference = (SprintSnippetType)parent.Reference!;
+        var reference = parent.GetReference<SprintSnippetType>();
 
         var sprintSnippet = new SprintSnippet { SprintSnippetType = reference, Text = modal.Text };
 
@@ -57,7 +57,7 @@ public class SprintSnippetInteractionModule : InteractionModuleBase<SocketIntera
         if (parent == null)
             return;
 
-        await Context.Interaction.RespondWithModalAsync<SprintSnippetDeleteModal>($"sprint-snippet:delete,{messageId}", modifyModal: (builder) => builder.Title += (SprintSnippetType)parent.Reference!);
+        await Context.Interaction.RespondWithModalAsync<SprintSnippetDeleteModal>($"sprint-snippet:delete,{messageId}", modifyModal: (builder) => builder.Title += parent.GetReference<SprintSnippetType>());
     }
 
     [ModalInteraction("sprint-snippet:delete,*")]
@@ -67,7 +67,7 @@ public class SprintSnippetInteractionModule : InteractionModuleBase<SocketIntera
         if (parent == null)
             return;
 
-        var reference = (SprintSnippetType)parent.Reference!;
+        var reference = parent.GetReference<SprintSnippetType>();
 
         var sprintSnippet = await sprintSnippetDataService.GetById(reference, modal.Text);
         if (sprintSnippet == null)

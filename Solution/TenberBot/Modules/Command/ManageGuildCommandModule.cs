@@ -121,8 +121,8 @@ public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
             UserId = null,
             InteractionParentType = parentType,
             MessageId = messageId,
-            Reference = reference == null ? null : Convert.ToInt32(reference),
-        });
+        }
+        .SetReference(Convert.ToInt32(reference)));
 
         await Context.Channel.GetAndModify(previousParent, (x) => x.Components = new ComponentBuilder().Build());
     }

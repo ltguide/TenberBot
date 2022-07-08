@@ -61,9 +61,7 @@ public class InteractionParentDataService : IInteractionParentDataService
 
         if (newObject != null)
         {
-            dbObject.UserId = newObject.UserId;
-            dbObject.MessageId = newObject.MessageId;
-            dbObject.Reference = newObject.Reference;
+            dbObject.Update(newObject);
         }
 
         await dbContext.SaveChangesAsync();

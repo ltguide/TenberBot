@@ -12,22 +12,22 @@ namespace TenberBot.Handlers;
 
 public class CommandHandler : DiscordClientService
 {
-    private readonly IServiceProvider _provider;
-    private readonly CommandService _commandService;
+    private readonly IServiceProvider provider;
+    private readonly CommandService commandService;
 
     public CommandHandler(DiscordSocketClient client, ILogger<CommandHandler> logger, IServiceProvider provider, CommandService commandService) : base(client, logger)
     {
-        _provider = provider;
-        _commandService = commandService;
+        this.provider = provider;
+        this.commandService = commandService;
     }
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         Client.MessageReceived += HandleMessage;
-        _commandService.CommandExecuted += CommandExecutedAsync;
+        commandService.CommandExecuted += CommandExecutedAsync;
 
-        _commandService.AddTypeReader<TimeSpan>(new TimeSpanReader(), true);
+        commandService.AddTypeReader<TimeSpan>(new TimeSpanReader(), true);
 
-        await _commandService.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
+        await commandService.AddModulesAsync(Assembly.GetEntryAssembly(), provider);
     }
 
     private async Task HandleMessage(SocketMessage incomingMessage)
@@ -49,7 +49,7 @@ public class CommandHandler : DiscordClientService
             return;
 
         var context = new SocketCommandContext(Client, message);
-        await _commandService.ExecuteAsync(context, argPos, _provider);
+        await commandService.ExecuteAsync(context, argPos, provider);
     }
 
     public async Task CommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
