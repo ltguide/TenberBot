@@ -1,9 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TenberBot.Data.Models;
 
 [Table("UserSprints")]
+[Index(nameof(UserId))]
 public class UserSprint
 {
     [Key]

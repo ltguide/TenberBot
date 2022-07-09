@@ -117,6 +117,7 @@ public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
     {
         var previousParent = await interactionParentDataService.Set(new InteractionParent
         {
+            GuildId = Context.Guild.Id,
             ChannelId = Context.Channel.Id,
             UserId = null,
             InteractionParentType = parentType,

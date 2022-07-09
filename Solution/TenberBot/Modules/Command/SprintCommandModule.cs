@@ -118,6 +118,7 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
 
         var parent = await interactionParentDataService.Set(new InteractionParent
         {
+            GuildId = Context.Guild.Id,
             ChannelId = sprint.ChannelId,
             UserId = sprint.UserId,
             InteractionParentType = InteractionParentType.Sprint,

@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using TenberBot.Data.Enums;
@@ -6,6 +7,7 @@ using TenberBot.Data.Enums;
 namespace TenberBot.Data.Models;
 
 [Table("Visuals")]
+[Index(nameof(VisualType))]
 public class Visual
 {
     [Key]

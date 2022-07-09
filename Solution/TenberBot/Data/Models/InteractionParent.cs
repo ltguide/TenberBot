@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
 using TenberBot.Data.Enums;
@@ -6,10 +7,15 @@ using TenberBot.Data.Enums;
 namespace TenberBot.Data.Models;
 
 [Table("InteractionParents")]
+[Index(nameof(InteractionParentType), nameof(ChannelId), nameof(UserId), IsUnique = true)]
+[Index(nameof(InteractionParentType), nameof(MessageId), IsUnique = true)]
+[Index(nameof(GuildId))]
 public class InteractionParent
 {
     [Key]
     public int InteractionParentId { get; set; }
+
+    public ulong GuildId { get; set; }
 
     public ulong ChannelId { get; set; }
 

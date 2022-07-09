@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using TenberBot.Data.Enums;
@@ -7,6 +8,7 @@ using TenberBot.Extensions;
 namespace TenberBot.Data.Models;
 
 [Table("Sprints")]
+[Index(nameof(SprintStatus))]
 public class Sprint
 {
     [Key]

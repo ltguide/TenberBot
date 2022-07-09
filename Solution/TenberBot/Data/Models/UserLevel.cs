@@ -1,9 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TenberBot.Data.Models;
 
 [Table("UserLevels")]
+[Index(nameof(GuildId), nameof(UserId), IsUnique = true)]
 public class UserLevel
 {
     [Key]
