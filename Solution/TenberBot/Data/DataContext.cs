@@ -18,7 +18,9 @@ public class DataContext : DbContext
 #endif
     }
 
-    public DbSet<GlobalSetting> GlobalSettings { get; set; }
+    public DbSet<ServerSetting> ServerSettings { get; set; }
+
+    public DbSet<ChannelSetting> ChannelSettings { get; set; }
 
     public DbSet<UserLevel> UserLevels { get; set; }
 
@@ -35,8 +37,6 @@ public class DataContext : DbContext
     public DbSet<Hug> Hugs { get; set; }
 
     public DbSet<SprintSnippet> SprintSnippets { get; set; }
-
-    public DbSet<SprintChannel> SprintChannels { get; set; }
 
     public DbSet<Sprint> Sprints { get; set; }
 

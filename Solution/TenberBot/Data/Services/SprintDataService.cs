@@ -16,13 +16,6 @@ public interface ISprintDataService
 
 
     Task<UserSprint?> GetUserById(ulong userId, bool active);
-
-
-    Task<SprintChannel?> GetChannelById(ulong channelId);
-
-    Task Add(SprintChannel newObject);
-
-    Task Update(SprintChannel dbObject, SprintChannel newObject);
 }
 
 public class SprintDataService : ISprintDataService
@@ -84,38 +77,5 @@ public class SprintDataService : ISprintDataService
             .Where(x => x.Sprint.SprintStatus == SprintStatus.Waiting || x.Sprint.SprintStatus == SprintStatus.Started)
             .FirstOrDefaultAsync(x => x.UserId == userId)
             .ConfigureAwait(false);
-    }
-
-    public async Task<SprintChannel?> GetChannelById(ulong channelId)
-    {
-        return await dbContext.SprintChannels
-            .FirstOrDefaultAsync(x => x.ChannelId == channelId)
-            .ConfigureAwait(false);
-    }
-
-    public async Task Add(SprintChannel newObject)
-    {
-        if (newObject == null)
-            throw new ArgumentNullException(nameof(newObject));
-
-        newObject.SprintChannelId = 0;
-
-        dbContext.Add(newObject);
-
-        await dbContext.SaveChangesAsync().ConfigureAwait(false);
-    }
-
-    public async Task Update(SprintChannel dbObject, SprintChannel newObject)
-    {
-        if (dbObject == null)
-            throw new ArgumentNullException(nameof(dbObject));
-
-        if (newObject != null)
-        {
-            dbObject.SprintMode = newObject.SprintMode;
-            dbObject.Role = newObject.Role;
-        }
-
-        await dbContext.SaveChangesAsync();
     }
 }

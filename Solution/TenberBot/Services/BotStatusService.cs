@@ -12,7 +12,7 @@ public class BotStatusService : DiscordClientService
     public BotStatusService(
         IBotStatusDataService botStatusDataService,
         DiscordSocketClient client,
-        ILogger<DiscordClientService> logger) : base(client, logger)
+        ILogger<BotStatusService> logger) : base(client, logger)
     {
         this.botStatusDataService = botStatusDataService;
     }
@@ -20,7 +20,6 @@ public class BotStatusService : DiscordClientService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Client.WaitForReadyAsync(stoppingToken);
-        Logger.LogInformation("Client is ready!");
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -31,7 +30,7 @@ public class BotStatusService : DiscordClientService
             else
                 await Client.SetGameAsync("");
 
-            await Task.Delay(2 * 60 * 1000, stoppingToken);
+            await Task.Delay(TimeSpan.FromMinutes(4), stoppingToken);
         }
     }
 }

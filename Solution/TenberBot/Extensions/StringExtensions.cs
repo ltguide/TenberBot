@@ -23,4 +23,15 @@ public static class StringExtensions
     {
         return $"<@&{value}>";
     }
+
+    public static IEmote? AsIEmote(this string value)
+    {
+        if (Emote.TryParse(value, out var emote))
+            return emote;
+
+        if (Emoji.TryParse(value, out var emoji))
+            return emoji;
+
+        return null;
+    }
 }

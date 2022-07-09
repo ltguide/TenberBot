@@ -57,14 +57,17 @@ public class Program
             })
             .ConfigureServices((context, services) =>
             {
-                services.AddHostedService<GlobalSettingService>();
+                services.AddMemoryCache();
 
                 services.AddHostedService<BotStatusService>();
+
+                services.AddSingleton<CacheService>();
+                services.AddHostedService(provider => provider.GetRequiredService<CacheService>());
 
                 services.AddSingleton<SprintService>();
                 services.AddHostedService(provider => provider.GetRequiredService<SprintService>());
 
-                services.AddHostedService<CommandHandler>();
+                services.AddHostedService<ChannelCommandHandler>();
                 services.AddHostedService<InteractionHandler>();
 
                 services.AddDbContext<DataContext>(builder =>
@@ -73,7 +76,8 @@ public class Program
                         options.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                     }), ServiceLifetime.Transient, ServiceLifetime.Singleton);
 
-                services.AddTransient<IGlobalSettingDataService, GlobalSettingDataService>();
+                services.AddTransient<IServerSettingDataService, ServerSettingDataService>();
+                services.AddTransient<IChannelSettingDataService, ChannelSettingDataService>();
 
                 services.AddTransient<IVisualDataService, VisualDataService>();
 

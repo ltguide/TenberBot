@@ -98,7 +98,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         {
             var message = Variables.Replace(greeting.Text, (match) =>
             {
-                return match.Value switch
+                return match.Value.ToLower() switch
                 {
                     "%random%" => Context.GetRandomUser()?.GetDisplayNameSanitized() ?? "Random User",
                     "%user%" => Context.User.GetDisplayNameSanitized(),

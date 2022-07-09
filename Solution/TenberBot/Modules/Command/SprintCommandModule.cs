@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using TenberBot.Data;
 using TenberBot.Data.Enums;
 using TenberBot.Data.Models;
 using TenberBot.Data.Services;
@@ -16,6 +17,7 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
     private readonly ISprintDataService sprintDataService;
     private readonly IInteractionParentDataService interactionParentDataService;
     private readonly IUserStatDataService userStatDataService;
+    private readonly CacheService cacheService;
     private readonly ILogger<SprintCommandModule> logger;
 
     public SprintCommandModule(
@@ -24,6 +26,7 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
         ISprintDataService sprintDataService,
         IInteractionParentDataService interactionParentDataService,
         IUserStatDataService userStatDataService,
+        CacheService cacheService,
         ILogger<SprintCommandModule> logger)
     {
         this.sprintService = sprintService;
@@ -31,12 +34,17 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
         this.sprintDataService = sprintDataService;
         this.interactionParentDataService = interactionParentDataService;
         this.userStatDataService = userStatDataService;
+        this.cacheService = cacheService;
         this.logger = logger;
     }
 
     [Command("sprint")]
     public async Task<RuntimeResult> SprintNoParams()
     {
+        var sprintMode = cacheService.Cache.Get<SprintMode>(Context.Channel, ChannelSettings.SprintMode);
+        if (sprintMode == SprintMode.Disabled)
+            return RemainResult.FromError("The sprint feature isn't configured for this channel.");
+
         var userSprint = await sprintDataService.GetUserById(Context.User.Id, active: true);
         if (userSprint == null)
             return DeleteResult.FromError("Please provide a duration for the sprint, e.g. `30m` or `1.5h`. You can include a message as well if you'd like.");
@@ -56,8 +64,8 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
     [Remarks("`<duration>` `[message]`")]
     public async Task<RuntimeResult> Sprint(TimeSpan duration, [Remainder] string? message = null)
     {
-        var sprintChannel = await sprintDataService.GetChannelById(Context.Channel.Id);
-        if (sprintChannel == null || sprintChannel.SprintMode == SprintMode.Disabled)
+        var sprintMode = cacheService.Cache.Get<SprintMode>(Context.Channel, ChannelSettings.SprintMode);
+        if (sprintMode == SprintMode.Disabled)
             return RemainResult.FromError("The sprint feature isn't configured for this channel.");
 
         var userSprint = await sprintDataService.GetUserById(Context.User.Id, active: true);
@@ -71,14 +79,14 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
         {
             ChannelId = Context.Channel.Id,
             UserId = Context.User.Id,
-            SprintMode = sprintChannel.SprintMode,
+            SprintMode = sprintMode,
             StartDate = DateTime.Now.AddSeconds(180),
             FinishDate = DateTime.Now.AddSeconds(180 + duration.TotalSeconds),
             Duration = new DateTime(9999, 12, 31, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(Math.Min(86399, duration.TotalSeconds)),
             Users = { new UserSprint { UserId = Context.User.Id, JoinDate = DateTime.Now, Message = message } },
         };
 
-        if (sprintChannel.SprintMode == SprintMode.Snippet)
+        if (sprintMode == SprintMode.Snippet)
         {
             var characters = await sprintSnippetDataService.GetRandom(SprintSnippetType.Characters);
             var prompt = await sprintSnippetDataService.GetRandom(SprintSnippetType.Prompt);
@@ -95,7 +103,9 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
 
         await userStatDataService.Save();
 
-        await SendEmbed(sprint, $"Get ready, {sprintChannel.Role}! There's a new sprint starting soon.");
+        var sprintRole = cacheService.Cache.Get<string>(Context.Channel, ChannelSettings.SprintRole);
+
+        await SendEmbed(sprint, $"Get ready, {sprintRole}! There's a new sprint starting soon.");
 
         sprintService.Cycle();
 

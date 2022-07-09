@@ -27,7 +27,7 @@ internal class InteractionHandler : DiscordClientService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         // Process the InteractionCreated payloads to execute Interactions commands
-        Client.InteractionCreated += HandleInteraction;
+        Client.InteractionCreated += InteractionCreated;
 
         // Process the command execution results 
         //_interactionService.SlashCommandExecuted += SlashCommandExecuted;
@@ -135,7 +135,7 @@ internal class InteractionHandler : DiscordClientService
     //    return Task.CompletedTask;
     //}
 
-    private async Task HandleInteraction(SocketInteraction arg)
+    private async Task InteractionCreated(SocketInteraction arg)
     {
         try
         {

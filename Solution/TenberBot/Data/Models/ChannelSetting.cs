@@ -3,11 +3,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TenberBot.Data.Models;
 
-[Table("GlobalSettings")]
-public class GlobalSetting
+[Table("ChannelSettings")]
+public class ChannelSetting
 {
     [Key]
-    public int GlobalSettingId { get; set; }
+    public int ChannelSettingId { get; set; }
+
+    public ulong GuildId { get; set; }
+
+    public ulong ChannelId { get; set; }
 
     public string Name { get; set; } = "";
 

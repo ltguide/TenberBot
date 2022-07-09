@@ -1,8 +1,11 @@
 ﻿using Discord;
 using Discord.Interactions;
+using TenberBot.Data;
 using TenberBot.Data.Enums;
 using TenberBot.Data.Models;
 using TenberBot.Data.Services;
+using TenberBot.Extensions;
+using TenberBot.Services;
 
 namespace TenberBot.Modules.Interaction;
 
@@ -10,32 +13,34 @@ namespace TenberBot.Modules.Interaction;
 [RequireUserPermission(ChannelPermission.ManageChannels)]
 public class ChannelSettingInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
-
-    private readonly ISprintDataService sprintDataService;
+    private readonly IChannelSettingDataService channelSettingDataService;
+    private readonly CacheService cacheService;
 
     public ChannelSettingInteractionModule(
-        ISprintDataService sprintDataService)
+        IChannelSettingDataService channelSettingDataService,
+        CacheService cacheService)
     {
-        this.sprintDataService = sprintDataService;
+        this.channelSettingDataService = channelSettingDataService;
+        this.cacheService = cacheService;
     }
 
     [SlashCommand("sprint", "Set the prefix for message commands.")]
     public async Task SetSprint(SprintMode mode, IRole role)
     {
-        var sprintChannel = await sprintDataService.GetChannelById(Context.Channel.Id);
+        await Set(ChannelSettings.SprintMode, mode.ToString(), mode);
+        await Set(ChannelSettings.SprintRole, role.Mention, role.Mention);
 
-        var newObject = new SprintChannel
-        {
-            ChannelId = Context.Channel.Id,
-            SprintMode = mode,
-            Role = role.Mention
-        };
+        await RespondAsync($"Channel settings for *sprint* updated.\n\n> **Mode**: {mode}\n> **Role**: {role.Name}");
+    }
 
-        if (sprintChannel == null)
-            await sprintDataService.Add(newObject);
+    private async Task Set<T>(string name, string value, T cacheValue)
+    {
+        cacheService.Cache.Set(Context.Guild, name, cacheValue);
+
+        var setting = await channelSettingDataService.GetByName(Context.Guild.Id, name);
+        if (setting == null)
+            await channelSettingDataService.Add(new ChannelSetting { GuildId = Context.Guild.Id, ChannelId = Context.Channel.Id, Name = name, Value = value, });
         else
-            await sprintDataService.Update(sprintChannel, newObject);
-
-        await RespondAsync($"Channel settings for *sprint* updated.\n\n> **Mode**: {mode}\n> **Role**: {role}");
+            await channelSettingDataService.Update(setting, new ChannelSetting { Value = value, });
     }
 }

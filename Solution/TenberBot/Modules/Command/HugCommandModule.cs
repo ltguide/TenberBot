@@ -95,7 +95,7 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
     {
         var hugText = RecipientVariables.Replace(hug.Text, (match) =>
         {
-            return match.Value switch
+            return match.Value.ToLower() switch
             {
                 "%recipient%" => recipient.GetMention(),
                 "%user%" => Context.User.GetMention(),
@@ -105,7 +105,7 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
 
         var statText = StatVariables.Replace(stat.Text, (match) =>
         {
-            return match.Value switch
+            return match.Value.ToLower() switch
             {
                 "%count%" => count.ToString("N0"),
                 "%s%" => count != 1 ? "s" : "",
@@ -126,7 +126,7 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
     {
         var hugText = SelfVariables.Replace(hug.Text, (match) =>
         {
-            return match.Value switch
+            return match.Value.ToLower() switch
             {
                 "%user%" => Context.User.GetMention(),
                 _ => match.Value,

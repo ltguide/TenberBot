@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using TenberBot.Data;
 using TenberBot.Extensions;
+using TenberBot.Services;
 
 namespace TenberBot.Modules.Command;
 
@@ -12,17 +13,20 @@ public class InfoCommandModule : ModuleBase<SocketCommandContext>
     private readonly IServiceProvider serviceProvider;
     private readonly CommandService commandService;
     private readonly DiscordSocketClient client;
+    private readonly CacheService cacheService;
     private readonly ILogger<InfoCommandModule> logger;
 
     public InfoCommandModule(
         IServiceProvider serviceProvider,
         CommandService commandService,
         DiscordSocketClient client,
+        CacheService cacheService,
         ILogger<InfoCommandModule> logger)
     {
         this.serviceProvider = serviceProvider;
         this.commandService = commandService;
         this.client = client;
+        this.cacheService = cacheService;
         this.logger = logger;
     }
 
@@ -87,7 +91,11 @@ public class InfoCommandModule : ModuleBase<SocketCommandContext>
     {
         _ = Task.Run(async () =>
         {
-            await Context.Message.AddReactionsAsync(new[] { GlobalSettings.EmoteSuccess, GlobalSettings.EmoteFail, GlobalSettings.EmoteUnknown });
+            await Context.Message.AddReactionsAsync(new[] {
+                cacheService.Cache.Get<IEmote>(Context.Guild, ServerSettings.EmoteSuccess),
+                cacheService.Cache.Get<IEmote>(Context.Guild, ServerSettings.EmoteFail),
+                cacheService.Cache.Get<IEmote>(Context.Guild, ServerSettings.EmoteBusy),
+            });
         });
 
         return Task.CompletedTask;
@@ -114,7 +122,7 @@ public class InfoCommandModule : ModuleBase<SocketCommandContext>
             .Take(perPage)
             .ToList();
 
-        var prefix = GlobalSettings.Prefix.SanitizeMD();
+        var prefix = cacheService.Cache.Get<string>(Context.Guild, ServerSettings.Prefix).SanitizeMD();
 
         var embedBuilder = new EmbedBuilder()
             .WithFooter($"Page {page} of {pages}");
