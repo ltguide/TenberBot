@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TenberBot.Data.Enums;
 
 namespace TenberBot.Data.Models;
 
@@ -24,4 +25,14 @@ public class UserStat
     public int SprintsCreated { get; set; }
 
     public int SprintsJoined { get; set; }
+
+    public int CoinFlips { get; set; }
+
+    public int CoinFlipStreak { get; set; }
+
+    public VisualType? CoinFlipPrevious { get; set; }
+
+    public int CoinFlipRecord { get; set; }
+
+    public string CoinFlipStreakText => $"{CoinFlipStreak} flip{(CoinFlipStreak != 1 ? "s" : "")}";
 }

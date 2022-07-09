@@ -10,17 +10,17 @@ namespace TenberBot.Modules.Command;
 [RequireBotPermission(ChannelPermission.SendMessages)]
 public class RandomizedCommandModule : ModuleBase<SocketCommandContext>
 {
-    private static int CoinFlipCounter = 0;
-    private static VisualType? CoinFlipPrevious = null;
-
     private readonly IVisualDataService visualDataService;
+    private readonly IUserStatDataService userStatDataService;
     private readonly ILogger<RandomizedCommandModule> logger;
 
     public RandomizedCommandModule(
         IVisualDataService visualDataService,
+        IUserStatDataService userStatDataService,
         ILogger<RandomizedCommandModule> logger)
     {
         this.visualDataService = visualDataService;
+        this.userStatDataService = userStatDataService;
         this.logger = logger;
     }
 
@@ -31,29 +31,43 @@ public class RandomizedCommandModule : ModuleBase<SocketCommandContext>
     {
         var footer = "No streak 😓";
 
+        var userStats = await userStatDataService.GetOrAddByContext(Context);
+
         var visualType = Random.Shared.Next(2) == 0 ? VisualType.CoinHead : VisualType.CoinTail;
-
-        if (visualType != CoinFlipPrevious)
-        {
-            if (CoinFlipPrevious != null && CoinFlipCounter > 1)
-                footer = $"Streak lost! Made it to {CoinFlipCounter} flip{(CoinFlipCounter != 1 ? "s" : "")}";
-
-            CoinFlipPrevious = visualType;
-            CoinFlipCounter = 1;
-        }
-        else
-        {
-            CoinFlipCounter++;
-
-            footer = $"Current streak is {CoinFlipCounter} flip{(CoinFlipCounter != 1 ? "s" : "")} in a row.";
-        }
 
         var visual = await visualDataService.GetRandom(visualType);
         if (visual == null)
             return;
 
+        if (visualType != userStats.CoinFlipPrevious)
+        {
+            if (userStats.CoinFlipPrevious != null && userStats.CoinFlipStreak > 1)
+                footer = $"Streak lost! Made it to {userStats.CoinFlipStreakText}";
+
+            userStats.CoinFlipPrevious = visualType;
+            userStats.CoinFlipStreak = 1;
+        }
+        else
+        {
+            userStats.CoinFlipStreak++;
+
+            footer = $"Current streak is {userStats.CoinFlipStreakText} in a row.";
+
+            if (userStats.CoinFlipStreak > userStats.CoinFlipRecord)
+            {
+                userStats.CoinFlipRecord = userStats.CoinFlipStreak;
+
+                footer += " Your personal best!";
+            }
+        }
+
+        userStats.CoinFlips++;
+
+        await userStatDataService.Save();
+
         var embedBuilder = new EmbedBuilder
         {
+            Author = Context.User.GetEmbedAuthor("flips a coin"),
             Title = visualType == VisualType.CoinHead ? "Heads!" : "Tails!",
             ThumbnailUrl = $"attachment://{visual.AttachmentFilename}",
         }.WithFooter(footer);
