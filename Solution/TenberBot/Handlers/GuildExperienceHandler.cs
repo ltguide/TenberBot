@@ -50,7 +50,7 @@ public class GuildExperienceHandler : DiscordClientService
         if (message.Source != MessageSource.User)
             return;
 
-        if (message.Channel is not SocketGuildChannel)
+        if (message.Channel is not SocketGuildChannel channel)
             return;
 
         var context = new SocketCommandContext(Client, message);
@@ -62,12 +62,15 @@ public class GuildExperienceHandler : DiscordClientService
                 return;
         }
 
-        await cacheService.Channel(context.Channel);
+        if (channel is SocketThreadChannel thread)
+            channel = thread.ParentChannel;
+
+        await cacheService.Channel(channel);
 
         var userLevel = await GetUserLevel(context.Guild.Id, context.User.Id);
 
         userLevel.AddMessage(
-            new ChannelExperience(context.Channel, cacheService.Cache),
+            new ChannelExperience(channel, cacheService.Cache),
             message.Attachments.Count,
             Lines.Matches(message.Content).Count + 1,
             Words.Matches(message.Content).Count,

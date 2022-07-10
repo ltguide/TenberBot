@@ -19,6 +19,7 @@ public class ExperienceCommandModule : ModuleBase<SocketCommandContext>
     }
 
     [Command("level", ignoreExtraArgs: true)]
+    [Alias("lvl")]
     [Summary("See your experience information.")]
     public async Task Level()
     {

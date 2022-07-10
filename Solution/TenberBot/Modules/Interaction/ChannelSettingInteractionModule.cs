@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using TenberBot.Data;
 using TenberBot.Data.Enums;
 using TenberBot.Data.Models;
@@ -28,6 +29,12 @@ public class ChannelSettingInteractionModule : InteractionModuleBase<SocketInter
     [SlashCommand("sprint", "Set the prefix for message commands.")]
     public async Task SetSprint(SprintMode? mode = null, IRole? role = null)
     {
+        if (Context.Channel is SocketThreadChannel)
+        {
+            await RespondAsync("Threads use the settings of their parent channel.", ephemeral: true);
+            return;
+        }
+
         if (mode != null)
             await Set(ChannelSettings.SprintMode, mode.Value.ToString(), mode);
 
@@ -50,6 +57,12 @@ public class ChannelSettingInteractionModule : InteractionModuleBase<SocketInter
         [Summary("message-attachment")] decimal? messageAttachment = null,
         [Summary("voice-minute")] decimal? voiceMinute = null)
     {
+        if (Context.Channel is SocketThreadChannel)
+        {
+            await RespondAsync("Threads use the settings of their parent channel.", ephemeral: true);
+            return;
+        }
+
         if (enabled != null)
             await Set(ChannelSettings.ExperienceEnabled, enabled.Value.ToString(), enabled);
 
