@@ -16,7 +16,7 @@ public class UserLevel
 
     public ulong UserId { get; set; }
 
-    public int VoiceLevel { get; set; }
+    public int VoiceLevel { get; set; } = 1;
 
     [Precision(20, 2)]
     public decimal VoiceExperience { get; set; }
@@ -27,7 +27,7 @@ public class UserLevel
     [Precision(20, 0)]
     public decimal ExcludedVoiceMinutes { get; set; }
 
-    public int MessageLevel { get; set; }
+    public int MessageLevel { get; set; } = 1;
 
     [Precision(20, 2)]
     public decimal MessageExperience { get; set; }
