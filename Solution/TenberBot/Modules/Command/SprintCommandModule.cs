@@ -105,7 +105,7 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
 
         var sprintRole = cacheService.Cache.Get<string>(Context.Channel, ChannelSettings.SprintRole);
 
-        await SendEmbed(sprint, $"Get ready, {sprintRole}! There's a new sprint starting soon.");
+        await SendEmbed(sprint, $"Get ready, {(sprintRole != "" ? sprintRole : "everyone")}! There's a new sprint starting soon.");
 
         sprintService.Cycle();
 

@@ -81,7 +81,7 @@ public class UserStatDataService : IUserStatDataService
 
         dbContext.Add(newObject);
 
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync().ConfigureAwait(false);
     }
 
     public async Task Delete(UserStat dbObject)
@@ -91,7 +91,7 @@ public class UserStatDataService : IUserStatDataService
 
         dbContext.Remove(dbObject);
 
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync().ConfigureAwait(false);
     }
 
     public async Task Save()

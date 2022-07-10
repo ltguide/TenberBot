@@ -66,7 +66,7 @@ public class SprintDataService : ISprintDataService
             dbObject.SprintStatus = newObject.SprintStatus;
         }
 
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync().ConfigureAwait(false);
     }
 
     public async Task<UserSprint?> GetUserById(ulong userId, bool active)

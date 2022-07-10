@@ -34,6 +34,7 @@ public class Program
                     LogLevel = logLevel,
                     MessageCacheSize = 200,
                     AlwaysDownloadUsers = true,
+                    GatewayIntents = GatewayIntents.AllUnprivileged & ~GatewayIntents.GuildScheduledEvents & ~GatewayIntents.GuildInvites,
                 };
 
                 config.Token = context.Configuration["app-token"];
@@ -67,7 +68,9 @@ public class Program
                 services.AddSingleton<SprintService>();
                 services.AddHostedService(provider => provider.GetRequiredService<SprintService>());
 
-                services.AddHostedService<ChannelCommandHandler>();
+                services.AddHostedService<GuildCommandHandler>();
+                services.AddHostedService<GuildExperienceHandler>();
+
                 services.AddHostedService<InteractionHandler>();
 
                 services.AddDbContext<DataContext>(builder =>
@@ -90,7 +93,8 @@ public class Program
 
                 services.AddTransient<ISprintDataService, SprintDataService>();
 
-                //services.AddTransient<IUserLevelDataService, UserLevelDataService>();
+                services.AddTransient<IUserVoiceChannelDataService, UserVoiceChannelDataService>();
+                services.AddTransient<IUserLevelDataService, UserLevelDataService>();
                 services.AddTransient<IUserStatDataService, UserStatDataService>();
 
                 services.AddHttpClient<WebService>();

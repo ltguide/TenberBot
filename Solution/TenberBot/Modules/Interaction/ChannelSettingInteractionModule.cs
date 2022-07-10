@@ -3,6 +3,7 @@ using Discord.Interactions;
 using TenberBot.Data;
 using TenberBot.Data.Enums;
 using TenberBot.Data.Models;
+using TenberBot.Data.POCO;
 using TenberBot.Data.Services;
 using TenberBot.Extensions;
 using TenberBot.Services;
@@ -25,19 +26,61 @@ public class ChannelSettingInteractionModule : InteractionModuleBase<SocketInter
     }
 
     [SlashCommand("sprint", "Set the prefix for message commands.")]
-    public async Task SetSprint(SprintMode mode, IRole role)
+    public async Task SetSprint(SprintMode? mode = null, IRole? role = null)
     {
-        await Set(ChannelSettings.SprintMode, mode.ToString(), mode);
-        await Set(ChannelSettings.SprintRole, role.Mention, role.Mention);
+        if (mode != null)
+            await Set(ChannelSettings.SprintMode, mode.Value.ToString(), mode);
 
-        await RespondAsync($"Channel settings for *sprint* updated.\n\n> **Mode**: {mode}\n> **Role**: {role.Name}");
+        if (role != null)
+            await Set(ChannelSettings.SprintRole, role.Mention, role.Mention);
+
+        mode = cacheService.Cache.Get<SprintMode>(Context.Channel, ChannelSettings.SprintMode);
+        var sprintRole = cacheService.Cache.Get<string>(Context.Channel, ChannelSettings.SprintRole);
+
+        await RespondAsync($"Channel settings for *sprint*:\n\n> **Mode**: {mode}\n> **Role**: {sprintRole}");
+    }
+
+    [SlashCommand("experience", "Set the experience for leveling.")]
+    public async Task SetExperience(
+        bool? enabled = null,
+        [Summary("message")] decimal? message = null,
+        [Summary("message-line")] decimal? messageLine = null,
+        [Summary("message-word")] decimal? messageWord = null,
+        [Summary("message-character")] decimal? messageCharacter = null,
+        [Summary("message-attachment")] decimal? messageAttachment = null,
+        [Summary("voice-minute")] decimal? voiceMinute = null)
+    {
+        if (enabled != null)
+            await Set(ChannelSettings.ExperienceEnabled, enabled.Value.ToString(), enabled);
+
+        if (message != null)
+            await Set(ChannelSettings.ExperienceMessage, message.Value.ToString(), message);
+
+        if (messageLine != null)
+            await Set(ChannelSettings.ExperienceMessageLine, messageLine.Value.ToString(), messageLine);
+
+        if (messageWord != null)
+            await Set(ChannelSettings.ExperienceMessageWord, messageWord.Value.ToString(), messageWord);
+
+        if (messageCharacter != null)
+            await Set(ChannelSettings.ExperienceMessageCharacter, messageCharacter.Value.ToString(), messageCharacter);
+
+        if (messageAttachment != null)
+            await Set(ChannelSettings.ExperienceMessageAttachment, messageAttachment.Value.ToString(), messageAttachment);
+
+        if (voiceMinute != null)
+            await Set(ChannelSettings.ExperienceVoiceMinute, voiceMinute.Value.ToString(), voiceMinute);
+
+        var channelExperience = new ChannelExperience(Context.Channel, cacheService.Cache);
+
+        await RespondAsync($"Channel settings for *experience*:\n\n> **status**: {(channelExperience.Enabled ? "Enabled" : "DISABLED")}\n\n> **message**: {channelExperience.Message}\n> **message-line**: {channelExperience.MessageLine}\n> **message-word**: {channelExperience.MessageWord}\n> **message-character**: {channelExperience.MessageCharacter}\n> **message-attachment**: {channelExperience.MessageAttachment}\n> **voice-minute**: {channelExperience.VoiceMinute}");
     }
 
     private async Task Set<T>(string name, string value, T cacheValue)
     {
-        cacheService.Cache.Set(Context.Guild, name, cacheValue);
+        cacheService.Cache.Set(Context.Channel, name, cacheValue);
 
-        var setting = await channelSettingDataService.GetByName(Context.Guild.Id, name);
+        var setting = await channelSettingDataService.GetByName(Context.Channel.Id, name);
         if (setting == null)
             await channelSettingDataService.Add(new ChannelSetting { GuildId = Context.Guild.Id, ChannelId = Context.Channel.Id, Name = name, Value = value, });
         else

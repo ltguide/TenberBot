@@ -51,7 +51,7 @@ public class InteractionParentDataService : IInteractionParentDataService
 
         dbContext.Add(newObject);
 
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync().ConfigureAwait(false);
     }
 
     public async Task Update(InteractionParent dbObject, InteractionParent newObject)
@@ -64,7 +64,7 @@ public class InteractionParentDataService : IInteractionParentDataService
             dbObject.Update(newObject);
         }
 
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync().ConfigureAwait(false);
     }
 
     public async Task Delete(InteractionParent dbObject)

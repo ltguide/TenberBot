@@ -5,6 +5,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using System.Reflection;
 using TenberBot.Parameters;
+using TenberBot.Services;
 
 namespace TenberBot.Handlers;
 
@@ -15,13 +16,22 @@ internal class InteractionHandler : DiscordClientService
     private readonly InteractionService interactionService;
     private readonly IHostEnvironment environment;
     private readonly IConfiguration configuration;
+    private readonly CacheService cacheService;
 
-    public InteractionHandler(DiscordSocketClient client, ILogger<DiscordClientService> logger, IServiceProvider provider, InteractionService interactionService, IHostEnvironment environment, IConfiguration configuration) : base(client, logger)
+    public InteractionHandler(
+        IServiceProvider provider,
+        InteractionService interactionService,
+        IHostEnvironment environment,
+        IConfiguration configuration,
+        CacheService cacheService,
+        DiscordSocketClient client,
+        ILogger<DiscordClientService> logger) : base(client, logger)
     {
         this.provider = provider;
         this.interactionService = interactionService;
         this.environment = environment;
         this.configuration = configuration;
+        this.cacheService = cacheService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -46,6 +56,29 @@ internal class InteractionHandler : DiscordClientService
         else
             await interactionService.RegisterCommandsGloballyAsync();
 
+    }
+
+    private async Task InteractionCreated(SocketInteraction arg)
+    {
+        try
+        {
+            // Create an execution context that matches the generic type parameter of your InteractionModuleBase<T> modules
+            var context = new SocketInteractionContext(Client, arg);
+
+            await cacheService.Channel(context.Channel);
+
+            await interactionService.ExecuteCommandAsync(context, provider);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Exception occurred whilst attempting to handle interaction.");
+
+            if (arg.Type == InteractionType.ApplicationCommand)
+            {
+                var msg = await arg.GetOriginalResponseAsync();
+                await msg.DeleteAsync();
+            }
+        }
     }
 
     //private Task ComponentCommandExecuted(ComponentCommandInfo commandInfo, IInteractionContext context, IResult result)
@@ -134,24 +167,4 @@ internal class InteractionHandler : DiscordClientService
 
     //    return Task.CompletedTask;
     //}
-
-    private async Task InteractionCreated(SocketInteraction arg)
-    {
-        try
-        {
-            // Create an execution context that matches the generic type parameter of your InteractionModuleBase<T> modules
-            var ctx = new SocketInteractionContext(Client, arg);
-            await interactionService.ExecuteCommandAsync(ctx, provider);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Exception occurred whilst attempting to handle interaction.");
-
-            if (arg.Type == InteractionType.ApplicationCommand)
-            {
-                var msg = await arg.GetOriginalResponseAsync();
-                await msg.DeleteAsync();
-            }
-        }
-    }
 }

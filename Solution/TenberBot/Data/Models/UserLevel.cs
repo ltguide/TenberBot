@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TenberBot.Data.POCO;
 
 namespace TenberBot.Data.Models;
 
@@ -15,15 +16,124 @@ public class UserLevel
 
     public ulong UserId { get; set; }
 
-    public int Level { get; set; }
+    public int VoiceLevel { get; set; }
 
-    public long Experience { get; set; }
+    [Precision(20, 2)]
+    public decimal VoiceExperience { get; set; }
 
-    public int MessageLines { get; set; }
+    [Precision(20, 0)]
+    public decimal VoiceMinutes { get; set; }
 
-    public int MessageAttachments { get; set; }
+    [Precision(20, 0)]
+    public decimal ExcludedVoiceMinutes { get; set; }
 
-    public long MessageWords { get; set; }
+    public int MessageLevel { get; set; }
 
-    public long MessageCharacters { get; set; }
+    [Precision(20, 2)]
+    public decimal MessageExperience { get; set; }
+
+    [Precision(20, 0)]
+    public decimal Messages { get; set; }
+
+    [Precision(20, 0)]
+    public decimal MessageLines { get; set; }
+
+    [Precision(20, 0)]
+    public decimal MessageWords { get; set; }
+
+    [Precision(20, 0)]
+    public decimal MessageCharacters { get; set; }
+
+    [Precision(20, 0)]
+    public decimal MessageAttachments { get; set; }
+
+    [Precision(20, 0)]
+    public decimal ExcludedMessages { get; set; }
+
+    [Precision(20, 0)]
+    public decimal ExcludedMessageLines { get; set; }
+
+    [Precision(20, 0)]
+    public decimal ExcludedMessageWords { get; set; }
+
+    [Precision(20, 0)]
+    public decimal ExcludedMessageCharacters { get; set; }
+
+    [Precision(20, 0)]
+    public decimal ExcludedMessageAttachments { get; set; }
+
+
+    public void AddMessage(ChannelExperience channelExperience, int attachments, int lines, int words, int characters)
+    {
+        if (channelExperience.Enabled && channelExperience.Message > 0)
+        {
+            Messages += 1;
+            MessageExperience += channelExperience.Message;
+        }
+        else
+            ExcludedMessages += 1;
+
+        if (lines > 0)
+        {
+            if (channelExperience.Enabled && channelExperience.MessageLine > 0)
+            {
+                MessageLines += lines;
+                MessageExperience += channelExperience.MessageLine * lines;
+            }
+            else
+                ExcludedMessageLines += lines;
+
+            if (channelExperience.Enabled && channelExperience.MessageWord > 0)
+            {
+                MessageWords += words;
+                MessageExperience += channelExperience.MessageWord * words;
+            }
+            else
+                ExcludedMessageWords += words;
+
+            if (channelExperience.Enabled && channelExperience.MessageCharacter > 0)
+            {
+                MessageCharacters += characters;
+                MessageExperience += channelExperience.MessageCharacter * characters;
+            }
+            else
+                ExcludedMessageCharacters += characters;
+        }
+
+        if (attachments > 0)
+        {
+            if (channelExperience.Enabled && channelExperience.MessageAttachment > 0)
+            {
+                MessageAttachments += attachments;
+                MessageExperience += channelExperience.MessageAttachment * attachments;
+            }
+            else
+                ExcludedMessageLines += attachments;
+        }
+
+        MessageLevel = CalculateLevel(MessageExperience);
+    }
+
+    public void AddVoice(ChannelExperience channelExperience, int minutes)
+    {
+        if (channelExperience.Enabled && channelExperience.VoiceMinute > 0)
+        {
+            VoiceMinutes += minutes;
+            VoiceExperience += channelExperience.VoiceMinute * minutes;
+        }
+        else
+            ExcludedVoiceMinutes += minutes;
+
+        VoiceLevel = CalculateLevel(VoiceExperience);
+    }
+
+    private static int CalculateLevel(decimal experience)
+    {
+        // largest Triangular Number less than Experience by factor of 100
+        // https://gamedev.stackexchange.com/questions/13638/algorithm-for-dynamically-calculating-a-level-based-on-experience-points
+        // https://en.wikipedia.org/wiki/Triangular_number
+        // https://math.stackexchange.com/questions/1417579/largest-triangular-number-less-than-a-given-natural-number
+
+        return (int)((-1 + Math.Sqrt(8 * (decimal.ToDouble(experience) / 100) + 1)) / 2) + 1;
+    }
 }

@@ -12,18 +12,18 @@ using TenberBot.Services;
 
 namespace TenberBot.Handlers;
 
-public class ChannelCommandHandler : DiscordClientService
+public class GuildCommandHandler : DiscordClientService
 {
     private readonly IServiceProvider provider;
     private readonly CommandService commandService;
     private readonly CacheService cacheService;
 
-    public ChannelCommandHandler(
+    public GuildCommandHandler(
         IServiceProvider provider,
         CommandService commandService,
         CacheService cacheService,
         DiscordSocketClient client,
-        ILogger<ChannelCommandHandler> logger) : base(client, logger)
+        ILogger<GuildCommandHandler> logger) : base(client, logger)
     {
         this.provider = provider;
         this.commandService = commandService;
@@ -48,7 +48,7 @@ public class ChannelCommandHandler : DiscordClientService
         if (message.Source != MessageSource.User)
             return;
 
-        if (message.Channel is not SocketTextChannel channel)
+        if (message.Channel is not SocketGuildChannel)
             return;
 
         var context = new SocketCommandContext(Client, message);

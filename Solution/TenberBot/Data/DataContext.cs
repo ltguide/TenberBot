@@ -22,6 +22,8 @@ public class DataContext : DbContext
 
     public DbSet<ChannelSetting> ChannelSettings { get; set; }
 
+    public DbSet<UserVoiceChannel> UserVoiceChannels { get; set; }
+
     public DbSet<UserLevel> UserLevels { get; set; }
 
     public DbSet<UserStat> UserStats { get; set; }
