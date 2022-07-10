@@ -42,6 +42,40 @@ public class GuildExperienceHandler : DiscordClientService
         return Task.CompletedTask;
     }
 
+    private async Task MessageReceived(SocketMessage incomingMessage)
+    {
+        if (incomingMessage is not SocketUserMessage message)
+            return;
+
+        if (message.Source != MessageSource.User)
+            return;
+
+        if (message.Channel is not SocketGuildChannel)
+            return;
+
+        var context = new SocketCommandContext(Client, message);
+
+        if (cacheService.Cache.TryGetValue(context.Guild, ServerSettings.Prefix, out string prefix) && string.IsNullOrWhiteSpace(prefix) == false)
+        {
+            int argPos = 0;
+            if (message.HasStringPrefix(prefix, ref argPos) || message.HasMentionPrefix(Client.CurrentUser, ref argPos))
+                return;
+        }
+
+        await cacheService.Channel(context.Channel);
+
+        var userLevel = await GetUserLevel(context.Guild.Id, context.User.Id);
+
+        userLevel.AddMessage(
+            new ChannelExperience(context.Channel, cacheService.Cache),
+            message.Attachments.Count,
+            Lines.Matches(message.Content).Count + 1,
+            Words.Matches(message.Content).Count,
+            message.Content.Length);
+
+        await userLevelDataService.Update(userLevel, null!);
+    }
+
     private async Task GuildAvailable(SocketGuild guild)
     {
         var voiceUsers = guild.VoiceChannels.SelectMany(x => x.ConnectedUsers).ToList();
@@ -93,59 +127,27 @@ public class GuildExperienceHandler : DiscordClientService
         }
     }
 
+    private async Task<UserLevel> GetUserLevel(ulong guildId, ulong userId)
+    {
+        var userLevel = await userLevelDataService.GetByIds(guildId, userId);
+        if (userLevel == null)
+        {
+            userLevel = new UserLevel { GuildId = guildId, UserId = userId };
+            await userLevelDataService.Add(userLevel);
+        }
+
+        return userLevel;
+    }
+
     private async Task VoiceDisconnected(IChannel channel, UserVoiceChannel userVoiceChannel)
     {
         await cacheService.Channel(channel);
 
-        var userLevel = await userLevelDataService.GetByIds(userVoiceChannel.GuildId, userVoiceChannel.UserId);
-        if (userLevel == null)
-        {
-            userLevel = new UserLevel { GuildId = userVoiceChannel.GuildId, UserId = userVoiceChannel.UserId };
-            await userLevelDataService.Add(userLevel);
-        }
+        var userLevel = await GetUserLevel(userVoiceChannel.GuildId, userVoiceChannel.UserId);
 
         userLevel.AddVoice(
             new ChannelExperience(channel, cacheService.Cache),
             (int)Math.Ceiling(DateTime.Now.Subtract(userVoiceChannel.ConnectDate).TotalMinutes));
-
-        await userLevelDataService.Update(userLevel, null!);
-    }
-
-    private async Task MessageReceived(SocketMessage incomingMessage)
-    {
-        if (incomingMessage is not SocketUserMessage message)
-            return;
-
-        if (message.Source != MessageSource.User)
-            return;
-
-        if (message.Channel is not SocketGuildChannel)
-            return;
-
-        var context = new SocketCommandContext(Client, message);
-
-        if (cacheService.Cache.TryGetValue(context.Guild, ServerSettings.Prefix, out string prefix) && string.IsNullOrWhiteSpace(prefix) == false)
-        {
-            int argPos = 0;
-            if (message.HasStringPrefix(prefix, ref argPos) || message.HasMentionPrefix(Client.CurrentUser, ref argPos))
-                return;
-        }
-
-        await cacheService.Channel(context.Channel);
-
-        var userLevel = await userLevelDataService.GetByContext(context);
-        if (userLevel == null)
-        {
-            userLevel = new UserLevel { GuildId = context.Guild.Id, UserId = context.User.Id };
-            await userLevelDataService.Add(userLevel);
-        }
-
-        userLevel.AddMessage(
-            new ChannelExperience(context.Channel, cacheService.Cache),
-            message.Attachments.Count,
-            Lines.Matches(message.Content).Count + 1,
-            Words.Matches(message.Content).Count,
-            message.Content.Length);
 
         await userLevelDataService.Update(userLevel, null!);
     }

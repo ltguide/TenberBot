@@ -62,13 +62,19 @@ public class UserLevel
     [Precision(20, 0)]
     public decimal ExcludedMessageAttachments { get; set; }
 
+    public decimal NextLevelMessageExperience => CalculateExperience(MessageLevel);
+
+    public decimal NextLevelVoiceExperience => CalculateExperience(VoiceLevel);
+
 
     public void AddMessage(ChannelExperience channelExperience, int attachments, int lines, int words, int characters)
     {
+        var experience = 0m;
+
         if (channelExperience.Enabled && channelExperience.Message > 0)
         {
             Messages += 1;
-            MessageExperience += channelExperience.Message;
+            experience += channelExperience.Message;
         }
         else
             ExcludedMessages += 1;
@@ -78,7 +84,7 @@ public class UserLevel
             if (channelExperience.Enabled && channelExperience.MessageLine > 0)
             {
                 MessageLines += lines;
-                MessageExperience += channelExperience.MessageLine * lines;
+                experience += channelExperience.MessageLine * lines;
             }
             else
                 ExcludedMessageLines += lines;
@@ -86,7 +92,7 @@ public class UserLevel
             if (channelExperience.Enabled && channelExperience.MessageWord > 0)
             {
                 MessageWords += words;
-                MessageExperience += channelExperience.MessageWord * words;
+                experience += channelExperience.MessageWord * words;
             }
             else
                 ExcludedMessageWords += words;
@@ -94,7 +100,7 @@ public class UserLevel
             if (channelExperience.Enabled && channelExperience.MessageCharacter > 0)
             {
                 MessageCharacters += characters;
-                MessageExperience += channelExperience.MessageCharacter * characters;
+                experience += channelExperience.MessageCharacter * characters;
             }
             else
                 ExcludedMessageCharacters += characters;
@@ -105,24 +111,34 @@ public class UserLevel
             if (channelExperience.Enabled && channelExperience.MessageAttachment > 0)
             {
                 MessageAttachments += attachments;
-                MessageExperience += channelExperience.MessageAttachment * attachments;
+                experience += channelExperience.MessageAttachment * attachments;
             }
             else
                 ExcludedMessageLines += attachments;
         }
+
+        Console.WriteLine($"{UserId} MessageExperience gain: {experience}");
+
+        MessageExperience += experience;
 
         MessageLevel = CalculateLevel(MessageExperience);
     }
 
     public void AddVoice(ChannelExperience channelExperience, int minutes)
     {
+        var experience = 0m;
+
         if (channelExperience.Enabled && channelExperience.VoiceMinute > 0)
         {
             VoiceMinutes += minutes;
-            VoiceExperience += channelExperience.VoiceMinute * minutes;
+            experience += channelExperience.VoiceMinute * minutes;
         }
         else
             ExcludedVoiceMinutes += minutes;
+
+        Console.WriteLine($"{UserId} VoiceExperience gain: {experience}");
+
+        VoiceExperience += experience;
 
         VoiceLevel = CalculateLevel(VoiceExperience);
     }
@@ -130,10 +146,15 @@ public class UserLevel
     private static int CalculateLevel(decimal experience)
     {
         // largest Triangular Number less than Experience by factor of 100
-        // https://gamedev.stackexchange.com/questions/13638/algorithm-for-dynamically-calculating-a-level-based-on-experience-points
+        // https://gamedev.stackexchange.com/a/13639
         // https://en.wikipedia.org/wiki/Triangular_number
         // https://math.stackexchange.com/questions/1417579/largest-triangular-number-less-than-a-given-natural-number
 
         return (int)((-1 + Math.Sqrt(8 * (decimal.ToDouble(experience) / 100) + 1)) / 2) + 1;
+    }
+
+    private static decimal CalculateExperience(int level)
+    {
+        return ((level * (level + 1)) / 2) * 100;
     }
 }

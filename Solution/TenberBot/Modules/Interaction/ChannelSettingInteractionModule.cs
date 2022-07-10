@@ -73,7 +73,16 @@ public class ChannelSettingInteractionModule : InteractionModuleBase<SocketInter
 
         var channelExperience = new ChannelExperience(Context.Channel, cacheService.Cache);
 
-        await RespondAsync($"Channel settings for *experience*:\n\n> **status**: {(channelExperience.Enabled ? "Enabled" : "DISABLED")}\n\n> **message**: {channelExperience.Message}\n> **message-line**: {channelExperience.MessageLine}\n> **message-word**: {channelExperience.MessageWord}\n> **message-character**: {channelExperience.MessageCharacter}\n> **message-attachment**: {channelExperience.MessageAttachment}\n> **voice-minute**: {channelExperience.VoiceMinute}");
+        if (channelExperience.Enabled)
+        {
+            var voice = "";
+            if (Context.Channel.GetChannelType() == ChannelType.Voice)
+                voice = $"\n> **voice-minute**: {channelExperience.VoiceMinute}";
+
+            await RespondAsync($"Channel settings for *experience*:\n\n> **status**: Enabled\n\n> **message**: {channelExperience.Message}\n> **message-line**: {channelExperience.MessageLine}\n> **message-word**: {channelExperience.MessageWord}\n> **message-character**: {channelExperience.MessageCharacter}\n> **message-attachment**: {channelExperience.MessageAttachment}{voice}");
+        }
+        else
+            await RespondAsync("Channel settings for *experience*:\n\n> **status**: Disabled");
     }
 
     private async Task Set<T>(string name, string value, T cacheValue)

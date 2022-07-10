@@ -85,6 +85,9 @@ public class CacheService : DiscordClientService
                 else if (defaultValue is ulong)
                     Cache.Set(entity, key, ulong.TryParse(value, out var @ulong) ? @ulong : defaultValue);
 
+                else if (defaultValue is bool)
+                    Cache.Set(entity, key, bool.TryParse(value, out var @bool) ? @bool : defaultValue);
+
                 else
                     Cache.Set(entity, key, value);
             }
