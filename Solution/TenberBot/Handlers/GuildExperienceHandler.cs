@@ -106,6 +106,12 @@ public class GuildExperienceHandler : DiscordClientService
         if (socketUser is not SocketGuildUser user)
             return;
 
+        if (before.VoiceChannel != null && after.VoiceChannel != null && before.VoiceChannel.Id == after.VoiceChannel.Id)
+        {
+            //Console.WriteLine($"user {user.Id} changed state {before.VoiceChannel.Name} ({before.VoiceChannel.Id})");
+            return;
+        }
+
         if (before.VoiceChannel != null)
         {
             //Console.WriteLine($"user {user.Id} disconnected {before.VoiceChannel.Name} ({before.VoiceChannel.Id})");
