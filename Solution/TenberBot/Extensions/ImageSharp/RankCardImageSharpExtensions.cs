@@ -82,7 +82,7 @@ public static class RankCardImageSharpExtensions
             // Message fill
             .Fill(
                 fillColor,
-                new RectangleF(541, 230, 470 * (float)(userLevel.MessageExperienceAmountCurrentLevel / userLevel.MessageExperienceRequiredCurrentLevel), 36)
+                new RectangleF(535, 230, 475 * (float)(userLevel.MessageExperienceAmountCurrentLevel / userLevel.MessageExperienceRequiredCurrentLevel), 36)
             )
             // Message Current Experience
             .DrawText(
@@ -124,7 +124,7 @@ public static class RankCardImageSharpExtensions
             // Voice fill
             .Fill(
                 fillColor,
-                new RectangleF(543, 335, 470f * (float)(userLevel.VoiceExperienceAmountCurrentLevel / userLevel.VoiceExperienceRequiredCurrentLevel), 35)
+                new RectangleF(539, 335, 475 * (float)(userLevel.VoiceExperienceAmountCurrentLevel / userLevel.VoiceExperienceRequiredCurrentLevel), 35)
             )
             // Voice Current Experience
             .DrawText(
