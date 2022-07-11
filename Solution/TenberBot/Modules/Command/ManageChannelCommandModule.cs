@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using TenberBot.Data;
+using TenberBot.Data.Settings.Server;
 using TenberBot.Extensions;
 using TenberBot.Services;
 
@@ -31,7 +31,7 @@ public class ManageChannelCommandModule : ModuleBase<SocketCommandContext>
         if (Context.Channel is not SocketTextChannel channel)
             return;
 
-        await Context.Message.AddReactionAsync(cacheService.Cache.Get<IEmote>(Context.Guild, ServerSettings.EmoteBusy));
+        await Context.Message.AddReactionAsync(cacheService.Get<EmoteServerSettings>(Context.Guild).Busy);
 
         _ = Task.Run(() => Process(channel, count));
     }

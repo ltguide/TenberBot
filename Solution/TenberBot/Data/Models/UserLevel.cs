@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using TenberBot.Data.POCO;
+using TenberBot.Data.Settings.Channel;
 
 namespace TenberBot.Data.Models;
 
@@ -67,40 +67,40 @@ public class UserLevel
     public decimal NextLevelVoiceExperience => CalculateExperience(VoiceLevel);
 
 
-    public void AddMessage(ChannelExperience channelExperience, int attachments, int lines, int words, int characters)
+    public void AddMessage(ExperienceChannelSettings settings, int attachments, int lines, int words, int characters)
     {
         var experience = 0m;
 
-        if (channelExperience.Enabled && channelExperience.Message > 0)
+        if (settings.Enabled && settings.Message > 0)
         {
             Messages += 1;
-            experience += channelExperience.Message;
+            experience += settings.Message;
         }
         else
             ExcludedMessages += 1;
 
         if (lines > 0)
         {
-            if (channelExperience.Enabled && channelExperience.MessageLine > 0)
+            if (settings.Enabled && settings.MessageLine > 0)
             {
                 MessageLines += lines;
-                experience += channelExperience.MessageLine * lines;
+                experience += settings.MessageLine * lines;
             }
             else
                 ExcludedMessageLines += lines;
 
-            if (channelExperience.Enabled && channelExperience.MessageWord > 0)
+            if (settings.Enabled && settings.MessageWord > 0)
             {
                 MessageWords += words;
-                experience += channelExperience.MessageWord * words;
+                experience += settings.MessageWord * words;
             }
             else
                 ExcludedMessageWords += words;
 
-            if (channelExperience.Enabled && channelExperience.MessageCharacter > 0)
+            if (settings.Enabled && settings.MessageCharacter > 0)
             {
                 MessageCharacters += characters;
-                experience += channelExperience.MessageCharacter * characters;
+                experience += settings.MessageCharacter * characters;
             }
             else
                 ExcludedMessageCharacters += characters;
@@ -108,10 +108,10 @@ public class UserLevel
 
         if (attachments > 0)
         {
-            if (channelExperience.Enabled && channelExperience.MessageAttachment > 0)
+            if (settings.Enabled && settings.MessageAttachment > 0)
             {
                 MessageAttachments += attachments;
-                experience += channelExperience.MessageAttachment * attachments;
+                experience += settings.MessageAttachment * attachments;
             }
             else
                 ExcludedMessageLines += attachments;
@@ -124,14 +124,14 @@ public class UserLevel
         MessageLevel = CalculateLevel(MessageExperience);
     }
 
-    public void AddVoice(ChannelExperience channelExperience, int minutes)
+    public void AddVoice(ExperienceChannelSettings settings, int minutes)
     {
         var experience = 0m;
 
-        if (channelExperience.Enabled && channelExperience.VoiceMinute > 0)
+        if (settings.Enabled && settings.VoiceMinute > 0)
         {
             VoiceMinutes += minutes;
-            experience += channelExperience.VoiceMinute * minutes;
+            experience += settings.VoiceMinute * minutes;
         }
         else
             ExcludedVoiceMinutes += minutes;

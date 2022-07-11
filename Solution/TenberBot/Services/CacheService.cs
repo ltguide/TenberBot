@@ -2,7 +2,8 @@
 using Discord.Addons.Hosting;
 using Discord.WebSocket;
 using Microsoft.Extensions.Caching.Memory;
-using TenberBot.Data;
+using System.Reflection;
+using TenberBot.Attributes;
 using TenberBot.Data.Services;
 using TenberBot.Extensions;
 
@@ -11,6 +12,10 @@ namespace TenberBot.Services;
 public class CacheService : DiscordClientService
 {
     public IMemoryCache Cache { get; }
+
+    private Dictionary<Type, string> ServerSettings = new();
+    private Dictionary<Type, string> ChannelSettings = new();
+    private Dictionary<Type, string> AllSettings = new();
 
     private readonly IChannelSettingDataService channelSettingDataService;
     private readonly IServerSettingDataService serverSettingDataService;
@@ -31,7 +36,21 @@ public class CacheService : DiscordClientService
     {
         Client.GuildAvailable += GuildAvailable;
 
+        ServerSettings = GetTypesByAttribute<ServerSettingsAttribute>(Assembly.GetEntryAssembly());
+
+        ChannelSettings = GetTypesByAttribute<ChannelSettingsAttribute>(Assembly.GetEntryAssembly());
+
+        AllSettings = ServerSettings.Concat(ChannelSettings).ToDictionary(x => x.Key, x => x.Value);
+
         return Task.CompletedTask;
+    }
+
+    private static Dictionary<Type, string> GetTypesByAttribute<T>(Assembly? assembly) where T : SettingsAttribute
+    {
+        if (assembly == null)
+            throw new ArgumentNullException(nameof(assembly));
+
+        return assembly.GetTypes().Where(x => x.GetCustomAttribute<T>() != null).ToDictionary(x => x, x => x.GetCustomAttribute<T>()!.Key);
     }
 
     private async Task GuildAvailable(SocketGuild guild)
@@ -46,9 +65,10 @@ public class CacheService : DiscordClientService
         if (Cache.Get<bool>(guild, "cached"))
             return;
 
-        var settings = (await serverSettingDataService.GetAll(guild.Id)).ToDictionary(x => x.Name, x => x.Value);
+        var settings = await serverSettingDataService.GetAll(guild.Id);
 
-        Map(guild, settings, ServerSettings.Defaults);
+        foreach (var setting in ServerSettings)
+            Cache.Set(guild, setting.Value, settings.FirstOrDefault(x => x.Name == setting.Value)?.GetValue(setting.Key) ?? Activator.CreateInstance(setting.Key));
 
         Cache.Set(guild, "cached", true);
     }
@@ -58,41 +78,34 @@ public class CacheService : DiscordClientService
         if (Cache.Get<bool>(channel, "cached"))
             return;
 
-        var settings = (await channelSettingDataService.GetAll(channel.Id)).ToDictionary(x => x.Name, x => x.Value);
+        var settings = await channelSettingDataService.GetAll(channel.Id);
 
-        Map(channel, settings, ChannelSettings.Defaults);
+        foreach (var setting in ChannelSettings)
+            Cache.Set(channel, setting.Value, settings.FirstOrDefault(x => x.Name == setting.Value)?.GetValue(setting.Key) ?? Activator.CreateInstance(setting.Key));
 
         Cache.Set(channel, "cached", true);
     }
 
-    private void Map(IEntity<ulong> entity, IDictionary<string, string> settings, IReadOnlyDictionary<string, object> defaults)
+    public T Get<T>(IEntity<ulong> entity)
     {
-        foreach (var kvp in defaults)
-        {
-            kvp.Deconstruct(out var key, out var defaultValue);
+        return Cache.Get<T>(entity, GetSettingsKey<T>());
+    }
 
-            if (settings.TryGetValue(key, out var value))
-            {
-                if (defaultValue is IEmote)
-                    Cache.Set(entity, key, value.AsIEmote() ?? defaultValue);
+    public bool TryGetValue<T>(IEntity<ulong> entity, out T value)
+    {
+        return Cache.TryGetValue(entity, GetSettingsKey<T>(), out value);
+    }
 
-                else if (defaultValue is Enum)
-                    Cache.Set(entity, key, Enum.TryParse(defaultValue.GetType(), value, out var @enum) ? @enum : defaultValue);
+    public T Set<T>(IEntity<ulong> entity, T value)
+    {
+        return Cache.Set(entity, GetSettingsKey<T>(), value);
+    }
 
-                else if (defaultValue is decimal)
-                    Cache.Set(entity, key, decimal.TryParse(value, out var @decimal) ? @decimal : defaultValue);
+    public string GetSettingsKey<T>()
+    {
+        if (AllSettings.TryGetValue(typeof(T), out var key) == false)
+            throw new InvalidOperationException("no key found");
 
-                else if (defaultValue is ulong)
-                    Cache.Set(entity, key, ulong.TryParse(value, out var @ulong) ? @ulong : defaultValue);
-
-                else if (defaultValue is bool)
-                    Cache.Set(entity, key, bool.TryParse(value, out var @bool) ? @bool : defaultValue);
-
-                else
-                    Cache.Set(entity, key, value);
-            }
-            else
-                Cache.Set(entity, key, defaultValue);
-        }
+        return key;
     }
 }

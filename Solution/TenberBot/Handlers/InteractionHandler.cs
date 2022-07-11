@@ -76,7 +76,9 @@ internal class InteractionHandler : DiscordClientService
             if (arg.Type == InteractionType.ApplicationCommand)
             {
                 var msg = await arg.GetOriginalResponseAsync();
-                await msg.DeleteAsync();
+
+                if (msg != null)
+                    await msg.DeleteAsync();
             }
         }
     }

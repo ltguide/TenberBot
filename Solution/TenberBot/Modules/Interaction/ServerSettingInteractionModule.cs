@@ -1,9 +1,9 @@
 ﻿using Discord;
 using Discord.Interactions;
-using TenberBot.Data;
 using TenberBot.Data.Enums;
 using TenberBot.Data.Models;
 using TenberBot.Data.Services;
+using TenberBot.Data.Settings.Server;
 using TenberBot.Extensions;
 using TenberBot.Services;
 
@@ -27,47 +27,51 @@ public class ServerSettingInteractionModule : InteractionModuleBase<SocketIntera
     [SlashCommand("prefix", "Set the prefix for message commands.")]
     public async Task SetPrefix(string? value = null)
     {
-        value ??= "";
+        var settings = cacheService.Get<BasicServerSettings>(Context.Guild);
 
-        await Set(ServerSettings.Prefix, value, value);
+        if (value != null)
+            settings.Prefix = value == "none" ? "" : value;
 
-        if (value == "")
-            await RespondAsync($"Server setting updated.\n\n> **Prefix**: *none* I can no longer respond to chat messages.");
+        await Set(settings);
+
+        if (settings.Prefix == "")
+            await RespondAsync($"Server setting:\n\n> **Prefix**: *none*\n\nI am not able to respond to chat messages.");
         else
-            await RespondAsync($"Server setting updated.\n\n> **Prefix**: {value}");
+            await RespondAsync($"Server setting:\n\n> **Prefix**: {settings.Prefix}");
     }
 
     [SlashCommand("emote", "Set the reaction emotes.")]
-    public async Task SetEmote(SetEmoteChoice type, string value)
+    public async Task SetEmote(
+        string? success = null,
+        string? fail = null,
+        string? busy = null)
     {
-        var iEmote = value.AsIEmote();
-        if (iEmote == null)
-        {
-            await RespondAsync($"I dont recognize that as an emote or an emoji.", ephemeral: true);
-            return;
-        }
+        var settings = cacheService.Get<EmoteServerSettings>(Context.Guild);
 
-        var key = type switch
-        {
-            SetEmoteChoice.Success => ServerSettings.EmoteSuccess,
-            SetEmoteChoice.Fail => ServerSettings.EmoteFail,
-            SetEmoteChoice.Unknown => ServerSettings.EmoteBusy,
-            _ => throw new NotImplementedException(),
-        };
+        if (success != null)
+            settings.Success = success.AsIEmote() ?? new EmoteServerSettings().Success;
 
-        await Set(key, value, iEmote);
+        if (fail != null)
+            settings.Fail = fail.AsIEmote() ?? new EmoteServerSettings().Fail;
 
-        await RespondAsync($"Server setting for *emote* updated.\n\n> **{type}**: {iEmote}");
+        if (busy != null)
+            settings.Busy = busy.AsIEmote() ?? new EmoteServerSettings().Busy;
+
+        await Set(settings);
+
+        await RespondAsync($"Server settings for *emote*:\n\n> **{SetEmoteChoice.Success}**: {settings.Success}\n> **{SetEmoteChoice.Fail}**: {settings.Fail}\n> **{SetEmoteChoice.Busy}**: {settings.Busy}");
     }
 
-    private async Task Set<T>(string name, string value, T cacheValue)
+    private async Task Set<T>(T value)
     {
-        cacheService.Cache.Set(Context.Guild, name, cacheValue);
+        var key = cacheService.GetSettingsKey<T>();
 
-        var setting = await serverSettingDataService.GetByName(Context.Guild.Id, name);
+        cacheService.Cache.Set(Context.Guild, key, value);
+
+        var setting = await serverSettingDataService.GetByName(Context.Guild.Id, key);
         if (setting == null)
-            await serverSettingDataService.Add(new ServerSetting { GuildId = Context.Guild.Id, Name = name, Value = value, });
+            await serverSettingDataService.Add(new ServerSetting { GuildId = Context.Guild.Id, Name = key, }.SetValue(value));
         else
-            await serverSettingDataService.Update(setting, new ServerSetting { Value = value, });
+            await serverSettingDataService.Update(setting, new ServerSetting().SetValue(value));
     }
 }

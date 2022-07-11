@@ -2,9 +2,8 @@
 using Discord.Addons.Hosting;
 using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.Extensions.Caching.Memory;
 using System.Reflection;
-using TenberBot.Data;
+using TenberBot.Data.Settings.Server;
 using TenberBot.Extensions;
 using TenberBot.Parameters;
 using TenberBot.Results.Command;
@@ -53,14 +52,14 @@ public class GuildCommandHandler : DiscordClientService
 
         var context = new SocketCommandContext(Client, message);
 
-        if (cacheService.Cache.TryGetValue(context.Guild, ServerSettings.Prefix, out string prefix) == false)
+        if (cacheService.TryGetValue<BasicServerSettings>(context.Guild, out var settings) == false)
             return;
 
-        if (string.IsNullOrWhiteSpace(prefix))
+        if (string.IsNullOrWhiteSpace(settings.Prefix))
             return;
 
         int argPos = 0;
-        if (!message.HasStringPrefix(prefix, ref argPos) && !message.HasMentionPrefix(Client.CurrentUser, ref argPos))
+        if (!message.HasStringPrefix(settings.Prefix, ref argPos) && !message.HasMentionPrefix(Client.CurrentUser, ref argPos))
             return;
 
         await cacheService.Channel(context.Channel);
@@ -83,7 +82,7 @@ public class GuildCommandHandler : DiscordClientService
 
         var reply = await context.Message.ReplyAsync(result.ErrorReason);
 
-        await context.Message.AddReactionAsync(cacheService.Cache.Get<IEmote>(context.Guild, ServerSettings.EmoteFail));
+        await context.Message.AddReactionAsync(cacheService.Get<EmoteServerSettings>(context.Guild).Fail);
 
         if (result is DeleteResult)
             reply.DeleteSoon(TimeSpan.FromSeconds(15));

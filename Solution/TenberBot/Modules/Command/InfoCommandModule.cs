@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using TenberBot.Data;
+using TenberBot.Data.Settings.Server;
 using TenberBot.Extensions;
 using TenberBot.Services;
 
@@ -91,10 +91,12 @@ public class InfoCommandModule : ModuleBase<SocketCommandContext>
     {
         _ = Task.Run(async () =>
         {
+            var emotes = cacheService.Get<EmoteServerSettings>(Context.Guild);
+
             await Context.Message.AddReactionsAsync(new[] {
-                cacheService.Cache.Get<IEmote>(Context.Guild, ServerSettings.EmoteSuccess),
-                cacheService.Cache.Get<IEmote>(Context.Guild, ServerSettings.EmoteFail),
-                cacheService.Cache.Get<IEmote>(Context.Guild, ServerSettings.EmoteBusy),
+                emotes.Success,
+                emotes.Fail,
+                emotes.Busy,
             });
         });
 
@@ -122,7 +124,7 @@ public class InfoCommandModule : ModuleBase<SocketCommandContext>
             .Take(perPage)
             .ToList();
 
-        var prefix = cacheService.Cache.Get<string>(Context.Guild, ServerSettings.Prefix).SanitizeMD();
+        var prefix = cacheService.Get<BasicServerSettings>(Context.Guild).Prefix.SanitizeMD();
 
         var embedBuilder = new EmbedBuilder()
             .WithFooter($"Page {page} of {pages}");

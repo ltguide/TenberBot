@@ -2,13 +2,11 @@
 using Discord.Addons.Hosting;
 using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.Extensions.Caching.Memory;
 using System.Text.RegularExpressions;
-using TenberBot.Data;
 using TenberBot.Data.Models;
-using TenberBot.Data.POCO;
 using TenberBot.Data.Services;
-using TenberBot.Extensions;
+using TenberBot.Data.Settings.Channel;
+using TenberBot.Data.Settings.Server;
 using TenberBot.Services;
 
 namespace TenberBot.Handlers;
@@ -55,10 +53,10 @@ public class GuildExperienceHandler : DiscordClientService
 
         var context = new SocketCommandContext(Client, message);
 
-        if (cacheService.Cache.TryGetValue(context.Guild, ServerSettings.Prefix, out string prefix) && string.IsNullOrWhiteSpace(prefix) == false)
+        if (cacheService.TryGetValue<BasicServerSettings>(context.Guild, out var settings) && string.IsNullOrWhiteSpace(settings.Prefix) == false)
         {
             int argPos = 0;
-            if (message.HasStringPrefix(prefix, ref argPos) || message.HasMentionPrefix(Client.CurrentUser, ref argPos))
+            if (message.HasStringPrefix(settings.Prefix, ref argPos) || message.HasMentionPrefix(Client.CurrentUser, ref argPos))
                 return;
         }
 
@@ -70,7 +68,7 @@ public class GuildExperienceHandler : DiscordClientService
         var userLevel = await GetUserLevel(context.Guild.Id, context.User.Id);
 
         userLevel.AddMessage(
-            new ChannelExperience(channel, cacheService.Cache),
+            cacheService.Get<ExperienceChannelSettings>(channel),
             message.Attachments.Count,
             Lines.Matches(message.Content).Count + 1,
             Words.Matches(message.Content).Count,
@@ -155,7 +153,7 @@ public class GuildExperienceHandler : DiscordClientService
         var userLevel = await GetUserLevel(userVoiceChannel.GuildId, userVoiceChannel.UserId);
 
         userLevel.AddVoice(
-            new ChannelExperience(channel, cacheService.Cache),
+            cacheService.Get<ExperienceChannelSettings>(channel),
             (int)Math.Ceiling(DateTime.Now.Subtract(userVoiceChannel.ConnectDate).TotalMinutes));
 
         await userLevelDataService.Update(userLevel, null!);

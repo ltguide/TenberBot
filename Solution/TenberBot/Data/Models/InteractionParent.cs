@@ -32,12 +32,12 @@ public class InteractionParent
         if (Reference == null)
             return default;
 
-        return JsonSerializer.Deserialize<T>(Reference);
+        return JsonSerializer.Deserialize<T>(Reference, Program.JsonSerializerOptions);
     }
 
     public InteractionParent SetReference<T>(T value)
     {
-        Reference = value == null ? null : JsonSerializer.Serialize(value);
+        Reference = value == null ? null : JsonSerializer.Serialize(value, Program.JsonSerializerOptions);
 
         return this;
     }

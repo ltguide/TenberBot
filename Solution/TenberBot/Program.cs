@@ -4,6 +4,8 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using NLog.Extensions.Logging;
+using System.Text.Json;
+using TenberBot.Converters;
 using TenberBot.Data;
 using TenberBot.Data.Services;
 using TenberBot.Handlers;
@@ -13,6 +15,11 @@ namespace TenberBot;
 
 public class Program
 {
+    public static readonly JsonSerializerOptions JsonSerializerOptions = new()
+    {
+        Converters = { new IEmoteJsonConverter(), }
+    };
+
     public static async Task Main(string[] args)
     {
         var logLevel = LogSeverity.Info;

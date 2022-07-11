@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
 
 namespace TenberBot.Data.Models;
 
@@ -16,4 +17,21 @@ public class ServerSetting
     public string Name { get; set; } = "";
 
     public string Value { get; set; } = "";
+
+    public object GetValue(Type type)
+    {
+        var result = JsonSerializer.Deserialize(Value, type, Program.JsonSerializerOptions);
+
+        if (result == null)
+            throw new InvalidCastException($"Unable to deserialize ServerSetting: {Name}");
+
+        return result;
+    }
+
+    public ServerSetting SetValue<T>(T value)
+    {
+        Value = JsonSerializer.Serialize(value, Program.JsonSerializerOptions);
+
+        return this;
+    }
 }

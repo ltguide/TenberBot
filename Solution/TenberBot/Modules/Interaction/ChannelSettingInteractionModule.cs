@@ -1,11 +1,10 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using TenberBot.Data;
 using TenberBot.Data.Enums;
 using TenberBot.Data.Models;
-using TenberBot.Data.POCO;
 using TenberBot.Data.Services;
+using TenberBot.Data.Settings.Channel;
 using TenberBot.Extensions;
 using TenberBot.Services;
 
@@ -35,16 +34,17 @@ public class ChannelSettingInteractionModule : InteractionModuleBase<SocketInter
             return;
         }
 
+        var settings = cacheService.Get<SprintChannelSettings>(Context.Channel);
+
         if (mode != null)
-            await Set(ChannelSettings.SprintMode, mode.Value.ToString(), mode);
+            settings.Mode = mode.Value;
 
         if (role != null)
-            await Set(ChannelSettings.SprintRole, role.Mention, role.Mention);
+            settings.Role = role.Mention;
 
-        mode = cacheService.Cache.Get<SprintMode>(Context.Channel, ChannelSettings.SprintMode);
-        var sprintRole = cacheService.Cache.Get<string>(Context.Channel, ChannelSettings.SprintRole);
+        await Set(settings);
 
-        await RespondAsync($"Channel settings for *sprint*:\n\n> **Mode**: {mode}\n> **Role**: {sprintRole}");
+        await RespondAsync($"Channel settings for *sprint*:\n\n> **Mode**: {settings.Mode}\n> **Role**: {settings.Role}");
     }
 
     [SlashCommand("experience", "Set the experience for leveling.")]
@@ -63,49 +63,53 @@ public class ChannelSettingInteractionModule : InteractionModuleBase<SocketInter
             return;
         }
 
+        var settings = cacheService.Get<ExperienceChannelSettings>(Context.Channel);
+
         if (enabled != null)
-            await Set(ChannelSettings.ExperienceEnabled, enabled.Value.ToString(), enabled);
+            settings.Enabled = enabled.Value;
 
         if (message != null)
-            await Set(ChannelSettings.ExperienceMessage, message.Value.ToString(), message);
+            settings.Message = message.Value;
 
         if (messageLine != null)
-            await Set(ChannelSettings.ExperienceMessageLine, messageLine.Value.ToString(), messageLine);
+            settings.MessageLine = messageLine.Value;
 
         if (messageWord != null)
-            await Set(ChannelSettings.ExperienceMessageWord, messageWord.Value.ToString(), messageWord);
+            settings.MessageWord = messageWord.Value;
 
         if (messageCharacter != null)
-            await Set(ChannelSettings.ExperienceMessageCharacter, messageCharacter.Value.ToString(), messageCharacter);
+            settings.MessageCharacter = messageCharacter.Value;
 
         if (messageAttachment != null)
-            await Set(ChannelSettings.ExperienceMessageAttachment, messageAttachment.Value.ToString(), messageAttachment);
+            settings.MessageAttachment = messageAttachment.Value;
 
         if (voiceMinute != null)
-            await Set(ChannelSettings.ExperienceVoiceMinute, voiceMinute.Value.ToString(), voiceMinute);
+            settings.VoiceMinute = voiceMinute.Value;
 
-        var channelExperience = new ChannelExperience(Context.Channel, cacheService.Cache);
+        await Set(settings);
 
-        if (channelExperience.Enabled)
+        if (settings.Enabled)
         {
             var voice = "";
             if (Context.Channel.GetChannelType() == ChannelType.Voice)
-                voice = $"\n> **voice-minute**: {channelExperience.VoiceMinute}";
+                voice = $"\n> **voice-minute**: {settings.VoiceMinute}";
 
-            await RespondAsync($"Channel settings for *experience*:\n\n> **status**: Enabled\n\n> **message**: {channelExperience.Message}\n> **message-line**: {channelExperience.MessageLine}\n> **message-word**: {channelExperience.MessageWord}\n> **message-character**: {channelExperience.MessageCharacter}\n> **message-attachment**: {channelExperience.MessageAttachment}{voice}");
+            await RespondAsync($"Channel settings for *experience*:\n\n> **status**: Enabled\n\n> **message**: {settings.Message}\n> **message-line**: {settings.MessageLine}\n> **message-word**: {settings.MessageWord}\n> **message-character**: {settings.MessageCharacter}\n> **message-attachment**: {settings.MessageAttachment}{voice}");
         }
         else
             await RespondAsync("Channel settings for *experience*:\n\n> **status**: Disabled");
     }
 
-    private async Task Set<T>(string name, string value, T cacheValue)
+    private async Task Set<T>(T value)
     {
-        cacheService.Cache.Set(Context.Channel, name, cacheValue);
+        var key = cacheService.GetSettingsKey<T>();
 
-        var setting = await channelSettingDataService.GetByName(Context.Channel.Id, name);
+        cacheService.Cache.Set(Context.Channel, key, value);
+
+        var setting = await channelSettingDataService.GetByName(Context.Channel.Id, key);
         if (setting == null)
-            await channelSettingDataService.Add(new ChannelSetting { GuildId = Context.Guild.Id, ChannelId = Context.Channel.Id, Name = name, Value = value, });
+            await channelSettingDataService.Add(new ChannelSetting { GuildId = Context.Guild.Id, ChannelId = Context.Channel.Id, Name = key, }.SetValue(value));
         else
-            await channelSettingDataService.Update(setting, new ChannelSetting { Value = value, });
+            await channelSettingDataService.Update(setting, new ChannelSetting().SetValue(value));
     }
 }

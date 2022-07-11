@@ -4,5 +4,5 @@ public enum SetEmoteChoice
 {
     Success,
     Fail,
-    Unknown,
+    Busy,
 }

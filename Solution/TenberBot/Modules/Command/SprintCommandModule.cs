@@ -1,9 +1,9 @@
 ﻿using Discord;
 using Discord.Commands;
-using TenberBot.Data;
 using TenberBot.Data.Enums;
 using TenberBot.Data.Models;
 using TenberBot.Data.Services;
+using TenberBot.Data.Settings.Channel;
 using TenberBot.Extensions;
 using TenberBot.Results.Command;
 using TenberBot.Services;
@@ -41,8 +41,8 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
     [Command("sprint")]
     public async Task<RuntimeResult> SprintNoParams()
     {
-        var sprintMode = cacheService.Cache.Get<SprintMode>(Context.Channel, ChannelSettings.SprintMode);
-        if (sprintMode == SprintMode.Disabled)
+        var settings = cacheService.Get<SprintChannelSettings>(Context.Channel);
+        if (settings.Mode == SprintMode.Disabled)
             return RemainResult.FromError("The sprint feature isn't configured for this channel.");
 
         var userSprint = await sprintDataService.GetUserById(Context.User.Id, active: true);
@@ -64,8 +64,8 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
     [Remarks("`<duration>` `[message]`")]
     public async Task<RuntimeResult> Sprint(TimeSpan duration, [Remainder] string? message = null)
     {
-        var sprintMode = cacheService.Cache.Get<SprintMode>(Context.Channel, ChannelSettings.SprintMode);
-        if (sprintMode == SprintMode.Disabled)
+        var settings = cacheService.Get<SprintChannelSettings>(Context.Channel);
+        if (settings.Mode == SprintMode.Disabled)
             return RemainResult.FromError("The sprint feature isn't configured for this channel.");
 
         var userSprint = await sprintDataService.GetUserById(Context.User.Id, active: true);
@@ -79,14 +79,14 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
         {
             ChannelId = Context.Channel.Id,
             UserId = Context.User.Id,
-            SprintMode = sprintMode,
+            SprintMode = settings.Mode,
             StartDate = DateTime.Now.AddSeconds(180),
             FinishDate = DateTime.Now.AddSeconds(180 + duration.TotalSeconds),
             Duration = new DateTime(9999, 12, 31, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(Math.Min(86399, duration.TotalSeconds)),
             Users = { new UserSprint { UserId = Context.User.Id, JoinDate = DateTime.Now, Message = message } },
         };
 
-        if (sprintMode == SprintMode.Snippet)
+        if (settings.Mode == SprintMode.Snippet)
         {
             var characters = await sprintSnippetDataService.GetRandom(SprintSnippetType.Characters);
             var prompt = await sprintSnippetDataService.GetRandom(SprintSnippetType.Prompt);
@@ -103,9 +103,7 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
 
         await userStatDataService.Save();
 
-        var sprintRole = cacheService.Cache.Get<string>(Context.Channel, ChannelSettings.SprintRole);
-
-        await SendEmbed(sprint, $"Get ready, {(sprintRole != "" ? sprintRole : "everyone")}! There's a new sprint starting soon.");
+        await SendEmbed(sprint, $"Get ready, {settings.Role}! There's a new sprint starting soon.");
 
         sprintService.Cycle();
 
