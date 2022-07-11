@@ -5,6 +5,7 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Processing;
 using System.Reflection;
 using TenberBot.Data.Models;
+using TenberBot.Data.Settings.Server;
 using Color = SixLabors.ImageSharp.Color;
 
 namespace TenberBot.Extensions.ImageSharp;
@@ -13,6 +14,7 @@ public static class RankCardImageSharpExtensions
 {
     public static IImageProcessingContext AddRankData(
         this IImageProcessingContext processingContext,
+        RankServerSettings settings,
         SocketGuild guild,
         SocketUser user,
         UserLevel userLevel)
@@ -29,6 +31,8 @@ public static class RankCardImageSharpExtensions
         var font40b = segoeui.CreateFont(40, FontStyle.Bold);
         var font40i = segoeuii.CreateFont(40, FontStyle.Italic);
         var font50b = segoeuib.CreateFont(50, FontStyle.Bold);
+
+        var fillColor = Color.ParseHex(settings.BackgroundFill);
 
         return processingContext
             // Guild Name
@@ -77,7 +81,7 @@ public static class RankCardImageSharpExtensions
             )
             // Message fill
             .Fill(
-                Color.DarkRed,
+                fillColor,
                 new RectangleF(541, 230, 470 * (float)(userLevel.MessageExperienceAmountCurrentLevel / userLevel.MessageExperienceRequiredCurrentLevel), 36)
             )
             // Message Current Experience
@@ -119,7 +123,7 @@ public static class RankCardImageSharpExtensions
             )
             // Voice fill
             .Fill(
-                Color.DarkRed,
+                fillColor,
                 new RectangleF(543, 335, 470f * (float)(userLevel.VoiceExperienceAmountCurrentLevel / userLevel.VoiceExperienceRequiredCurrentLevel), 35)
             )
             // Voice Current Experience

@@ -68,7 +68,7 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
 
         using (var img = Image.Load(settings.BackgroundData, out IImageFormat format))
         {
-            img.Mutate(ctx => ctx.AddRankData(Context.Guild, Context.User, userLevel));
+            img.Mutate(ctx => ctx.AddRankData(settings, Context.Guild, Context.User, userLevel));
 
             if (myAvatar != null)
             {

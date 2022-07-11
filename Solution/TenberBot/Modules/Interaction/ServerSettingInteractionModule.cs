@@ -6,6 +6,7 @@ using TenberBot.Data.Services;
 using TenberBot.Data.Settings.Server;
 using TenberBot.Extensions;
 using TenberBot.Services;
+using Color = SixLabors.ImageSharp.Color;
 
 namespace TenberBot.Modules.Interaction;
 
@@ -66,23 +67,28 @@ public class ServerSettingInteractionModule : InteractionModuleBase<SocketIntera
     }
 
     [SlashCommand("rank", "Configure the rank system.")]
-    public async Task Rank(IAttachment? background = null)
+    public async Task Rank(
+        [Summary("background-image")] IAttachment? backgroundImage = null,
+        [Summary("background-fill")] string? backgroundFill = null)
     {
         var settings = cacheService.Get<RankServerSettings>(Context.Guild);
 
-        if (background != null)
+        if (backgroundImage != null)
         {
-            var file = await webService.GetFileAttachment(background.Url);
+            var file = await webService.GetFileAttachment(backgroundImage.Url);
             if (file != null)
             {
                 settings.BackgroundData = file.Value.GetBytes();
-                settings.BackgroundName = background.Filename;
+                settings.BackgroundName = backgroundImage.Filename;
             }
         }
 
+        if (backgroundFill != null && Color.TryParseHex(backgroundFill, out var color))
+            settings.BackgroundFill = color.ToHex();
+
         await Set(settings);
 
-        var text = "Server settings for *rank*:\n\n> **Background**: ";
+        var text = $"Server settings for *rank*:\n\n> **Background Fill**: #{settings.BackgroundFill}\n> **Background Image**: ";
 
         if (settings.BackgroundData != null)
             await Context.Interaction.RespondWithFileAsync(new MemoryStream(settings.BackgroundData), settings.BackgroundName, text);

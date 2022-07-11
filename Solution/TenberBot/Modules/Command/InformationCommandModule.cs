@@ -87,12 +87,12 @@ public class InformationCommandModule : ModuleBase<SocketCommandContext>
 
 #if DEBUG
     [Command("react", ignoreExtraArgs: true)]
-    public Task AddReaction()
+    public async Task AddReaction()
     {
+        var emotes = cacheService.Get<EmoteServerSettings>(Context.Guild);
+
         _ = Task.Run(async () =>
         {
-            var emotes = cacheService.Get<EmoteServerSettings>(Context.Guild);
-
             await Context.Message.AddReactionsAsync(new[] {
                 emotes.Success,
                 emotes.Fail,
@@ -100,7 +100,9 @@ public class InformationCommandModule : ModuleBase<SocketCommandContext>
             });
         });
 
-        return Task.CompletedTask;
+        await ReplyAsync($"{emotes.Success.ToString()!.SanitizeMD()} / {emotes.Fail.ToString()!.SanitizeMD()} / {emotes.Busy.ToString()!.SanitizeMD()}");
+
+        await ReplyAsync($"{emotes.Success} / {emotes.Fail} / {emotes.Busy}");
     }
 #endif
 

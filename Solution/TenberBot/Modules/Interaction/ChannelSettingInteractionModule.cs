@@ -50,7 +50,7 @@ public class ChannelSettingInteractionModule : InteractionModuleBase<SocketInter
     [SlashCommand("experience", "Set the experience for leveling.")]
     public async Task SetExperience(
         bool? enabled = null,
-        [Summary("message")] decimal? message = null,
+        decimal? message = null,
         [Summary("message-line")] decimal? messageLine = null,
         [Summary("message-word")] decimal? messageWord = null,
         [Summary("message-character")] decimal? messageCharacter = null,
