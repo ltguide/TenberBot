@@ -9,6 +9,8 @@ public interface IUserLevelDataService
     Task<UserLevel?> GetByContext(SocketCommandContext context);
     Task<UserLevel?> GetByIds(ulong guildId, ulong userId);
 
+    Task<UserLevel> GetRanks(UserLevel dbObject);
+
     Task Add(UserLevel newObject);
 
     Task Update(UserLevel dbObject, UserLevel newObject);
@@ -35,6 +37,25 @@ public class UserLevelDataService : IUserLevelDataService
         return await dbContext.UserLevels
             .FirstOrDefaultAsync(x => x.GuildId == guildId && x.UserId == userId)
             .ConfigureAwait(false);
+    }
+
+    public async Task<UserLevel> GetRanks(UserLevel dbObject)
+    {
+        var voiceRank = await dbContext.UserLevels
+            .Where(x => x.GuildId == dbObject.GuildId)
+            .CountAsync(x => x.VoiceExperience > dbObject.VoiceExperience)
+            .ConfigureAwait(false);
+
+        dbObject.VoiceRank = voiceRank + 1;
+
+        var messageRank = await dbContext.UserLevels
+            .Where(x => x.GuildId == dbObject.GuildId)
+            .CountAsync(x => x.MessageExperience > dbObject.MessageExperience)
+            .ConfigureAwait(false);
+
+        dbObject.MessageRank = messageRank + 1;
+
+        return dbObject;
     }
 
     public async Task Add(UserLevel newObject)

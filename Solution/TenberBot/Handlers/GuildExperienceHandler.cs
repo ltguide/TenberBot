@@ -154,7 +154,9 @@ public class GuildExperienceHandler : DiscordClientService
 
         userLevel.AddVoice(
             cacheService.Get<ExperienceChannelSettings>(channel),
-            (int)Math.Ceiling(DateTime.Now.Subtract(userVoiceChannel.ConnectDate).TotalMinutes));
+            (int)Math.Ceiling(DateTime.Now.Subtract(userVoiceChannel.ConnectDate).TotalMinutes),
+            0,
+            0);
 
         await userLevelDataService.Update(userLevel, null!);
     }

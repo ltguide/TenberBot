@@ -8,20 +8,20 @@ using TenberBot.Services;
 namespace TenberBot.Modules.Command;
 
 [Remarks("Information")]
-public class InfoCommandModule : ModuleBase<SocketCommandContext>
+public class InformationCommandModule : ModuleBase<SocketCommandContext>
 {
     private readonly IServiceProvider serviceProvider;
     private readonly CommandService commandService;
     private readonly DiscordSocketClient client;
     private readonly CacheService cacheService;
-    private readonly ILogger<InfoCommandModule> logger;
+    private readonly ILogger<InformationCommandModule> logger;
 
-    public InfoCommandModule(
+    public InformationCommandModule(
         IServiceProvider serviceProvider,
         CommandService commandService,
         DiscordSocketClient client,
         CacheService cacheService,
-        ILogger<InfoCommandModule> logger)
+        ILogger<InformationCommandModule> logger)
     {
         this.serviceProvider = serviceProvider;
         this.commandService = commandService;
@@ -69,7 +69,7 @@ public class InfoCommandModule : ModuleBase<SocketCommandContext>
 
 
         embedBuilder
-            .WithAuthor("Commands for Everyone", client.GetCurrentAvatarUrl());
+            .WithAuthor("Commands for Everyone", client.CurrentUser.GetCurrentAvatarUrl());
 
         await ReplyAsync(embed: embedBuilder.Build());
 

@@ -31,4 +31,9 @@ public static class SocketUserExtensions
             IconUrl = socketUser.GetAvatarUrl()
         };
     }
+
+    public static string GetCurrentAvatarUrl(this SocketUser socketUser)
+    {
+        return socketUser.GetAvatarUrl() ?? socketUser.GetDefaultAvatarUrl();
+    }
 }

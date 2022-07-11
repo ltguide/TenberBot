@@ -55,7 +55,9 @@ public class ChannelSettingInteractionModule : InteractionModuleBase<SocketInter
         [Summary("message-word")] decimal? messageWord = null,
         [Summary("message-character")] decimal? messageCharacter = null,
         [Summary("message-attachment")] decimal? messageAttachment = null,
-        [Summary("voice-minute")] decimal? voiceMinute = null)
+        [Summary("voice-minute")] decimal? voiceMinute = null,
+        [Summary("voice-minute-video")] decimal? voiceMinuteVideo = null,
+        [Summary("voice-minute-stream")] decimal? voiceMinuteStream = null)
     {
         if (Context.Channel is SocketThreadChannel)
         {
@@ -86,13 +88,19 @@ public class ChannelSettingInteractionModule : InteractionModuleBase<SocketInter
         if (voiceMinute != null)
             settings.VoiceMinute = voiceMinute.Value;
 
+        if (voiceMinuteVideo != null)
+            settings.VoiceMinuteVideo = voiceMinuteVideo.Value;
+
+        if (voiceMinuteStream != null)
+            settings.VoiceMinuteStream = voiceMinuteStream.Value;
+
         await Set(settings);
 
         if (settings.Enabled)
         {
             var voice = "";
             if (Context.Channel.GetChannelType() == ChannelType.Voice)
-                voice = $"\n> **voice-minute**: {settings.VoiceMinute}";
+                voice = $"\n\n> **voice-minute**: {settings.VoiceMinute}\n> **voice-minute-video**: {settings.VoiceMinuteVideo}\n> **voice-minute-stream**: {settings.VoiceMinuteStream}";
 
             await RespondAsync($"Channel settings for *experience*:\n\n> **status**: Enabled\n\n> **message**: {settings.Message}\n> **message-line**: {settings.MessageLine}\n> **message-word**: {settings.MessageWord}\n> **message-character**: {settings.MessageCharacter}\n> **message-attachment**: {settings.MessageAttachment}{voice}");
         }

@@ -19,4 +19,8 @@ public class UserVoiceChannel
     public ulong UserId { get; set; }
 
     public DateTime ConnectDate { get; set; }
+
+    public DateTime? VideoDate { get; set; }
+
+    public DateTime? StreamDate { get; set; }
 }

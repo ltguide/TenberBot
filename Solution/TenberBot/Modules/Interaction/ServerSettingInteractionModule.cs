@@ -14,18 +14,21 @@ namespace TenberBot.Modules.Interaction;
 public class ServerSettingInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IServerSettingDataService serverSettingDataService;
+    private readonly WebService webService;
     private readonly CacheService cacheService;
 
     public ServerSettingInteractionModule(
         IServerSettingDataService serverSettingDataService,
+        WebService webService,
         CacheService cacheService)
     {
         this.serverSettingDataService = serverSettingDataService;
+        this.webService = webService;
         this.cacheService = cacheService;
     }
 
-    [SlashCommand("prefix", "Set the prefix for message commands.")]
-    public async Task SetPrefix(string? value = null)
+    [SlashCommand("prefix", "Configure the prefix for message commands.")]
+    public async Task Prefix(string? value = null)
     {
         var settings = cacheService.Get<BasicServerSettings>(Context.Guild);
 
@@ -40,8 +43,8 @@ public class ServerSettingInteractionModule : InteractionModuleBase<SocketIntera
             await RespondAsync($"Server setting:\n\n> **Prefix**: {settings.Prefix}");
     }
 
-    [SlashCommand("emote", "Set the reaction emotes.")]
-    public async Task SetEmote(
+    [SlashCommand("emote", "Configure the reaction emotes.")]
+    public async Task Emote(
         string? success = null,
         string? fail = null,
         string? busy = null)
@@ -60,6 +63,31 @@ public class ServerSettingInteractionModule : InteractionModuleBase<SocketIntera
         await Set(settings);
 
         await RespondAsync($"Server settings for *emote*:\n\n> **{SetEmoteChoice.Success}**: {settings.Success}\n> **{SetEmoteChoice.Fail}**: {settings.Fail}\n> **{SetEmoteChoice.Busy}**: {settings.Busy}");
+    }
+
+    [SlashCommand("rank", "Configure the rank system.")]
+    public async Task Rank(IAttachment? background = null)
+    {
+        var settings = cacheService.Get<RankServerSettings>(Context.Guild);
+
+        if (background != null)
+        {
+            var file = await webService.GetFileAttachment(background.Url);
+            if (file != null)
+            {
+                settings.BackgroundData = file.Value.GetBytes();
+                settings.BackgroundName = background.Filename;
+            }
+        }
+
+        await Set(settings);
+
+        var text = "Server settings for *rank*:\n\n> **Background**: ";
+
+        if (settings.BackgroundData != null)
+            await Context.Interaction.RespondWithFileAsync(new MemoryStream(settings.BackgroundData), settings.BackgroundName, text);
+        else
+            await RespondAsync(text + "*none*");
     }
 
     private async Task Set<T>(T value)

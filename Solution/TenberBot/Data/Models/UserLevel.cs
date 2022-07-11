@@ -25,7 +25,19 @@ public class UserLevel
     public decimal VoiceMinutes { get; set; }
 
     [Precision(20, 0)]
+    public decimal VoiceMinutesStream { get; set; }
+
+    [Precision(20, 0)]
+    public decimal VoiceMinutesVideo { get; set; }
+
+    [Precision(20, 0)]
     public decimal ExcludedVoiceMinutes { get; set; }
+
+    [Precision(20, 0)]
+    public decimal ExcludedVoiceMinutesVideo { get; set; }
+
+    [Precision(20, 0)]
+    public decimal ExcludedVoiceMinutesStream { get; set; }
 
     public int MessageLevel { get; set; } = 1;
 
@@ -62,9 +74,17 @@ public class UserLevel
     [Precision(20, 0)]
     public decimal ExcludedMessageAttachments { get; set; }
 
+    public decimal CurrentLevelMessageExperience => CalculateExperience(MessageLevel - 1);
     public decimal NextLevelMessageExperience => CalculateExperience(MessageLevel);
 
+    public decimal CurrentLevelVoiceExperience => CalculateExperience(VoiceLevel - 1);
     public decimal NextLevelVoiceExperience => CalculateExperience(VoiceLevel);
+
+    [NotMapped]
+    public int VoiceRank { get; set; }
+
+    [NotMapped]
+    public int MessageRank { get; set; }
 
 
     public void AddMessage(ExperienceChannelSettings settings, int attachments, int lines, int words, int characters)
@@ -117,14 +137,16 @@ public class UserLevel
                 ExcludedMessageLines += attachments;
         }
 
+#if DEBUG
         Console.WriteLine($"{UserId} MessageExperience gain: {experience}");
+#endif
 
         MessageExperience += experience;
 
         MessageLevel = CalculateLevel(MessageExperience);
     }
 
-    public void AddVoice(ExperienceChannelSettings settings, int minutes)
+    public void AddVoice(ExperienceChannelSettings settings, int minutes, int minutesVideo, int minutesStream)
     {
         var experience = 0m;
 
@@ -136,7 +158,31 @@ public class UserLevel
         else
             ExcludedVoiceMinutes += minutes;
 
+        if (minutesVideo > 0)
+        {
+            if (settings.Enabled && settings.VoiceMinuteVideo > 0)
+            {
+                VoiceMinutesVideo += minutesVideo;
+                experience += settings.VoiceMinuteVideo * minutesVideo;
+            }
+            else
+                ExcludedVoiceMinutesVideo += minutesVideo;
+        }
+
+        if (minutesStream > 0)
+        {
+            if (settings.Enabled && settings.VoiceMinuteStream > 0)
+            {
+                VoiceMinutesStream += minutesStream;
+                experience += settings.VoiceMinuteStream * minutesStream;
+            }
+            else
+                ExcludedVoiceMinutesStream += minutesStream;
+        }
+
+#if DEBUG
         Console.WriteLine($"{UserId} VoiceExperience gain: {experience}");
+#endif
 
         VoiceExperience += experience;
 
