@@ -30,9 +30,6 @@ public static class RankCardImageSharpExtensions
         var font40i = segoeuii.CreateFont(40, FontStyle.Italic);
         var font50b = segoeuib.CreateFont(50, FontStyle.Bold);
 
-        var messageScale = (float)(userLevel.MessageExperience / userLevel.NextLevelMessageExperience);
-        var voiceScale = (float)(userLevel.VoiceExperience / userLevel.NextLevelVoiceExperience);
-
         return processingContext
             // Guild Name
             .DrawText(
@@ -81,7 +78,7 @@ public static class RankCardImageSharpExtensions
             // Message fill
             .Fill(
                 Color.DarkRed,
-                new RectangleF(541, 230, 470 * messageScale, 36)
+                new RectangleF(541, 230, 470 * (float)(userLevel.MessageExperienceAmountCurrentLevel / userLevel.MessageExperienceRequiredCurrentLevel), 36)
             )
             // Message Current Experience
             .DrawText(
@@ -90,7 +87,7 @@ public static class RankCardImageSharpExtensions
                     Origin = new PointF(770, 226),
                     HorizontalAlignment = HorizontalAlignment.Center,
                 },
-                $"{userLevel.MessageExperience - userLevel.CurrentLevelMessageExperience:N2} / {userLevel.NextLevelMessageExperience - userLevel.CurrentLevelMessageExperience:N0}",
+                $"{userLevel.MessageExperienceAmountCurrentLevel:N2} / {userLevel.MessageExperienceRequiredCurrentLevel:N0}",
                 Color.White
             )
             // Voice Rank
@@ -123,7 +120,7 @@ public static class RankCardImageSharpExtensions
             // Voice fill
             .Fill(
                 Color.DarkRed,
-                new RectangleF(543, 335, 470 * voiceScale, 35)
+                new RectangleF(543, 335, 470f * (float)(userLevel.VoiceExperienceAmountCurrentLevel / userLevel.VoiceExperienceRequiredCurrentLevel), 35)
             )
             // Voice Current Experience
             .DrawText(
@@ -132,7 +129,7 @@ public static class RankCardImageSharpExtensions
                     Origin = new PointF(770, 330),
                     HorizontalAlignment = HorizontalAlignment.Center,
                 },
-                $"{userLevel.VoiceExperience - userLevel.CurrentLevelVoiceExperience:N2} / {userLevel.NextLevelVoiceExperience - userLevel.CurrentLevelVoiceExperience:N0}",
+                $"{userLevel.VoiceExperienceAmountCurrentLevel:N2} / {userLevel.VoiceExperienceRequiredCurrentLevel:N0}",
                 Color.White
             );
     }

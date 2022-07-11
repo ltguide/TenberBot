@@ -74,11 +74,16 @@ public class UserLevel
     [Precision(20, 0)]
     public decimal ExcludedMessageAttachments { get; set; }
 
-    public decimal CurrentLevelMessageExperience => CalculateExperience(MessageLevel - 1);
-    public decimal NextLevelMessageExperience => CalculateExperience(MessageLevel);
+    public decimal VoiceExperienceTotalCurrentLevel => CalculateExperience(VoiceLevel - 1);
+    public decimal VoiceExperienceTotalNextLevel => CalculateExperience(VoiceLevel);
+    public decimal VoiceExperienceAmountCurrentLevel => VoiceExperience - VoiceExperienceTotalCurrentLevel;
+    public decimal VoiceExperienceRequiredCurrentLevel => VoiceExperienceTotalNextLevel - VoiceExperienceTotalCurrentLevel;
 
-    public decimal CurrentLevelVoiceExperience => CalculateExperience(VoiceLevel - 1);
-    public decimal NextLevelVoiceExperience => CalculateExperience(VoiceLevel);
+    public decimal MessageExperienceTotalCurrentLevel => CalculateExperience(MessageLevel - 1);
+    public decimal MessageExperienceTotalNextLevel => CalculateExperience(MessageLevel);
+    public decimal MessageExperienceAmountCurrentLevel => MessageExperience - MessageExperienceTotalCurrentLevel;
+    public decimal MessageExperienceRequiredCurrentLevel => MessageExperienceTotalNextLevel - MessageExperienceTotalCurrentLevel;
+
 
     [NotMapped]
     public int VoiceRank { get; set; }

@@ -52,6 +52,8 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
         if (userLevel == null)
             return DeleteResult.FromError("You have no experience right now.");
 
+        await Context.Message.AddReactionAsync(cacheService.Get<EmoteServerSettings>(Context.Guild).Busy);
+
         await userLevelDataService.GetRanks(userLevel);
 
         var myAvatar = await webService.GetFileAttachment(client.CurrentUser.GetCurrentAvatarUrl());
@@ -88,6 +90,8 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
         }
 
         await Context.Channel.SendFileAsync(new FileAttachment(memoryStream, $"{Context.User.Id}_{settings.BackgroundName}"), messageReference: Context.Message.GetReferenceTo());
+
+        await Context.Message.RemoveAllReactionsAsync();
 
         return DeleteResult.FromSuccess("");
     }
