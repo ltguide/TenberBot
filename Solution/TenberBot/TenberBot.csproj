@@ -11,12 +11,14 @@
 	  <None Remove="Fonts\segoeui.ttf" />
 	  <None Remove="Fonts\segoeuib.ttf" />
 	  <None Remove="Fonts\segoeuii.ttf" />
+	  <None Remove="Fonts\seguiemj.ttf" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <EmbeddedResource Include="Fonts\segoeui.ttf" />
 	  <EmbeddedResource Include="Fonts\segoeuib.ttf" />
 	  <EmbeddedResource Include="Fonts\segoeuii.ttf" />
+	  <EmbeddedResource Include="Fonts\seguiemj.ttf" />
 	</ItemGroup>
 
 	<ItemGroup>
