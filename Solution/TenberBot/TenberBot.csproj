@@ -12,6 +12,7 @@
 	  <None Remove="Fonts\segoeuib.ttf" />
 	  <None Remove="Fonts\segoeuii.ttf" />
 	  <None Remove="Fonts\seguiemj.ttf" />
+	  <None Remove="Fonts\seguihis.ttf" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -19,6 +20,7 @@
 	  <EmbeddedResource Include="Fonts\segoeuib.ttf" />
 	  <EmbeddedResource Include="Fonts\segoeuii.ttf" />
 	  <EmbeddedResource Include="Fonts\seguiemj.ttf" />
+	  <EmbeddedResource Include="Fonts\seguihis.ttf" />
 	</ItemGroup>
 
 	<ItemGroup>

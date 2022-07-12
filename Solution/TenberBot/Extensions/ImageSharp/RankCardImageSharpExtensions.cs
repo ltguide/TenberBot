@@ -26,6 +26,7 @@ public static class RankCardImageSharpExtensions
         var segoeuii = fontCollection.Add(assembly.GetManifestResourceStream("TenberBot.Fonts.segoeuii.ttf")!);
         var segoeuib = fontCollection.Add(assembly.GetManifestResourceStream("TenberBot.Fonts.segoeuib.ttf")!);
         var seguiemj = fontCollection.Add(assembly.GetManifestResourceStream("TenberBot.Fonts.seguiemj.ttf")!);
+        var seguihis = fontCollection.Add(assembly.GetManifestResourceStream("TenberBot.Fonts.seguihis.ttf")!);
 
         var font30 = segoeui.CreateFont(30);
         var font40 = segoeui.CreateFont(40);
@@ -35,6 +36,8 @@ public static class RankCardImageSharpExtensions
 
         var fillColor = Color.ParseHex(settings.BackgroundFill);
 
+        var fallbackFontFamilies = new List<FontFamily>() { seguiemj, seguihis };
+
         return processingContext
             // Guild Name
             .DrawText(
@@ -42,7 +45,7 @@ public static class RankCardImageSharpExtensions
                 {
                     Origin = new PointF(1070, 3),
                     HorizontalAlignment = HorizontalAlignment.Right,
-                    FallbackFontFamilies = new List<FontFamily>() { seguiemj, }
+                    FallbackFontFamilies = fallbackFontFamilies,
                 },
                 guild.Name,
                 Color.White
@@ -52,7 +55,7 @@ public static class RankCardImageSharpExtensions
                 new TextOptions(font50b)
                 {
                     Origin = new PointF(355, 80),
-                    FallbackFontFamilies = new List<FontFamily>() { seguiemj, }
+                    FallbackFontFamilies = fallbackFontFamilies,
                 },
                 user.GetDisplayName(),
                 Color.White
