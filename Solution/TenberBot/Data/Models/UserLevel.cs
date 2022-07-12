@@ -21,22 +21,22 @@ public class UserLevel
     [Precision(20, 2)]
     public decimal VoiceExperience { get; set; }
 
-    [Precision(20, 0)]
+    [Precision(20, 2)]
     public decimal VoiceMinutes { get; set; }
 
-    [Precision(20, 0)]
+    [Precision(20, 2)]
     public decimal VoiceMinutesStream { get; set; }
 
-    [Precision(20, 0)]
+    [Precision(20, 2)]
     public decimal VoiceMinutesVideo { get; set; }
 
-    [Precision(20, 0)]
+    [Precision(20, 2)]
     public decimal ExcludedVoiceMinutes { get; set; }
 
-    [Precision(20, 0)]
+    [Precision(20, 2)]
     public decimal ExcludedVoiceMinutesVideo { get; set; }
 
-    [Precision(20, 0)]
+    [Precision(20, 2)]
     public decimal ExcludedVoiceMinutesStream { get; set; }
 
     public int MessageLevel { get; set; } = 1;
@@ -151,7 +151,7 @@ public class UserLevel
         MessageLevel = CalculateLevel(MessageExperience);
     }
 
-    public void AddVoice(ExperienceChannelSettings settings, int minutes, int minutesVideo, int minutesStream)
+    public void AddVoice(ExperienceChannelSettings settings, decimal minutes, decimal minutesVideo, decimal minutesStream)
     {
         var experience = 0m;
 

@@ -96,20 +96,28 @@ public class GuildExperienceHandler : DiscordClientService
 
         foreach (var voiceUser in voiceUsers.Where(x => userVoiceChannels.Any(y => y.UserId == x.Id && y.ChannelId == x.VoiceChannel.Id) == false))
         {
-            //Console.WriteLine($"user {voiceUser.Id} is connected {voiceUser.VoiceChannel.Name} ({voiceUser.VoiceChannel.Id})");
+            Console.WriteLine($"user {voiceUser.Id} is connected {voiceUser.VoiceChannel.Name} ({voiceUser.VoiceChannel.Id}) IsVideoing:{voiceUser.IsVideoing} IsStreaming:{voiceUser.IsStreaming}");
 
-            await userVoiceChannelDataService.Add(new UserVoiceChannel { GuildId = guild.Id, ChannelId = voiceUser.VoiceChannel.Id, UserId = voiceUser.Id, ConnectDate = DateTime.Now });
+            await userVoiceChannelDataService.Add(new UserVoiceChannel
+            {
+                GuildId = guild.Id,
+                ChannelId = voiceUser.VoiceChannel.Id,
+                UserId = voiceUser.Id,
+                ConnectDate = DateTime.Now,
+                VideoDate = voiceUser.IsVideoing ? DateTime.Now : null,
+                StreamDate = voiceUser.IsStreaming ? DateTime.Now : null,
+            });
         }
     }
 
     private async Task UserVoiceStateUpdated(SocketUser socketUser, SocketVoiceState before, SocketVoiceState after)
     {
-        if (socketUser is not SocketGuildUser user)
-            return;
-
-        if (before.VoiceChannel != null && after.VoiceChannel != null && before.VoiceChannel.Id == after.VoiceChannel.Id)
+        if (before.VoiceChannel?.Id == after.VoiceChannel?.Id)
         {
-            //Console.WriteLine($"user {user.Id} changed state {before.VoiceChannel.Name} ({before.VoiceChannel.Id})");
+            //Console.WriteLine($"user {user.Id} changed state {after.VoiceChannel!.Name} ({after.VoiceChannel.Id}) IsVideoing:{before.IsVideoing} IsStreaming:{before.IsStreaming} | IsVideoing:{after.IsVideoing} IsStreaming:{after.IsStreaming}");
+
+            await VoiceStateUpdated(socketUser, before, after);
+
             return;
         }
 
@@ -117,7 +125,7 @@ public class GuildExperienceHandler : DiscordClientService
         {
             //Console.WriteLine($"user {user.Id} disconnected {before.VoiceChannel.Name} ({before.VoiceChannel.Id})");
 
-            var userVoiceChannel = await userVoiceChannelDataService.GetByIds(before.VoiceChannel.Id, user.Id);
+            var userVoiceChannel = await userVoiceChannelDataService.GetByIds(before.VoiceChannel.Id, socketUser.Id);
             if (userVoiceChannel != null)
             {
                 await VoiceDisconnected(before.VoiceChannel, userVoiceChannel);
@@ -130,7 +138,16 @@ public class GuildExperienceHandler : DiscordClientService
         {
             //Console.WriteLine($"user {user.Id} connected {after.VoiceChannel.Name} ({after.VoiceChannel.Id})");
 
-            await userVoiceChannelDataService.Add(new UserVoiceChannel { GuildId = user.Guild.Id, ChannelId = after.VoiceChannel.Id, UserId = user.Id, ConnectDate = DateTime.Now });
+            if (socketUser is not SocketGuildUser user)
+                return;
+
+            await userVoiceChannelDataService.Add(new UserVoiceChannel
+            {
+                GuildId = user.Guild.Id,
+                ChannelId = after.VoiceChannel.Id,
+                UserId = socketUser.Id,
+                ConnectDate = DateTime.Now,
+            });
         }
     }
 
@@ -146,6 +163,30 @@ public class GuildExperienceHandler : DiscordClientService
         return userLevel;
     }
 
+    public async Task VoiceStateUpdated(SocketUser socketUser, SocketVoiceState before, SocketVoiceState after)
+    {
+        if (before.IsVideoing == after.IsVideoing && before.IsStreaming == after.IsStreaming)
+            return;
+
+        var userVoiceChannel = await userVoiceChannelDataService.GetByIds(after.VoiceChannel!.Id, socketUser.Id);
+        if (userVoiceChannel == null)
+            return;
+
+        if (before.IsVideoing != after.IsVideoing)
+        {
+            userVoiceChannel.VideoMinutes += ToMinutes(userVoiceChannel.VideoDate);
+            userVoiceChannel.VideoDate = after.IsVideoing ? DateTime.Now : null;
+        }
+
+        if (before.IsStreaming != after.IsStreaming)
+        {
+            userVoiceChannel.StreamMinutes += ToMinutes(userVoiceChannel.StreamDate);
+            userVoiceChannel.StreamDate = after.IsStreaming ? DateTime.Now : null;
+        }
+
+        await userVoiceChannelDataService.Update(userVoiceChannel, null!);
+    }
+
     private async Task VoiceDisconnected(IChannel channel, UserVoiceChannel userVoiceChannel)
     {
         await cacheService.Channel(channel);
@@ -154,10 +195,19 @@ public class GuildExperienceHandler : DiscordClientService
 
         userLevel.AddVoice(
             cacheService.Get<ExperienceChannelSettings>(channel),
-            (int)Math.Ceiling(DateTime.Now.Subtract(userVoiceChannel.ConnectDate).TotalMinutes),
-            0,
-            0);
+            ToMinutes(userVoiceChannel.ConnectDate),
+            ToMinutes(userVoiceChannel.VideoDate) + userVoiceChannel.VideoMinutes,
+            ToMinutes(userVoiceChannel.StreamDate) + userVoiceChannel.StreamMinutes
+        );
 
         await userLevelDataService.Update(userLevel, null!);
+    }
+
+    private static decimal ToMinutes(DateTime? dateTime)
+    {
+        if (dateTime == null)
+            return 0;
+
+        return Convert.ToDecimal(Math.Round(DateTime.Now.Subtract(dateTime.Value).TotalMinutes, 2));
     }
 }

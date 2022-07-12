@@ -7,11 +7,11 @@ public class ExperienceChannelSettings
 {
     public bool Enabled { get; set; } = true;
 
-    public decimal VoiceMinute { get; set; } = 1m;
+    public decimal VoiceMinute { get; set; } = 0.3m;
 
-    public decimal VoiceMinuteVideo { get; set; } = 0.1m;
+    public decimal VoiceMinuteVideo { get; set; } = 0.05m;
 
-    public decimal VoiceMinuteStream { get; set; } = 0.1m;
+    public decimal VoiceMinuteStream { get; set; } = 0.11m;
 
     public decimal Message { get; set; } = 1m;
 

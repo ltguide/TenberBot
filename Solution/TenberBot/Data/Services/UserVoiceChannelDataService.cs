@@ -11,6 +11,8 @@ public interface IUserVoiceChannelDataService
 
     Task Add(UserVoiceChannel newObject);
 
+    Task Update(UserVoiceChannel dbObject, UserVoiceChannel newObject);
+
     Task Delete(UserVoiceChannel dbObject);
 }
 
@@ -46,6 +48,18 @@ public class UserVoiceChannelDataService : IUserVoiceChannelDataService
         newObject.UserVoiceChannelId = 0;
 
         dbContext.Add(newObject);
+
+        await dbContext.SaveChangesAsync().ConfigureAwait(false);
+    }
+
+    public async Task Update(UserVoiceChannel dbObject, UserVoiceChannel newObject)
+    {
+        if (dbObject == null)
+            throw new ArgumentNullException(nameof(dbObject));
+
+        if (newObject != null)
+        {
+        }
 
         await dbContext.SaveChangesAsync().ConfigureAwait(false);
     }

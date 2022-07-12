@@ -22,5 +22,11 @@ public class UserVoiceChannel
 
     public DateTime? VideoDate { get; set; }
 
+    [Precision(7, 2)]
+    public decimal VideoMinutes { get; set; }
+
     public DateTime? StreamDate { get; set; }
+
+    [Precision(7, 2)]
+    public decimal StreamMinutes { get; set; }
 }
