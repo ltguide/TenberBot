@@ -28,7 +28,7 @@ public static class SocketUserExtensions
         return new EmbedAuthorBuilder
         {
             Name = $"{socketUser.GetDisplayName()}{(append?.StartsWith("'") == false ? " " : "")}{append}",
-            IconUrl = socketUser.GetAvatarUrl()
+            IconUrl = socketUser.GetCurrentAvatarUrl()
         };
     }
 
