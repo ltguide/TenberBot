@@ -34,6 +34,9 @@ public static class SocketUserExtensions
 
     public static string GetCurrentAvatarUrl(this SocketUser socketUser)
     {
+        if (socketUser is SocketGuildUser socketGuildUser)
+            return socketGuildUser.GetGuildAvatarUrl();
+
         return socketUser.GetAvatarUrl() ?? socketUser.GetDefaultAvatarUrl();
     }
 }
