@@ -11,6 +11,5 @@ public static class FileAttachmentExtensions
         fileAttachment.Stream.CopyTo(memoryStream);
 
         return memoryStream.ToArray();
-
     }
 }

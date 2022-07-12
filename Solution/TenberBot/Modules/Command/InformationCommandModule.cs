@@ -85,6 +85,12 @@ public class InformationCommandModule : ModuleBase<SocketCommandContext>
         await Context.Message.ReplyAsync($"{Context.User.GetDisplayNameSanitized()} told me to say: {text}");
     }
 
+    [Command("myavatar", ignoreExtraArgs: true)]
+    public async Task ShowAvatars()
+    {
+        await ReplyAsync($"Out of the available, using this one: <{Context.User.GetCurrentAvatarUrl()}>\n> GetGuildAvatarUrl: {(Context.User as SocketGuildUser)?.GetGuildAvatarUrl()}\n> GetAvatarUrl: {Context.User.GetAvatarUrl()}\n> GetDefaultAvatarUrl: {Context.User.GetDefaultAvatarUrl()}");
+    }
+
 #if DEBUG
     [Command("react", ignoreExtraArgs: true)]
     public async Task AddReaction()

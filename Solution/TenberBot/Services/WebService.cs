@@ -1,15 +1,21 @@
 ﻿using Discord;
+using Microsoft.Extensions.Caching.Memory;
+using TenberBot.Extensions;
+
 namespace TenberBot.Services;
 
 public class WebService
 {
+    private readonly IMemoryCache memoryCache;
     private readonly HttpClient client;
     private readonly ILogger<WebService> logger;
 
     public WebService(
+        IMemoryCache memoryCache,
         HttpClient client,
         ILogger<WebService> logger)
     {
+        this.memoryCache = memoryCache;
         this.client = client;
         this.logger = logger;
     }
@@ -40,6 +46,20 @@ public class WebService
             logger.LogWarning(ex, $"Failed to GET {url}");
             return null;
         }
+    }
+
+    public async Task<byte[]?> GetBytes(string url, TimeSpan duration)
+    {
+        var key = $"WebService, {url}";
+
+        if (memoryCache.TryGetValue<byte[]>(key, out var value))
+            return value;
+
+        var fileAttachment = await GetFileAttachment(url);
+        if (fileAttachment == null)
+            return null;
+
+        return memoryCache.Set(key, fileAttachment.Value.GetBytes(), duration);
     }
 
     private static string GetFilename(HttpResponseMessage response)

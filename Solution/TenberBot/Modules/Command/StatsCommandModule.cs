@@ -56,11 +56,11 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
 
         await userLevelDataService.GetRanks(userLevel);
 
-        var myAvatar = await webService.GetFileAttachment(client.CurrentUser.GetCurrentAvatarUrl());
+        var myAvatar = await webService.GetBytes(client.CurrentUser.GetCurrentAvatarUrl(), TimeSpan.FromMinutes(60));
         if (myAvatar == null)
             return DeleteResult.FromError("Failed to load my avatar. Please try again.");
 
-        var userAvatar = await webService.GetFileAttachment(Context.User.GetCurrentAvatarUrl());
+        var userAvatar = await webService.GetBytes(Context.User.GetCurrentAvatarUrl(), TimeSpan.FromMinutes(5));
         if (userAvatar == null)
             return DeleteResult.FromError("Failed to load your avatar. Please try again.");
 
@@ -72,7 +72,7 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
 
             if (myAvatar != null)
             {
-                using var myAvatarImage = Image.Load(myAvatar.Value.Stream);
+                using var myAvatarImage = Image.Load(myAvatar);
                 myAvatarImage.Mutate(ctx => ctx.Resize(80, 80).BackgroundColor(Color.Black));
 
                 img.Mutate(ctx => ctx.DrawImage(myAvatarImage, new Point(240, 270), new GraphicsOptions { AlphaCompositionMode = PixelAlphaCompositionMode.DestOver }));
@@ -80,7 +80,7 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
 
             if (userAvatar != null)
             {
-                using var userAvatarImage = Image.Load(userAvatar.Value.Stream);
+                using var userAvatarImage = Image.Load(userAvatar);
                 userAvatarImage.Mutate(ctx => ctx.Resize(280, 280).ApplyRoundedCorners(100));
 
                 img.Mutate(ctx => ctx.DrawImage(userAvatarImage, new Point(15, 15), new GraphicsOptions { AlphaCompositionMode = PixelAlphaCompositionMode.DestOver }));
