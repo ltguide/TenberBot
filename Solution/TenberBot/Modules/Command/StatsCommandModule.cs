@@ -1,18 +1,12 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 using TenberBot.Data.Services;
 using TenberBot.Data.Settings.Server;
 using TenberBot.Extensions;
-using TenberBot.Extensions.ImageSharp;
+using TenberBot.Helpers;
 using TenberBot.Results.Command;
 using TenberBot.Services;
-using Color = SixLabors.ImageSharp.Color;
-using Image = SixLabors.ImageSharp.Image;
 
 namespace TenberBot.Modules.Command;
 
@@ -64,30 +58,7 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
         if (userAvatar == null)
             return DeleteResult.FromError("Failed to load your avatar. Please try again.");
 
-        using var memoryStream = new MemoryStream();
-
-        using (var img = Image.Load(card.ImageData, out IImageFormat format))
-        {
-            img.Mutate(ctx => ctx.AddRankData(card, Context.Guild, Context.User, userLevel));
-
-            if (myAvatar != null)
-            {
-                using var myAvatarImage = Image.Load(myAvatar);
-                myAvatarImage.Mutate(ctx => ctx.Resize(60, 60).BackgroundColor(Color.Black));
-
-                img.Mutate(ctx => ctx.DrawImage(myAvatarImage, new Point(140, 190), new GraphicsOptions { AlphaCompositionMode = PixelAlphaCompositionMode.DestOver }));
-            }
-
-            if (userAvatar != null)
-            {
-                using var userAvatarImage = Image.Load(userAvatar);
-                userAvatarImage.Mutate(ctx => ctx.Resize(160, 160).ApplyRoundedCorners(80));
-
-                img.Mutate(ctx => ctx.DrawImage(userAvatarImage, new Point(15, 40), new GraphicsOptions { AlphaCompositionMode = PixelAlphaCompositionMode.DestOver }));
-            }
-
-            img.Save(memoryStream, format);
-        }
+        using var memoryStream = RankCardHelper.GetStream(card, Context.Guild, Context.User, userLevel, null, null);
 
         await Context.Channel.SendFileAsync(new FileAttachment(memoryStream, $"{Context.User.Id}_{card.ImageName}"), messageReference: Context.Message.GetReferenceTo());
 

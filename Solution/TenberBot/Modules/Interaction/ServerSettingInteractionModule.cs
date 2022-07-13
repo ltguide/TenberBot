@@ -5,6 +5,7 @@ using TenberBot.Data.Models;
 using TenberBot.Data.Services;
 using TenberBot.Data.Settings.Server;
 using TenberBot.Extensions;
+using TenberBot.Helpers;
 using TenberBot.Services;
 using Color = SixLabors.ImageSharp.Color;
 
@@ -133,7 +134,11 @@ public class ServerSettingInteractionModule : InteractionModuleBase<SocketIntera
         var text = $"Server settings for *rank-card* for {role.Mention}:\n\n> **Guild Color**: #{card.GuildColor}\n> **User Color**: #{card.UserColor}\n> **Rank Color**: #{card.RankColor}\n> **Level Color**: #{card.LevelColor}\n> **Experience Color**: #{card.ExperienceColor}\n\n> **Progress Color**: #{card.ProgressColor}\n> **Progress Fill**: #{card.ProgressFill}\n\n> **Background Image**: ";
 
         if (card.ImageData != null)
-            await Context.Interaction.RespondWithFileAsync(new MemoryStream(card.ImageData), card.ImageName, text);
+        {
+            using var memoryStream = RankCardHelper.GetStream(card, Context.Guild, Context.User, new UserLevel(), null, null);
+
+            await Context.Interaction.RespondWithFileAsync(new FileAttachment(memoryStream, $"{Context.User.Id}_{card.ImageName}"), text);
+        }
         else
             await RespondAsync(text + "*none*");
     }
