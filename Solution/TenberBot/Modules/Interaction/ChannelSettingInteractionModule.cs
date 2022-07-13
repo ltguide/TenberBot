@@ -11,7 +11,7 @@ using TenberBot.Services;
 namespace TenberBot.Modules.Interaction;
 
 [Group("channel-setting", "Manage channel settings for the bot.")]
-[RequireUserPermission(ChannelPermission.ManageChannels)]
+[DefaultMemberPermissions(GuildPermission.ManageChannels)]
 public class ChannelSettingInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IChannelSettingDataService channelSettingDataService;

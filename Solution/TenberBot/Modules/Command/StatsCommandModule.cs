@@ -44,15 +44,15 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
     [Summary("See your experience information.")]
     public async Task<RuntimeResult> Rank()
     {
-        var settings = cacheService.Get<RankServerSettings>(Context.Guild);
-        if (settings.BackgroundData == null)
-            return DeleteResult.FromError("The rank background isn't configured.");
+        await Context.Message.AddReactionAsync(cacheService.Get<EmoteServerSettings>(Context.Guild).Busy);
 
         var userLevel = await userLevelDataService.GetByContext(Context);
         if (userLevel == null)
             return DeleteResult.FromError("You have no experience right now.");
 
-        await Context.Message.AddReactionAsync(cacheService.Get<EmoteServerSettings>(Context.Guild).Busy);
+        var card = FindCard();
+        if (card == null)
+            return DeleteResult.FromError("Unable to find a configured rank card.");
 
         await userLevelDataService.GetRanks(userLevel);
 
@@ -66,33 +66,51 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
 
         using var memoryStream = new MemoryStream();
 
-        using (var img = Image.Load(settings.BackgroundData, out IImageFormat format))
+        using (var img = Image.Load(card.ImageData, out IImageFormat format))
         {
-            img.Mutate(ctx => ctx.AddRankData(settings, Context.Guild, Context.User, userLevel));
+            img.Mutate(ctx => ctx.AddRankData(card, Context.Guild, Context.User, userLevel));
 
             if (myAvatar != null)
             {
                 using var myAvatarImage = Image.Load(myAvatar);
-                myAvatarImage.Mutate(ctx => ctx.Resize(80, 80).BackgroundColor(Color.Black));
+                myAvatarImage.Mutate(ctx => ctx.Resize(60, 60).BackgroundColor(Color.Black));
 
-                img.Mutate(ctx => ctx.DrawImage(myAvatarImage, new Point(240, 270), new GraphicsOptions { AlphaCompositionMode = PixelAlphaCompositionMode.DestOver }));
+                img.Mutate(ctx => ctx.DrawImage(myAvatarImage, new Point(140, 190), new GraphicsOptions { AlphaCompositionMode = PixelAlphaCompositionMode.DestOver }));
             }
 
             if (userAvatar != null)
             {
                 using var userAvatarImage = Image.Load(userAvatar);
-                userAvatarImage.Mutate(ctx => ctx.Resize(280, 280).ApplyRoundedCorners(100));
+                userAvatarImage.Mutate(ctx => ctx.Resize(160, 160).ApplyRoundedCorners(80));
 
-                img.Mutate(ctx => ctx.DrawImage(userAvatarImage, new Point(15, 15), new GraphicsOptions { AlphaCompositionMode = PixelAlphaCompositionMode.DestOver }));
+                img.Mutate(ctx => ctx.DrawImage(userAvatarImage, new Point(15, 40), new GraphicsOptions { AlphaCompositionMode = PixelAlphaCompositionMode.DestOver }));
             }
 
             img.Save(memoryStream, format);
         }
 
-        await Context.Channel.SendFileAsync(new FileAttachment(memoryStream, $"{Context.User.Id}_{settings.BackgroundName}"), messageReference: Context.Message.GetReferenceTo());
+        await Context.Channel.SendFileAsync(new FileAttachment(memoryStream, $"{Context.User.Id}_{card.ImageName}"), messageReference: Context.Message.GetReferenceTo());
 
         await Context.Message.RemoveAllReactionsAsync();
 
         return DeleteResult.FromSuccess("");
+    }
+
+    private RankCardSettings? FindCard()
+    {
+        if (Context.User is not SocketGuildUser user)
+            return null;
+
+        var cards = cacheService.Get<RankServerSettings>(Context.Guild).Cards.Where(x => x.ImageData != null).ToDictionary(x => x.Role, x => x);
+        if (cards.Count == 0)
+            return null;
+
+        foreach (var role in user.Roles.Where(x => x.Mention != "@everyone"))
+        {
+            if (cards.TryGetValue(role.Mention, out var card))
+                return card;
+        }
+
+        return cards.TryGetValue("@everyone", out var everyoneCard) ? everyoneCard : cards.First().Value;
     }
 }

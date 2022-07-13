@@ -41,7 +41,7 @@ public class Program
                     LogLevel = logLevel,
                     MessageCacheSize = 200,
                     AlwaysDownloadUsers = true,
-                    GatewayIntents = GatewayIntents.AllUnprivileged & ~GatewayIntents.GuildScheduledEvents & ~GatewayIntents.GuildInvites,
+                    GatewayIntents = (GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers) & ~GatewayIntents.GuildScheduledEvents & ~GatewayIntents.GuildInvites,
                 };
 
                 config.Token = context.Configuration["app-token"];
