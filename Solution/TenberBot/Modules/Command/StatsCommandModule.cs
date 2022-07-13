@@ -58,7 +58,7 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
         if (userAvatar == null)
             return DeleteResult.FromError("Failed to load your avatar. Please try again.");
 
-        using var memoryStream = RankCardHelper.GetStream(card, Context.Guild, Context.User, userLevel, null, null);
+        using var memoryStream = RankCardHelper.GetStream(card, Context.Guild, Context.User, userLevel, myAvatar, userAvatar);
 
         await Context.Channel.SendFileAsync(new FileAttachment(memoryStream, $"{Context.User.Id}_{card.ImageName}"), messageReference: Context.Message.GetReferenceTo());
 
