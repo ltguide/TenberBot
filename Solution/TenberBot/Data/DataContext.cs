@@ -38,6 +38,8 @@ public class DataContext : DbContext
 
     public DbSet<Hug> Hugs { get; set; }
 
+    public DbSet<RankCard> RankCards { get; set; }
+
     public DbSet<SprintSnippet> SprintSnippets { get; set; }
 
     public DbSet<Sprint> Sprints { get; set; }

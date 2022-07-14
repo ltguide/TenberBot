@@ -5,7 +5,6 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Processing;
 using System.Reflection;
 using TenberBot.Data.Models;
-using TenberBot.Data.Settings.Server;
 using Color = SixLabors.ImageSharp.Color;
 
 namespace TenberBot.Extensions.ImageSharp;
@@ -14,7 +13,7 @@ public static class RankCardImageSharpExtensions
 {
     public static IImageProcessingContext AddRankData(
         this IImageProcessingContext processingContext,
-        RankCardSettings card,
+        RankCard card,
         SocketGuild guild,
         SocketUser user,
         UserLevel userLevel)
@@ -23,125 +22,20 @@ public static class RankCardImageSharpExtensions
         var fontCollection = new FontCollection();
 
         var segoeui = fontCollection.Add(assembly.GetManifestResourceStream("TenberBot.Fonts.segoeui.ttf")!);
-        var segoeuii = fontCollection.Add(assembly.GetManifestResourceStream("TenberBot.Fonts.segoeuii.ttf")!);
-        var segoeuib = fontCollection.Add(assembly.GetManifestResourceStream("TenberBot.Fonts.segoeuib.ttf")!);
         var seguiemj = fontCollection.Add(assembly.GetManifestResourceStream("TenberBot.Fonts.seguiemj.ttf")!);
         var seguihis = fontCollection.Add(assembly.GetManifestResourceStream("TenberBot.Fonts.seguihis.ttf")!);
+
+        fontCollection.Add(assembly.GetManifestResourceStream("TenberBot.Fonts.segoeuii.ttf")!);
+        fontCollection.Add(assembly.GetManifestResourceStream("TenberBot.Fonts.segoeuib.ttf")!);
 
         var fallbackFontFamilies = new List<FontFamily>() { seguiemj, seguihis };
 
         var font24 = segoeui.CreateFont(24);
+        var font24b = segoeui.CreateFont(24, FontStyle.Bold);
         var font28 = segoeui.CreateFont(28);
         var font28b = segoeui.CreateFont(28, FontStyle.Bold);
-        var font24i = segoeuii.CreateFont(24, FontStyle.Italic);
-        var font32b = segoeuib.CreateFont(32, FontStyle.Bold);
-
-        //return processingContext
-        //    // Guild Name
-        //    .DrawText(
-        //        new TextOptions(font24i)
-        //        {
-        //            Origin = new PointF(795, 0),
-        //            HorizontalAlignment = HorizontalAlignment.Right,
-        //            FallbackFontFamilies = fallbackFontFamilies,
-        //        },
-        //        "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-        //        Color.White
-        //    )
-        //    // User Name
-        //    .DrawText(
-        //        new TextOptions(font32b)
-        //        {
-        //            Origin = new PointF(210, 40),
-        //            FallbackFontFamilies = fallbackFontFamilies,
-        //        },
-        //        "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-        //        Color.White
-        //    )
-        //    // Message Rank
-        //    .DrawText(
-        //        new TextOptions(font28b)
-        //        {
-        //            Origin = new PointF(318, 132),
-        //            HorizontalAlignment = HorizontalAlignment.Center,
-        //        },
-        //        "000",
-        //        Color.White
-        //    )
-        //    // Message Level
-        //    .DrawText(
-        //        "000",
-        //        font28,
-        //        Color.White,
-        //        new PointF(425, 96)
-        //    )
-        //    // Message Total Experience
-        //    .DrawText(
-        //        new TextOptions(font28)
-        //        {
-        //            Origin = new PointF(780, 96),
-        //            HorizontalAlignment = HorizontalAlignment.Right,
-        //        },
-        //        $"000,000,000 exp",
-        //        Color.White
-        //    )
-        //    // Message fill
-        //    .Fill(
-        //        Color.DarkRed,
-        //        new RectangleF(364, 138, 414, 30)
-        //    )
-        //    // Message Current Experience
-        //    .DrawText(
-        //        new TextOptions(font24)
-        //        {
-        //            Origin = new PointF(571, 134),
-        //            HorizontalAlignment = HorizontalAlignment.Center,
-        //        },
-        //        "0,000,000 / 0,000,000",
-        //        Color.White
-        //    )
-        //    // Voice Rank
-        //    .DrawText(
-        //        new TextOptions(font28b)
-        //        {
-        //            Origin = new PointF(318, 218),
-        //            HorizontalAlignment = HorizontalAlignment.Center,
-        //        },
-        //        "000",
-        //        Color.White
-        //    )
-        //    // Voice Level
-        //    .DrawText(
-        //        "000",
-        //        font28,
-        //        Color.White,
-        //        new PointF(425, 182)
-        //    )
-        //    // Voice Total Experience
-        //    .DrawText(
-        //        new TextOptions(font28)
-        //        {
-        //            Origin = new PointF(780, 182),
-        //            HorizontalAlignment = HorizontalAlignment.Right,
-        //        },
-        //        $"000,000,000 exp",
-        //        Color.White
-        //    )
-        //    // Voice fill
-        //    .Fill(
-        //        Color.DarkRed,
-        //        new RectangleF(364, 224, 414, 30)
-        //    )
-        //    // Voice Current Experience
-        //    .DrawText(
-        //        new TextOptions(font24)
-        //        {
-        //            Origin = new PointF(571, 220),
-        //            HorizontalAlignment = HorizontalAlignment.Center,
-        //        },
-        //        "0,000,000 / 0,000,000",
-        //        Color.White
-        //    );
+        var font24i = segoeui.CreateFont(24, FontStyle.Italic);
+        var font32b = segoeui.CreateFont(32, FontStyle.Bold);
 
         return processingContext
             // Guild Name
@@ -165,6 +59,17 @@ public static class RankCardImageSharpExtensions
                 user.GetDisplayName(),
                 Color.ParseHex(card.UserColor)
             )
+            // Role Name
+            .DrawText(
+                new TextOptions(font24)
+                {
+                    Origin = new PointF(5, 268),
+                    VerticalAlignment = VerticalAlignment.Bottom,
+                    FallbackFontFamilies = fallbackFontFamilies,
+                },
+                card.Name,
+                Color.ParseHex(card.RoleColor)
+            )
             // Message Rank
             .DrawText(
                 new TextOptions(font28b)
@@ -178,7 +83,7 @@ public static class RankCardImageSharpExtensions
             // Message Level
             .DrawText(
                 userLevel.MessageLevel.ToString(),
-                font28,
+                font28b,
                 Color.ParseHex(card.LevelColor),
                 new PointF(425, 96)
             )
@@ -199,13 +104,14 @@ public static class RankCardImageSharpExtensions
             )
             // Message Current Experience
             .DrawText(
-                new TextOptions(font24)
+                new TextOptions(font24b)
                 {
                     Origin = new PointF(571, 134),
                     HorizontalAlignment = HorizontalAlignment.Center,
                 },
                 $"{userLevel.MessageExperienceAmountCurrentLevel:N2} / {userLevel.MessageExperienceRequiredCurrentLevel:N0}",
-                Color.ParseHex(card.ProgressColor)
+                Brushes.Solid(Color.ParseHex(card.ProgressColor)),
+                Pens.Solid(Color.ParseHex(card.ProgressFill), 1f)
             )
             // Voice Rank
             .DrawText(
@@ -220,7 +126,7 @@ public static class RankCardImageSharpExtensions
             // Voice Level
             .DrawText(
                 userLevel.VoiceLevel.ToString(),
-                font28,
+                font28b,
                 Color.ParseHex(card.LevelColor),
                 new PointF(425, 182)
             )
@@ -237,17 +143,18 @@ public static class RankCardImageSharpExtensions
             // Voice fill
             .Fill(
                 Color.ParseHex(card.ProgressFill),
-                new RectangleF(364, 224, 414 * (float)(userLevel.VoiceExperienceAmountCurrentLevel / userLevel.VoiceExperienceRequiredCurrentLevel), 30)
+                new RectangleF(364, 224, 414 * .41f, 30)
             )
             // Voice Current Experience
             .DrawText(
-                new TextOptions(font24)
+                new TextOptions(font24b)
                 {
                     Origin = new PointF(571, 220),
                     HorizontalAlignment = HorizontalAlignment.Center,
                 },
                 $"{userLevel.VoiceExperienceAmountCurrentLevel:N2} / {userLevel.VoiceExperienceRequiredCurrentLevel:N0}",
-                Color.ParseHex(card.ProgressColor)
+                Brushes.Solid(Color.ParseHex(card.ProgressColor)),
+                Pens.Solid(Color.ParseHex(card.ProgressFill), 1.4f)
             );
     }
 }

@@ -15,15 +15,18 @@ namespace TenberBot.Modules.Interaction;
 [DefaultMemberPermissions(GuildPermission.ManageGuild)]
 public class ServerSettingInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
+    private readonly IRankCardDataService rankCardDataService;
     private readonly IServerSettingDataService serverSettingDataService;
     private readonly WebService webService;
     private readonly CacheService cacheService;
 
     public ServerSettingInteractionModule(
+        IRankCardDataService rankCardDataService,
         IServerSettingDataService serverSettingDataService,
         WebService webService,
         CacheService cacheService)
     {
+        this.rankCardDataService = rankCardDataService;
         this.serverSettingDataService = serverSettingDataService;
         this.webService = webService;
         this.cacheService = cacheService;
@@ -74,25 +77,24 @@ public class ServerSettingInteractionModule : InteractionModuleBase<SocketIntera
         [Summary("colors")] string? colors = null,
         [Summary("guild-color")] string? guildColor = null,
         [Summary("user-color")] string? userColor = null,
+        [Summary("role-color")] string? roleColor = null,
         [Summary("rank-color")] string? rankColor = null,
         [Summary("level-color")] string? levelColor = null,
         [Summary("experience-color")] string? experienceColor = null,
         [Summary("progress-color")] string? progressColor = null,
         [Summary("progress-fill")] string? progressFill = null)
     {
-        var settings = cacheService.Get<RankServerSettings>(Context.Guild);
-
-        var card = settings.Cards.FirstOrDefault(x => x.Role == role.Mention);
+        var card = await rankCardDataService.GetByRoleId(role.Id);
         if (card == null)
-            settings.Cards.Add(card = new RankCardSettings { Role = role.Mention, });
+            await rankCardDataService.Add(card = new RankCard { GuildId = Context.Guild.Id, RoleId = role.Id, });
 
         if (image != null)
         {
             var file = await webService.GetFileAttachment(image.Url);
             if (file != null)
             {
-                card.ImageData = file.Value.GetBytes();
-                card.ImageName = image.Filename;
+                card.Data = file.Value.GetBytes();
+                card.Filename = image.Filename;
             }
         }
 
@@ -102,6 +104,7 @@ public class ServerSettingInteractionModule : InteractionModuleBase<SocketIntera
 
             card.GuildColor = hex;
             card.UserColor = hex;
+            card.RoleColor = hex;
             card.RankColor = hex;
             card.LevelColor = hex;
             card.ExperienceColor = hex;
@@ -113,6 +116,9 @@ public class ServerSettingInteractionModule : InteractionModuleBase<SocketIntera
 
         if (userColor != null && Color.TryParseHex(userColor, out color))
             card.UserColor = color.ToHex();
+
+        if (roleColor != null && Color.TryParseHex(roleColor, out color))
+            card.RoleColor = color.ToHex();
 
         if (rankColor != null && Color.TryParseHex(rankColor, out color))
             card.RankColor = color.ToHex();
@@ -129,15 +135,17 @@ public class ServerSettingInteractionModule : InteractionModuleBase<SocketIntera
         if (progressFill != null && Color.TryParseHex(progressFill, out color))
             card.ProgressFill = color.ToHex();
 
-        await Set(settings);
+        await rankCardDataService.Update(card, null!);
 
-        var text = $"Server settings for *rank-card* for {role.Mention}:\n\n> **Guild Color**: #{card.GuildColor}\n> **User Color**: #{card.UserColor}\n> **Rank Color**: #{card.RankColor}\n> **Level Color**: #{card.LevelColor}\n> **Experience Color**: #{card.ExperienceColor}\n\n> **Progress Color**: #{card.ProgressColor}\n> **Progress Fill**: #{card.ProgressFill}\n\n> **Background Image**: ";
+        var text = $"Server settings for *rank-card* for {role.Mention}:\n\n> **Guild Color**: #{card.GuildColor}\n> **User Color**: #{card.UserColor}\n> **Role Color**: #{card.RoleColor}\n> **Rank Color**: #{card.RankColor}\n> **Level Color**: #{card.LevelColor}\n> **Experience Color**: #{card.ExperienceColor}\n\n> **Progress Color**: #{card.ProgressColor}\n> **Progress Fill**: #{card.ProgressFill}\n\n> **Background Image**: ";
 
-        if (card.ImageData != null)
+        if (card.Data != null)
         {
             using var memoryStream = RankCardHelper.GetStream(card, Context.Guild, Context.User, new UserLevel(), null, null);
 
-            await Context.Interaction.RespondWithFileAsync(new FileAttachment(memoryStream, $"{Context.User.Id}_{card.ImageName}"), text);
+            card.Name = "Role Name";
+
+            await Context.Interaction.RespondWithFileAsync(new FileAttachment(memoryStream, $"{Context.User.Id}_{card.Filename}"), text);
         }
         else
             await RespondAsync(text + "*none*");

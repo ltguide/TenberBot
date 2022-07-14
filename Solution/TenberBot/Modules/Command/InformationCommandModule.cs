@@ -91,7 +91,7 @@ public class InformationCommandModule : ModuleBase<SocketCommandContext>
         if (Context.User is not SocketGuildUser user)
             return;
 
-        await ReplyAsync($"I think you have these roles: {string.Join(", ", user.Roles)}", allowedMentions: AllowedMentions.None);
+        await ReplyAsync($"I think you have these roles: {string.Join(", ", user.Roles.OrderByDescending(x => x.Position))}", allowedMentions: AllowedMentions.None);
     }
 
 

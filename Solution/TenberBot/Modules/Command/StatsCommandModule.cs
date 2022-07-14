@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using TenberBot.Data.Models;
 using TenberBot.Data.Services;
 using TenberBot.Data.Settings.Server;
 using TenberBot.Extensions;
@@ -16,6 +17,8 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
     private readonly IUserLevelDataService userLevelDataService;
     private readonly WebService webService;
     private readonly DiscordSocketClient client;
+    private readonly IVisualDataService visualDataService;
+    private readonly IRankCardDataService rankCardDataService;
     private readonly CacheService cacheService;
     private readonly ILogger<StatsCommandModule> logger;
 
@@ -23,12 +26,16 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
         IUserLevelDataService userLevelDataService,
         WebService webService,
         DiscordSocketClient client,
+        IVisualDataService visualDataService,
+        IRankCardDataService rankCardDataService,
         CacheService cacheService,
         ILogger<StatsCommandModule> logger)
     {
         this.userLevelDataService = userLevelDataService;
         this.webService = webService;
         this.client = client;
+        this.visualDataService = visualDataService;
+        this.rankCardDataService = rankCardDataService;
         this.cacheService = cacheService;
         this.logger = logger;
     }
@@ -44,7 +51,7 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
         if (userLevel == null)
             return DeleteResult.FromError("You have no experience right now.");
 
-        var card = FindCard();
+        var card = await FindCard();
         if (card == null)
             return DeleteResult.FromError("Unable to find a configured rank card.");
 
@@ -60,28 +67,31 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
 
         using var memoryStream = RankCardHelper.GetStream(card, Context.Guild, Context.User, userLevel, myAvatar, userAvatar);
 
-        await Context.Channel.SendFileAsync(new FileAttachment(memoryStream, $"{Context.User.Id}_{card.ImageName}"), messageReference: Context.Message.GetReferenceTo());
+        await Context.Channel.SendFileAsync(new FileAttachment(memoryStream, $"{Context.User.Id}_{card.Filename}"), messageReference: Context.Message.GetReferenceTo());
 
         await Context.Message.RemoveAllReactionsAsync();
 
         return DeleteResult.FromSuccess("");
     }
 
-    private RankCardSettings? FindCard()
+    private async Task<RankCard?> FindCard()
     {
         if (Context.User is not SocketGuildUser user)
             return null;
 
-        var cards = cacheService.Get<RankServerSettings>(Context.Guild).Cards.Where(x => x.ImageData != null).ToDictionary(x => x.Role, x => x);
+        var cards = (await rankCardDataService.GetAllByGuildId(Context.Guild.Id)).Where(x => x.Data != null).ToDictionary(x => x.RoleId, x => x);
         if (cards.Count == 0)
             return null;
 
-        foreach (var role in user.Roles.Where(x => x.Mention != "@everyone"))
+        foreach (var role in user.Roles.OrderByDescending(x => x.Position))
         {
-            if (cards.TryGetValue(role.Mention, out var card))
+            if (cards.TryGetValue(role.Id, out var card))
+            {
+                card.Name = role.Name;
                 return card;
+            }
         }
 
-        return cards.TryGetValue("@everyone", out var everyoneCard) ? everyoneCard : cards.First().Value;
+        return cards.First().Value;
     }
 }

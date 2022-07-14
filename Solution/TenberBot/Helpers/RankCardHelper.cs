@@ -4,7 +4,6 @@ using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using TenberBot.Data.Models;
-using TenberBot.Data.Settings.Server;
 using TenberBot.Extensions.ImageSharp;
 using Color = SixLabors.ImageSharp.Color;
 using Image = SixLabors.ImageSharp.Image;
@@ -13,11 +12,11 @@ namespace TenberBot.Helpers
 {
     public class RankCardHelper
     {
-        public static MemoryStream GetStream(RankCardSettings card, SocketGuild guild, SocketUser user, UserLevel userLevel, byte[]? myAvatar, byte[]? userAvatar)
+        public static MemoryStream GetStream(RankCard card, SocketGuild guild, SocketUser user, UserLevel userLevel, byte[]? myAvatar, byte[]? userAvatar)
         {
             var memoryStream = new MemoryStream();
 
-            using (var img = Image.Load(card.ImageData, out IImageFormat format))
+            using (var img = Image.Load(card.Data, out IImageFormat format))
             {
                 img.Mutate(ctx => ctx.AddRankData(card, guild, user, userLevel));
 

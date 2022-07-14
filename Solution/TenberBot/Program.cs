@@ -97,6 +97,7 @@ public class Program
                 services.AddTransient<IGreetingDataService, GreetingDataService>();
                 services.AddTransient<IHugDataService, HugDataService>();
                 services.AddTransient<ISprintSnippetDataService, SprintSnippetDataService>();
+                services.AddTransient<IRankCardDataService, RankCardDataService>();
 
                 services.AddTransient<ISprintDataService, SprintDataService>();
 
