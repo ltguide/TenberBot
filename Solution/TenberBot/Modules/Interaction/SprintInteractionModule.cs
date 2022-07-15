@@ -39,7 +39,6 @@ public class SprintInteractionModule : InteractionModuleBase<SocketInteractionCo
             await Context.Interaction.RespondWithModalAsync<SprintJoinModal>($"sprint:join,{messageId}");
         else
             await RespondAsync("You are already a member of this sprint.", ephemeral: true);
-
     }
 
     [ModalInteraction("sprint:join,*")]

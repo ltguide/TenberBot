@@ -16,8 +16,6 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
 {
     private readonly IUserLevelDataService userLevelDataService;
     private readonly WebService webService;
-    private readonly DiscordSocketClient client;
-    private readonly IVisualDataService visualDataService;
     private readonly IRankCardDataService rankCardDataService;
     private readonly CacheService cacheService;
     private readonly ILogger<StatsCommandModule> logger;
@@ -25,16 +23,12 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
     public StatsCommandModule(
         IUserLevelDataService userLevelDataService,
         WebService webService,
-        DiscordSocketClient client,
-        IVisualDataService visualDataService,
         IRankCardDataService rankCardDataService,
         CacheService cacheService,
         ILogger<StatsCommandModule> logger)
     {
         this.userLevelDataService = userLevelDataService;
         this.webService = webService;
-        this.client = client;
-        this.visualDataService = visualDataService;
         this.rankCardDataService = rankCardDataService;
         this.cacheService = cacheService;
         this.logger = logger;
@@ -55,15 +49,15 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
         if (card == null)
             return DeleteResult.FromError("Unable to find a configured rank card.");
 
-        await userLevelDataService.GetRanks(userLevel);
-
-        var myAvatar = await webService.GetBytes(client.CurrentUser.GetCurrentAvatarUrl(), TimeSpan.FromMinutes(60));
+        var myAvatar = await webService.GetBytes(Context.Client.CurrentUser.GetCurrentAvatarUrl(), TimeSpan.FromMinutes(60));
         if (myAvatar == null)
             return DeleteResult.FromError("Failed to load my avatar. Please try again.");
 
         var userAvatar = await webService.GetBytes(Context.User.GetCurrentAvatarUrl(), TimeSpan.FromMinutes(5));
         if (userAvatar == null)
             return DeleteResult.FromError("Failed to load your avatar. Please try again.");
+
+        await userLevelDataService.GetRanks(userLevel);
 
         using var memoryStream = RankCardHelper.GetStream(card, Context.Guild, Context.User, userLevel, myAvatar, userAvatar);
 

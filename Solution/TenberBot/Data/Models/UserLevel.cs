@@ -91,6 +91,15 @@ public class UserLevel
     [NotMapped]
     public int MessageRank { get; set; }
 
+    public void UpdateMessageLevel()
+    {
+        MessageLevel = CalculateLevel(MessageExperience);
+    }
+
+    public void UpdateVoiceLevel()
+    {
+        VoiceLevel = CalculateLevel(VoiceExperience);
+    }
 
     public void AddMessage(ExperienceChannelSettings settings, int attachments, int lines, int words, int characters)
     {
@@ -148,7 +157,7 @@ public class UserLevel
 
         MessageExperience += experience;
 
-        MessageLevel = CalculateLevel(MessageExperience);
+        UpdateMessageLevel();
     }
 
     public void AddVoice(ExperienceChannelSettings settings, decimal minutes, decimal minutesVideo, decimal minutesStream)
@@ -191,7 +200,7 @@ public class UserLevel
 
         VoiceExperience += experience;
 
-        VoiceLevel = CalculateLevel(VoiceExperience);
+        UpdateVoiceLevel();
     }
 
     private static int CalculateLevel(decimal experience)

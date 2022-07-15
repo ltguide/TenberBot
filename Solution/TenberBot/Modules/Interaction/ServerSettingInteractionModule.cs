@@ -141,9 +141,23 @@ public class ServerSettingInteractionModule : InteractionModuleBase<SocketIntera
 
         if (card.Data != null)
         {
-            using var memoryStream = RankCardHelper.GetStream(card, Context.Guild, Context.User, new UserLevel(), null, null);
-
             card.Name = "Role Name";
+
+            var userLevel = new UserLevel()
+            {
+                MessageExperience = 987654321.99m,
+                MessageRank = 999,
+                VoiceExperience = 123456789.55m,
+                VoiceRank = 555,
+            };
+
+            userLevel.UpdateVoiceLevel();
+            userLevel.UpdateMessageLevel();
+
+            var myAvatar = await webService.GetBytes(Context.Client.CurrentUser.GetCurrentAvatarUrl(), TimeSpan.FromMinutes(60));
+            var userAvatar = await webService.GetBytes(Context.User.GetCurrentAvatarUrl(), TimeSpan.FromMinutes(5));
+
+            using var memoryStream = RankCardHelper.GetStream(card, Context.Guild, Context.User, userLevel, myAvatar, userAvatar);
 
             await Context.Interaction.RespondWithFileAsync(new FileAttachment(memoryStream, $"{Context.User.Id}_{card.Filename}"), text);
         }
