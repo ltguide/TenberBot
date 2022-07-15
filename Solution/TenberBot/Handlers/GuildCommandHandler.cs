@@ -13,6 +13,7 @@ namespace TenberBot.Handlers;
 
 public class GuildCommandHandler : DiscordClientService
 {
+    private List<string> InnerAliases = new();
     private readonly IServiceProvider provider;
     private readonly CommandService commandService;
     private readonly CacheService cacheService;
@@ -37,6 +38,11 @@ public class GuildCommandHandler : DiscordClientService
         commandService.AddTypeReader<TimeSpan>(new TimeSpanReader(), true);
 
         await commandService.AddModulesAsync(Assembly.GetEntryAssembly(), provider);
+
+        InnerAliases.AddRange(commandService.Modules
+            .Where(x => x.Remarks == "Greetings")
+            .SelectMany(x => x.Commands.Where(x => x.Summary != null))
+            .SelectMany(x => x.Aliases));
     }
 
     private async Task MessageReceived(SocketMessage incomingMessage)
@@ -59,7 +65,10 @@ public class GuildCommandHandler : DiscordClientService
             return;
 
         int argPos = 0;
-        if (!message.HasStringPrefix(settings.Prefix, ref argPos) && !message.HasMentionPrefix(Client.CurrentUser, ref argPos))
+        if (message.HasStringPrefix(settings.Prefix, ref argPos) == false
+            && message.HasMentionPrefix(Client.CurrentUser, ref argPos) == false
+            && message.HasInnerAlias(settings.Prefix, InnerAliases, ref argPos) == false
+        )
             return;
 
         await cacheService.Channel(context.Channel);
