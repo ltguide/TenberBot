@@ -147,7 +147,7 @@ public class ServerSettingInteractionModule : InteractionModuleBase<SocketIntera
             {
                 MessageExperience = 987654321.99m,
                 MessageRank = 999,
-                VoiceExperience = 123456789.55m,
+                VoiceExperience = 123400789.55m,
                 VoiceRank = 555,
             };
 

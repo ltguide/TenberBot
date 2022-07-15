@@ -143,7 +143,7 @@ public static class RankCardImageSharpExtensions
             // Voice fill
             .Fill(
                 Color.ParseHex(card.ProgressFill),
-                new RectangleF(364, 224, 414 * .41f, 30)
+                new RectangleF(364, 224, 414 * (float)(userLevel.VoiceExperienceAmountCurrentLevel / userLevel.VoiceExperienceRequiredCurrentLevel), 30)
             )
             // Voice Current Experience
             .DrawText(
