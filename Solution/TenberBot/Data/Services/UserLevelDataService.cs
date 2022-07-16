@@ -1,5 +1,6 @@
 ﻿using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
+using TenberBot.Data.Enums;
 using TenberBot.Data.Models;
 
 namespace TenberBot.Data.Services;
@@ -8,6 +9,10 @@ public interface IUserLevelDataService
 {
     Task<UserLevel?> GetByContext(SocketCommandContext context);
     Task<UserLevel?> GetByIds(ulong guildId, ulong userId);
+
+    Task<IList<UserLevel>> GetPage(ulong guildId, int perPage, int pageNumber, LeaderboardType leaderboardType);
+
+    Task<int> GetCount(ulong guildId, int perPage);
 
     Task<UserLevel> GetRanks(UserLevel dbObject);
 
@@ -37,6 +42,28 @@ public class UserLevelDataService : IUserLevelDataService
         return await dbContext.UserLevels
             .FirstOrDefaultAsync(x => x.GuildId == guildId && x.UserId == userId)
             .ConfigureAwait(false);
+    }
+
+    public async Task<IList<UserLevel>> GetPage(ulong guildId, int perPage, int pageNumber, LeaderboardType leaderboardType)
+    {
+        return await dbContext.UserLevels
+            .Where(x => x.GuildId == guildId)
+            .OrderByDescending(x => leaderboardType == LeaderboardType.Message ? x.MessageExperience : x.VoiceExperience)
+            .ThenBy(x => x.UserId)
+            .Skip(perPage * pageNumber)
+            .Take(perPage)
+            .ToListAsync()
+            .ConfigureAwait(false);
+    }
+
+    public async Task<int> GetCount(ulong guildId, int perPage)
+    {
+        var count = await dbContext.UserLevels
+            .Where(x => x.GuildId == guildId)
+            .CountAsync()
+            .ConfigureAwait(false);
+
+        return (int)Math.Ceiling((decimal)count / perPage) - 1;
     }
 
     public async Task<UserLevel> GetRanks(UserLevel dbObject)

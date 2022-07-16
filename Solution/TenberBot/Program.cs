@@ -15,7 +15,7 @@ namespace TenberBot;
 
 public class Program
 {
-    public static readonly DateTime BaseDuration = new DateTime(9999, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+    public static readonly DateTime BaseDuration = new(9999, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
 
     public static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {

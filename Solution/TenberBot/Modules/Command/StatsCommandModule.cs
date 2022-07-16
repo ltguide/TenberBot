@@ -1,7 +1,9 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using TenberBot.Data.Enums;
 using TenberBot.Data.Models;
+using TenberBot.Data.POCO;
 using TenberBot.Data.Services;
 using TenberBot.Data.Settings.Server;
 using TenberBot.Extensions;
@@ -14,6 +16,7 @@ namespace TenberBot.Modules.Command;
 [Remarks("Information")]
 public class StatsCommandModule : ModuleBase<SocketCommandContext>
 {
+    private readonly IInteractionParentDataService interactionParentDataService;
     private readonly IUserLevelDataService userLevelDataService;
     private readonly WebService webService;
     private readonly IRankCardDataService rankCardDataService;
@@ -21,12 +24,14 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
     private readonly ILogger<StatsCommandModule> logger;
 
     public StatsCommandModule(
+        IInteractionParentDataService interactionParentDataService,
         IUserLevelDataService userLevelDataService,
         WebService webService,
         IRankCardDataService rankCardDataService,
         CacheService cacheService,
         ILogger<StatsCommandModule> logger)
     {
+        this.interactionParentDataService = interactionParentDataService;
         this.userLevelDataService = userLevelDataService;
         this.webService = webService;
         this.rankCardDataService = rankCardDataService;
@@ -66,6 +71,36 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
         await Context.Message.RemoveAllReactionsAsync();
 
         return DeleteResult.FromSuccess("");
+    }
+
+    [Command("leaderboard", ignoreExtraArgs: true)]
+    [Alias("lb")]
+    [Summary("View experience leaderboard.")]
+    public async Task Leaderboard()
+    {
+        var reply = await Context.Message.ReplyAsync("Which leaderboard do you want to view?");
+
+        var parent = await interactionParentDataService.Set(new InteractionParent
+        {
+            GuildId = Context.Guild.Id,
+            ChannelId = Context.Channel.Id,
+            UserId = Context.User.Id,
+            InteractionParentType = InteractionParentType.Leaderboard,
+            MessageId = reply.Id,
+        }.SetReference(new LeaderboardView()));
+
+        try
+        {
+            if (parent != null)
+                await Context.Channel.DeleteMessageAsync(parent.Value);
+        }
+        catch (Exception) { }
+
+        var components = new ComponentBuilder()
+            .WithButton("Message", $"leaderboard:view-message,{reply.Id}", emote: new Emoji("📝"))
+            .WithButton("Voice", $"leaderboard:view-voice,{reply.Id}", emote: new Emoji("🎤"));
+
+        await reply.ModifyAsync(x => x.Components = components.Build());
     }
 
     private async Task<RankCard?> FindCard()

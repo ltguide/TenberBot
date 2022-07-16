@@ -8,38 +8,37 @@ using TenberBot.Extensions.ImageSharp;
 using Color = SixLabors.ImageSharp.Color;
 using Image = SixLabors.ImageSharp.Image;
 
-namespace TenberBot.Helpers
+namespace TenberBot.Helpers;
+
+public class RankCardHelper
 {
-    public class RankCardHelper
+    public static MemoryStream GetStream(RankCard card, SocketGuild guild, SocketUser user, UserLevel userLevel, byte[]? myAvatar, byte[]? userAvatar)
     {
-        public static MemoryStream GetStream(RankCard card, SocketGuild guild, SocketUser user, UserLevel userLevel, byte[]? myAvatar, byte[]? userAvatar)
+        var memoryStream = new MemoryStream();
+
+        using (var img = Image.Load(card.Data, out IImageFormat format))
         {
-            var memoryStream = new MemoryStream();
+            img.Mutate(ctx => ctx.AddRankData(card, guild, user, userLevel));
 
-            using (var img = Image.Load(card.Data, out IImageFormat format))
+            if (myAvatar != null)
             {
-                img.Mutate(ctx => ctx.AddRankData(card, guild, user, userLevel));
+                using var myAvatarImage = Image.Load(myAvatar);
+                myAvatarImage.Mutate(ctx => ctx.Resize(60, 60).BackgroundColor(Color.Black));
 
-                if (myAvatar != null)
-                {
-                    using var myAvatarImage = Image.Load(myAvatar);
-                    myAvatarImage.Mutate(ctx => ctx.Resize(60, 60).BackgroundColor(Color.Black));
-
-                    img.Mutate(ctx => ctx.DrawImage(myAvatarImage, new Point(140, 190), new GraphicsOptions { AlphaCompositionMode = PixelAlphaCompositionMode.DestOver }));
-                }
-
-                if (userAvatar != null)
-                {
-                    using var userAvatarImage = Image.Load(userAvatar);
-                    userAvatarImage.Mutate(ctx => ctx.Resize(160, 160).ApplyRoundedCorners(80));
-
-                    img.Mutate(ctx => ctx.DrawImage(userAvatarImage, new Point(15, 40), new GraphicsOptions { AlphaCompositionMode = PixelAlphaCompositionMode.DestOver }));
-                }
-
-                img.Save(memoryStream, format);
+                img.Mutate(ctx => ctx.DrawImage(myAvatarImage, new Point(140, 190), new GraphicsOptions { AlphaCompositionMode = PixelAlphaCompositionMode.DestOver }));
             }
 
-            return memoryStream;
+            if (userAvatar != null)
+            {
+                using var userAvatarImage = Image.Load(userAvatar);
+                userAvatarImage.Mutate(ctx => ctx.Resize(160, 160).ApplyRoundedCorners(80));
+
+                img.Mutate(ctx => ctx.DrawImage(userAvatarImage, new Point(15, 40), new GraphicsOptions { AlphaCompositionMode = PixelAlphaCompositionMode.DestOver }));
+            }
+
+            img.Save(memoryStream, format);
         }
+
+        return memoryStream;
     }
 }

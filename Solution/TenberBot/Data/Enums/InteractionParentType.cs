@@ -8,4 +8,5 @@ public enum InteractionParentType
     SprintSnippet,
     Sprint,
     UserTimer,
+    Leaderboard,
 }

@@ -3,7 +3,6 @@ using Discord.Interactions;
 using TenberBot.Data.Enums;
 using TenberBot.Data.Models;
 using TenberBot.Data.Services;
-using TenberBot.Extensions;
 
 namespace TenberBot.Modules.Interaction;
 

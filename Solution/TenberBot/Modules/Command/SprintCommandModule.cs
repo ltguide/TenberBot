@@ -132,8 +132,12 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
 
         await reply.ModifyAsync(x => x.Components = components.Build());
 
-        if (parent != null)
-            await Context.Channel.DeleteMessageAsync(parent.Value);
+        try
+        {
+            if (parent != null)
+                await Context.Channel.DeleteMessageAsync(parent.Value);
+        }
+        catch (Exception) { }
 
         Context.Message.DeleteSoon();
     }
