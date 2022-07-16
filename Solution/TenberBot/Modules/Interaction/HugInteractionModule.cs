@@ -87,6 +87,6 @@ public class HugInteractionModule : InteractionModuleBase<SocketInteractionConte
     {
         var embed = await hugDataService.GetAllAsEmbed(hugType);
 
-        await Context.Channel.GetAndModify(messageId, (x) => x.Embed = embed);
+        await Context.Channel.GetAndModify(messageId, x => x.Embed = embed);
     }
 }

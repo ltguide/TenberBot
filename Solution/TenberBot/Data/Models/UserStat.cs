@@ -35,4 +35,6 @@ public class UserStat
     public int CoinFlipRecord { get; set; }
 
     public string CoinFlipStreakText => $"{CoinFlipStreak} flip{(CoinFlipStreak != 1 ? "s" : "")}";
+
+    public int TimersCreated { get; set; }
 }

@@ -62,7 +62,7 @@ public class SprintInteractionModule : InteractionModuleBase<SocketInteractionCo
 
         await RespondAsync($"{Context.User.GetDisplayNameSanitized()} has joined the sprint!");
 
-        await Context.Channel.GetAndModify(parent.MessageId, (x) => x.Embed = sprint.GetAsEmbed());
+        await Context.Channel.GetAndModify(parent.MessageId, x => x.Embed = sprint.GetAsEmbed());
 
         _ = Task.Delay(TimeSpan.FromSeconds(5)).ContinueWith(_ => Context.Interaction.DeleteOriginalResponseAsync());
     }
@@ -108,7 +108,7 @@ public class SprintInteractionModule : InteractionModuleBase<SocketInteractionCo
 
             await RespondAsync($"Hey, {sprint.UserMentions}, the sprint has been stopped early.");
 
-            await Context.Channel.GetAndModify(parent.MessageId, (x) =>
+            await Context.Channel.GetAndModify(parent.MessageId, x =>
             {
                 x.Content = null;
                 x.Embed = sprint.GetAsEmbed();
@@ -125,7 +125,7 @@ public class SprintInteractionModule : InteractionModuleBase<SocketInteractionCo
 
             await RespondAsync($"{Context.User.GetDisplayNameSanitized()} has left the sprint early.");
 
-            await Context.Channel.GetAndModify(parent.MessageId, (x) => x.Embed = sprint.GetAsEmbed());
+            await Context.Channel.GetAndModify(parent.MessageId, x => x.Embed = sprint.GetAsEmbed());
         }
 
         _ = Task.Delay(TimeSpan.FromSeconds(5)).ContinueWith(_ => Context.Interaction.DeleteOriginalResponseAsync());

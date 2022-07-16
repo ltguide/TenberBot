@@ -83,6 +83,6 @@ public class BotStatusInteractionModule : InteractionModuleBase<SocketInteractio
     {
         var embed = await botStatusDataService.GetAllAsEmbed();
 
-        await Context.Channel.GetAndModify(messageId, (x) => x.Embed = embed);
+        await Context.Channel.GetAndModify(messageId, x => x.Embed = embed);
     }
 }

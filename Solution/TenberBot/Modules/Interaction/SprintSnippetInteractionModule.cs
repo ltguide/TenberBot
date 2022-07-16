@@ -87,6 +87,6 @@ public class SprintSnippetInteractionModule : InteractionModuleBase<SocketIntera
     {
         var embed = await sprintSnippetDataService.GetAllAsEmbed(sprintSnippetType);
 
-        await Context.Channel.GetAndModify(messageId, (x) => x.Embed = embed);
+        await Context.Channel.GetAndModify(messageId, x => x.Embed = embed);
     }
 }

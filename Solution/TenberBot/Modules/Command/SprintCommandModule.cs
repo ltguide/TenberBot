@@ -12,6 +12,8 @@ namespace TenberBot.Modules.Command;
 
 public class SprintCommandModule : ModuleBase<SocketCommandContext>
 {
+    private const int MaxDuration = 86400;
+
     private readonly SprintService sprintService;
     private readonly ISprintSnippetDataService sprintSnippetDataService;
     private readonly ISprintDataService sprintDataService;
@@ -72,7 +74,7 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
         if (userSprint != null)
             return DeleteResult.FromError($"You are already a member of a sprint that will finish in {TimestampTag.FromDateTime(userSprint.Sprint.FinishDate.ToUniversalTime(), TimestampTagStyles.Relative)}");
 
-        if (duration.TotalSeconds < 60 || duration.TotalSeconds > 86400)
+        if (duration.TotalSeconds < 60 || duration.TotalSeconds > MaxDuration)
             return DeleteResult.FromError("Sorry, the duration of a sprint must be at least a **minute** and no more than a **day**.");
 
         var sprint = new Sprint
@@ -82,7 +84,7 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
             SprintMode = settings.Mode,
             StartDate = DateTime.Now.AddSeconds(180),
             FinishDate = DateTime.Now.AddSeconds(180 + duration.TotalSeconds),
-            Duration = new DateTime(9999, 12, 31, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(Math.Min(86399, duration.TotalSeconds)),
+            Duration = Program.BaseDuration.AddSeconds(Math.Min(MaxDuration - 1, duration.TotalSeconds)),
             Users = { new UserSprint { UserId = Context.User.Id, JoinDate = DateTime.Now, Message = message } },
         };
 

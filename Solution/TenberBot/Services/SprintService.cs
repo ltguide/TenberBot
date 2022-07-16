@@ -63,7 +63,7 @@ public class SprintService : DiscordClientService
 
                 if (sprint.SprintStatus == SprintStatus.Finished)
                 {
-                    await channel.GetAndModify(parent.MessageId, (x) =>
+                    await channel.GetAndModify(parent.MessageId, x =>
                     {
                         x.Embed = sprint.GetAsEmbed();
                         x.Components = new ComponentBuilder().Build();
@@ -72,7 +72,7 @@ public class SprintService : DiscordClientService
                     await interactionParentDataService.Delete(parent);
                 }
                 else
-                    await channel.GetAndModify(parent.MessageId, (x) =>
+                    await channel.GetAndModify(parent.MessageId, x =>
                     {
                         x.Embed = sprint.GetAsEmbed();
                         x.Content = null;
@@ -105,7 +105,7 @@ public class SprintService : DiscordClientService
         taskCompletionSource?.TrySetResult();
     }
 
-    private int GetDelay(IList<Sprint> sprints)
+    private static int GetDelay(IList<Sprint> sprints)
     {
         var nextDates = new List<DateTime>();
 

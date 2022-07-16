@@ -87,6 +87,6 @@ public class GreetingInteractionModule : InteractionModuleBase<SocketInteraction
     {
         var embed = await greetingDataService.GetAllAsEmbed(greetingType);
 
-        await Context.Channel.GetAndModify(messageId, (x) => x.Embed = embed);
+        await Context.Channel.GetAndModify(messageId, x => x.Embed = embed);
     }
 }

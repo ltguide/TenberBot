@@ -15,6 +15,8 @@ namespace TenberBot;
 
 public class Program
 {
+    public static readonly DateTime BaseDuration = new DateTime(9999, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+
     public static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         Converters = { new IEmoteJsonConverter(), }
@@ -75,6 +77,9 @@ public class Program
                 services.AddSingleton<SprintService>();
                 services.AddHostedService(provider => provider.GetRequiredService<SprintService>());
 
+                services.AddSingleton<UserTimerService>();
+                services.AddHostedService(provider => provider.GetRequiredService<UserTimerService>());
+
                 services.AddHostedService<GuildCommandHandler>();
                 services.AddHostedService<GuildExperienceHandler>();
 
@@ -104,6 +109,7 @@ public class Program
                 services.AddTransient<IUserVoiceChannelDataService, UserVoiceChannelDataService>();
                 services.AddTransient<IUserLevelDataService, UserLevelDataService>();
                 services.AddTransient<IUserStatDataService, UserStatDataService>();
+                services.AddTransient<IUserTimerDataService, UserTimerDataService>();
 
                 services.AddHttpClient<WebService>();
             })

@@ -45,4 +45,6 @@ public class DataContext : DbContext
     public DbSet<Sprint> Sprints { get; set; }
 
     public DbSet<UserSprint> UserSprints { get; set; }
+
+    public DbSet<UserTimer> UserTimers { get; set; }
 }

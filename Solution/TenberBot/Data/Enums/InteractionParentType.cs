@@ -7,4 +7,5 @@ public enum InteractionParentType
     Hug,
     SprintSnippet,
     Sprint,
+    UserTimer,
 }
