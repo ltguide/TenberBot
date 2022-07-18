@@ -105,6 +105,7 @@ public class UserLevelDataService : IUserLevelDataService
         return await query
             .Skip(view.PerPage * view.CurrentPage)
             .Take(view.PerPage)
+            .AsNoTracking()
             .ToListAsync()
             .ConfigureAwait(false);
     }

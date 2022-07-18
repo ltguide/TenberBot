@@ -6,7 +6,7 @@ public class LeaderboardView
 {
     public int MinimumExperience { get; set; } = 50;
 
-    public int PerPage { get; set; } = 2;
+    public int PerPage { get; set; } = 15;
 
     public int CurrentPage { get; set; }
 
@@ -24,7 +24,7 @@ public class LeaderboardView
         {
             "first" => 0,
             "previous" => Math.Max(0, CurrentPage - 1),
-            "user" => UserPage,
+            "user" => Math.Max(0, UserPage),
             "next" => Math.Min(PageCount, CurrentPage + 1),
             "last" => PageCount,
             "refresh" => CurrentPage,
