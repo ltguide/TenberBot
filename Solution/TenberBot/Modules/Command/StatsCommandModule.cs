@@ -78,6 +78,8 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
     [Summary("View experience leaderboard.")]
     public async Task Leaderboard()
     {
+        await Context.Message.AddReactionAsync(cacheService.Get<EmoteServerSettings>(Context.Guild).Success);
+
         var reply = await Context.Message.ReplyAsync("Which leaderboard do you want to view?");
 
         var parent = await interactionParentDataService.Set(new InteractionParent
