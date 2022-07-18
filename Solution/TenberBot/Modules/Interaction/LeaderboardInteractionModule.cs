@@ -96,7 +96,7 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
         var componentBuilder = new ComponentBuilder()
             .WithButton(customId: $"leaderboard:page-first,{messageId}", emote: new Emoji("⏮"))
             .WithButton(customId: $"leaderboard:page-previous,{messageId}", emote: new Emoji("⏪"))
-            .WithButton("Me", $"leaderboard:page-user,{messageId}", emote: new Emoji("📍"))
+            .WithButton(customId: $"leaderboard:page-user,{messageId}", emote: new Emoji("📍"))
             .WithButton(customId: $"leaderboard:page-next,{messageId}", emote: new Emoji("⏩"))
             .WithButton(customId: $"leaderboard:page-last,{messageId}", emote: new Emoji("⏭"));
 
@@ -116,7 +116,10 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
         if (view.UserPage == -1)
             return $"Sorry, {Context.User.Id.GetUserMention()}, you need at least {view.MinimumExperience:N0} experience to show up on the {view.LeaderboardType} Leaderboard. I'd love to hear more about you! 💖";
 
-        return $"Hey, {Context.User.Id.GetUserMention()}, you are on **page {view.UserPage + 1}** of the {view.LeaderboardType} Leaderboard. Congrats! ✨";
+        var flavor = view.UserPage == 0 ? "Congrats! ✨" : "You're doing awesome! 💖";
+        var pin = view.CurrentPage != view.UserPage ? "\nYou can click the 📍 button to jump to your page." : "";
+
+        return $"Hey, {Context.User.Id.GetUserMention()}, you are on **page {view.UserPage + 1}** of the {view.LeaderboardType} Leaderboard. {flavor}{pin}";
     }
 
     private async Task<Embed> GetEmbed(LeaderboardView view)
@@ -139,10 +142,10 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
         Func<UserLevel, int, string> wtf;
 
         if (view.LeaderboardType == LeaderboardType.Message)
-            wtf = (x, a) => $"`#{a + view.BaseRank,-4}` {(x.UserId == Context.User.Id ? x.UserId.GetUserMention() : x.ServerUser.DisplayName.SanitizeMD())} (level {x.MessageLevel,4}) has {x.MessageExperience:N2} exp";
+            wtf = (x, a) => $"`#{a + view.BaseRank,-4}` {(x.UserId == Context.User.Id ? x.UserId.GetUserMention() : x.ServerUser.DisplayName.SanitizeMD())} is level **{x.MessageLevel,4}** ({x.MessageExperience:N2} exp)";
 
         else
-            wtf = (x, a) => $"`#{a + view.BaseRank,-4}` {(x.UserId == Context.User.Id ? x.UserId.GetUserMention() : x.ServerUser.DisplayName.SanitizeMD())} (level {x.VoiceLevel,4}) has {x.VoiceExperience:N2} exp";
+            wtf = (x, a) => $"`#{a + view.BaseRank,-4}` {(x.UserId == Context.User.Id ? x.UserId.GetUserMention() : x.ServerUser.DisplayName.SanitizeMD())} is level **{x.VoiceLevel,4}** ({x.VoiceExperience:N2} exp)";
 
         embedBuilder.WithDescription(string.Join("\n", userLevels.Select(wtf)));
 

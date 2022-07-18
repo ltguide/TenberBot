@@ -6,7 +6,7 @@ public class LeaderboardView
 {
     public int MinimumExperience { get; set; } = 50;
 
-    public int PerPage { get; set; } = 15;
+    public int PerPage { get; set; } = 10;
 
     public int CurrentPage { get; set; }
 
