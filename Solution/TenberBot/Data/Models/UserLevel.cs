@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TenberBot.Data.Enums;
 using TenberBot.Data.Settings.Channel;
 
 namespace TenberBot.Data.Models;
@@ -93,6 +94,14 @@ public class UserLevel
 
     [NotMapped]
     public int MessageRank { get; set; }
+
+    public (int, decimal) GetLeaderboardData(LeaderboardType leaderboardType)
+    {
+        if (leaderboardType == LeaderboardType.Message)
+            return (MessageLevel, MessageExperience);
+
+        return (VoiceLevel, VoiceExperience);
+    }
 
     public void UpdateMessageLevel()
     {

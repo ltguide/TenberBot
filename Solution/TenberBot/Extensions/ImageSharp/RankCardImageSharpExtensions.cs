@@ -94,7 +94,7 @@ public static class RankCardImageSharpExtensions
                     Origin = new PointF(780, 96),
                     HorizontalAlignment = HorizontalAlignment.Right,
                 },
-                $"{userLevel.MessageExperience:N2} exp",
+                $"{userLevel.MessageExperience:N2} XP",
                 Color.ParseHex(card.ExperienceColor)
             )
             // Message fill
@@ -137,7 +137,7 @@ public static class RankCardImageSharpExtensions
                     Origin = new PointF(780, 182),
                     HorizontalAlignment = HorizontalAlignment.Right,
                 },
-                $"{userLevel.VoiceExperience:N2} exp",
+                $"{userLevel.VoiceExperience:N2} XP",
                 Color.ParseHex(card.ExperienceColor)
             )
             // Voice fill
