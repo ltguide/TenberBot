@@ -11,15 +11,16 @@ public static class IUserMessageExtensions
             .ContinueWith(_ => message.DeleteAsync());
     }
 
-    public static bool HasInnerAlias(this IUserMessage message, string prefix, IList<string> aliases, ref int argPos)
+    public static bool HasInnerAlias(this IUserMessage message, string prefix, IList<string> aliases, out string command)
     {
-        foreach (Match match in Regex.Matches(message.Content, @$" {Regex.Escape(prefix)}(\S+)", RegexOptions.IgnoreCase))
-            if (aliases.Contains(match.Groups[1].Value.ToLower()))
-            {
-                argPos = match.Index + 2;
+        foreach (Match match in Regex.Matches(message.Content, @$" {Regex.Escape(prefix)}([-\w]+)", RegexOptions.IgnoreCase))
+        {
+            command = match.Groups[1].Value.ToLower();
+            if (aliases.Contains(command))
                 return true;
-            }
+        }
 
+        command = "";
         return false;
     }
 }

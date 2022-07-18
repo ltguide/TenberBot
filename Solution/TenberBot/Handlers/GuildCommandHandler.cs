@@ -13,7 +13,7 @@ namespace TenberBot.Handlers;
 
 public class GuildCommandHandler : DiscordClientService
 {
-    private List<string> InnerAliases = new();
+    private readonly List<string> InnerAliases = new();
     private readonly IServiceProvider provider;
     private readonly CommandService commandService;
     private readonly CacheService cacheService;
@@ -53,27 +53,28 @@ public class GuildCommandHandler : DiscordClientService
         if (message.Source != MessageSource.User)
             return;
 
-        if (message.Channel is not SocketGuildChannel)
+        if (message.Channel is not SocketGuildChannel channel)
             return;
 
-        var context = new SocketCommandContext(Client, message);
-
-        if (cacheService.TryGetValue<BasicServerSettings>(context.Guild, out var settings) == false)
+        if (cacheService.TryGetValue<BasicServerSettings>(channel.Guild, out var settings) == false)
             return;
 
         if (string.IsNullOrWhiteSpace(settings.Prefix))
             return;
 
+        var context = new SocketCommandContext(Client, message);
+
+        await cacheService.Channel(channel);
+
         int argPos = 0;
-        if (message.HasStringPrefix(settings.Prefix, ref argPos) == false
-            && message.HasMentionPrefix(Client.CurrentUser, ref argPos) == false
-            && message.HasInnerAlias(settings.Prefix, InnerAliases, ref argPos) == false
-        )
-            return;
+        if (message.HasStringPrefix(settings.Prefix, ref argPos) || message.HasMentionPrefix(Client.CurrentUser, ref argPos))
+            await commandService.ExecuteAsync(context, argPos, provider);
 
-        await cacheService.Channel(context.Channel);
+        else if (message.Content == Client.CurrentUser.Id.GetUserMention())
+            await commandService.ExecuteAsync(context, "just-bot-name", provider);
 
-        await commandService.ExecuteAsync(context, argPos, provider);
+        else if (message.HasInnerAlias(settings.Prefix, InnerAliases, out var command))
+            await commandService.ExecuteAsync(context, command, provider);
     }
 
     public async Task CommandExecuted(Optional<CommandInfo> command, ICommandContext context, IResult result)

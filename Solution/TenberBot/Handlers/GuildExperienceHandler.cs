@@ -51,9 +51,7 @@ public class GuildExperienceHandler : DiscordClientService
         if (message.Channel is not SocketGuildChannel channel)
             return;
 
-        var context = new SocketCommandContext(Client, message);
-
-        if (cacheService.TryGetValue<BasicServerSettings>(context.Guild, out var settings) && string.IsNullOrWhiteSpace(settings.Prefix) == false)
+        if (cacheService.TryGetValue<BasicServerSettings>(channel.Guild, out var settings) && string.IsNullOrWhiteSpace(settings.Prefix) == false)
         {
             int argPos = 0;
             if (message.HasStringPrefix(settings.Prefix, ref argPos) || message.HasMentionPrefix(Client.CurrentUser, ref argPos))
@@ -65,7 +63,7 @@ public class GuildExperienceHandler : DiscordClientService
 
         await cacheService.Channel(channel);
 
-        var userLevel = await GetUserLevel(context.Guild.Id, context.User.Id);
+        var userLevel = await GetUserLevel(channel.Guild.Id, message.Author);
 
         userLevel.AddMessage(
             cacheService.Get<ExperienceChannelSettings>(channel),
@@ -89,7 +87,11 @@ public class GuildExperienceHandler : DiscordClientService
 
             var channel = guild.VoiceChannels.FirstOrDefault(x => x.Id == userVoiceChannel.ChannelId);
             if (channel != null)
-                await VoiceDisconnected(channel, userVoiceChannel);
+            {
+                var userLevel = await userLevelDataService.GetByIds(guild.Id, userVoiceChannel.UserId);
+                if (userLevel != null)
+                    await VoiceDisconnected(userLevel, channel, userVoiceChannel);
+            }
 
             await userVoiceChannelDataService.Delete(userVoiceChannel);
         }
@@ -128,7 +130,9 @@ public class GuildExperienceHandler : DiscordClientService
             var userVoiceChannel = await userVoiceChannelDataService.GetByIds(before.VoiceChannel.Id, socketUser.Id);
             if (userVoiceChannel != null)
             {
-                await VoiceDisconnected(before.VoiceChannel, userVoiceChannel);
+                var userLevel = await GetUserLevel(userVoiceChannel.GuildId, socketUser);
+
+                await VoiceDisconnected(userLevel, before.VoiceChannel, userVoiceChannel);
 
                 await userVoiceChannelDataService.Delete(userVoiceChannel);
             }
@@ -141,6 +145,8 @@ public class GuildExperienceHandler : DiscordClientService
             if (socketUser is not SocketGuildUser user)
                 return;
 
+            // TODO add to ServerUser
+
             await userVoiceChannelDataService.Add(new UserVoiceChannel
             {
                 GuildId = user.Guild.Id,
@@ -151,14 +157,22 @@ public class GuildExperienceHandler : DiscordClientService
         }
     }
 
-    private async Task<UserLevel> GetUserLevel(ulong guildId, ulong userId)
+    private async Task<UserLevel> GetUserLevel(ulong guildId, SocketUser user)
     {
-        var userLevel = await userLevelDataService.GetByIds(guildId, userId);
+        var userLevel = await userLevelDataService.GetByIds(guildId, user.Id);
         if (userLevel == null)
         {
-            userLevel = new UserLevel { GuildId = guildId, UserId = userId };
+            userLevel = new UserLevel
+            {
+                GuildId = guildId,
+                UserId = user.Id,
+                ServerUser = new ServerUser(user) { GuildId = guildId, },
+            };
+
             await userLevelDataService.Add(userLevel);
         }
+        else
+            userLevel.ServerUser.Clone(user);
 
         return userLevel;
     }
@@ -187,11 +201,10 @@ public class GuildExperienceHandler : DiscordClientService
         await userVoiceChannelDataService.Update(userVoiceChannel, null!);
     }
 
-    private async Task VoiceDisconnected(IChannel channel, UserVoiceChannel userVoiceChannel)
+
+    private async Task VoiceDisconnected(UserLevel userLevel, IChannel channel, UserVoiceChannel userVoiceChannel)
     {
         await cacheService.Channel(channel);
-
-        var userLevel = await GetUserLevel(userVoiceChannel.GuildId, userVoiceChannel.UserId);
 
         userLevel.AddVoice(
             cacheService.Get<ExperienceChannelSettings>(channel),

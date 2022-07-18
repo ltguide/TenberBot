@@ -62,7 +62,7 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
         if (userAvatar == null)
             return DeleteResult.FromError("Failed to load your avatar. Please try again.");
 
-        await userLevelDataService.GetRanks(userLevel);
+        await userLevelDataService.LoadRanks(userLevel);
 
         using var memoryStream = RankCardHelper.GetStream(card, Context.Guild, Context.User, userLevel, myAvatar, userAvatar);
 

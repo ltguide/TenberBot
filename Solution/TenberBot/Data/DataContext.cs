@@ -18,9 +18,17 @@ public class DataContext : DbContext
 #endif
     }
 
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ServerUser>()
+            .HasKey(x => new { x.GuildId, x.UserId });
+    }
+
     public DbSet<ServerSetting> ServerSettings { get; set; }
 
     public DbSet<ChannelSetting> ChannelSettings { get; set; }
+
+    public DbSet<ServerUser> ServerUsers { get; set; }
 
     public DbSet<UserVoiceChannel> UserVoiceChannels { get; set; }
 

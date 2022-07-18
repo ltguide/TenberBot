@@ -42,7 +42,7 @@ public class InteractionParent
         return this;
     }
 
-    internal void Update(InteractionParent newObject)
+    public void Update(InteractionParent newObject)
     {
         UserId = newObject.UserId;
         MessageId = newObject.MessageId;

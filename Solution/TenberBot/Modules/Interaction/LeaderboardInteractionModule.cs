@@ -10,8 +10,6 @@ namespace TenberBot.Modules.Interaction;
 
 public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
-    private const int PerPage = 15;
-
     private readonly IUserLevelDataService userLevelDataService;
     private readonly IInteractionParentDataService interactionParentDataService;
 
@@ -38,9 +36,10 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
 
         var view = parent.GetReference<LeaderboardView>()!;
 
-        view.PageNumber = 0;
-        view.PageCount = await userLevelDataService.GetCount(Context.Guild.Id, PerPage);
         view.LeaderboardType = Enum.Parse<LeaderboardType>(leaderboardType, true);
+        view.UserPage = await userLevelDataService.GetUserPage(parent.GuildId, parent.UserId.Value, view);
+        view.CurrentPage = 0;
+        view.PageCount = await userLevelDataService.GetCount(Context.Guild.Id, view);
 
         parent.SetReference(view);
 
@@ -53,7 +52,7 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
         await ModifyOriginalResponseAsync(x =>
         {
             x.Components = GetButtons(messageId, view.LeaderboardType);
-            x.Content = null;
+            x.Content = GetContent(view);
             x.Embed = embed;
         });
     }
@@ -71,12 +70,11 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
             return;
         }
 
-        var pageCount = await userLevelDataService.GetCount(Context.Guild.Id, PerPage);
-
         var view = parent.GetReference<LeaderboardView>()!;
 
-        view.PageCount = await userLevelDataService.GetCount(Context.Guild.Id, PerPage);
-        view.PageNumber = await GetPageNumber(page, parent, view);
+        view.UserPage = await userLevelDataService.GetUserPage(parent.GuildId, parent.UserId.Value, view);
+        view.PageCount = await userLevelDataService.GetCount(Context.Guild.Id, view);
+        view.CurrentPage = view.GetNewPage(page);
 
         parent.SetReference(view);
 
@@ -86,30 +84,11 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
 
         var embed = await GetEmbed(view);
 
-        await ModifyOriginalResponseAsync(x => x.Embed = embed);
-    }
-
-    private async Task<int> GetPageNumber(string page, InteractionParent parent, LeaderboardView view)
-    {
-        if (page == "user")
+        await ModifyOriginalResponseAsync(x =>
         {
-            var userLevel = await userLevelDataService.GetByIds(parent.GuildId, parent.UserId!.Value);
-            if (userLevel == null)
-                return 0;
-
-            await userLevelDataService.GetRanks(userLevel);
-
-            return (int)Math.Floor((decimal)(view.LeaderboardType == LeaderboardType.Message ? userLevel.MessageRank : userLevel.VoiceRank) / PerPage);
-        }
-
-        return page switch
-        {
-            "first" => 0,
-            "previous" => Math.Max(0, view.PageNumber - 1),
-            "next" => Math.Min(view.PageCount, view.PageNumber + 1),
-            "last" => view.PageCount,
-            _ => throw new NotImplementedException(),
-        };
+            x.Content = GetContent(view);
+            x.Embed = embed;
+        });
     }
 
     private static MessageComponent GetButtons(ulong messageId, LeaderboardType leaderboardType)
@@ -117,7 +96,7 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
         var componentBuilder = new ComponentBuilder()
             .WithButton(customId: $"leaderboard:page-first,{messageId}", emote: new Emoji("⏮"))
             .WithButton(customId: $"leaderboard:page-previous,{messageId}", emote: new Emoji("⏪"))
-            .WithButton(customId: $"leaderboard:page-user,{messageId}", emote: new Emoji("🪞"))
+            .WithButton("Me", $"leaderboard:page-user,{messageId}", emote: new Emoji("📍"))
             .WithButton(customId: $"leaderboard:page-next,{messageId}", emote: new Emoji("⏩"))
             .WithButton(customId: $"leaderboard:page-last,{messageId}", emote: new Emoji("⏭"));
 
@@ -127,31 +106,43 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
         if (leaderboardType == LeaderboardType.Voice)
             componentBuilder.WithButton("Switch to Message", $"leaderboard:view-message,{messageId}", ButtonStyle.Secondary, new Emoji("📝"), row: 1);
 
+        componentBuilder.WithButton(customId: $"leaderboard:page-refresh,{messageId}", style: ButtonStyle.Secondary, emote: new Emoji("🔁"), row: 1);
+
         return componentBuilder.Build();
+    }
+
+    private string GetContent(LeaderboardView view)
+    {
+        if (view.UserPage == -1)
+            return $"Sorry, {Context.User.Id.GetUserMention()}, you need at least {view.MinimumExperience:N0} experience to show up on the {view.LeaderboardType} Leaderboard. I'd love to hear more about you! 💖";
+
+        return $"Hey, {Context.User.Id.GetUserMention()}, you are on **page {view.UserPage + 1}** of the {view.LeaderboardType} Leaderboard. Congrats! ✨";
     }
 
     private async Task<Embed> GetEmbed(LeaderboardView view)
     {
-        var userLevels = await userLevelDataService.GetPage(Context.Guild.Id, PerPage, view.PageNumber, view.LeaderboardType);
+        var userLevels = await userLevelDataService.GetPage(Context.Guild.Id, view);
 
         var embedBuilder = new EmbedBuilder
         {
-            Title = $"Viewing {view.LeaderboardType} Leaderboard",
-        }.WithFooter($"{view.PageNumber + 1} of {view.PageCount + 1}");
+            Author = Context.User.GetEmbedAuthor($"is viewing the {view.LeaderboardType} Leaderboard"),
+        }
+        .WithFooter($"Page {view.CurrentPage + 1} of {view.PageCount + 1}")
+        .WithCurrentTimestamp();
 
         if (userLevels.Count == 0)
         {
-            embedBuilder.WithDescription("no results");
+            embedBuilder.WithDescription("No results found.");
             return embedBuilder.Build();
         }
 
         Func<UserLevel, int, string> wtf;
 
         if (view.LeaderboardType == LeaderboardType.Message)
-            wtf = (x, a) => $"`#{a + 1 + (PerPage * view.PageNumber),-4}` {x.UserId.GetUserMention()} (level {x.MessageLevel,4}) has {x.MessageExperience:N2} exp";
+            wtf = (x, a) => $"`#{a + view.BaseRank,-4}` {(x.UserId == Context.User.Id ? x.UserId.GetUserMention() : x.ServerUser.DisplayName.SanitizeMD())} (level {x.MessageLevel,4}) has {x.MessageExperience:N2} exp";
 
         else
-            wtf = (x, a) => $"`#{a + 1 + (PerPage * view.PageNumber),-4}` {x.UserId.GetUserMention()} (level {x.VoiceLevel,4}) has {x.VoiceExperience:N2} exp";
+            wtf = (x, a) => $"`#{a + view.BaseRank,-4}` {(x.UserId == Context.User.Id ? x.UserId.GetUserMention() : x.ServerUser.DisplayName.SanitizeMD())} (level {x.VoiceLevel,4}) has {x.VoiceExperience:N2} exp";
 
         embedBuilder.WithDescription(string.Join("\n", userLevels.Select(wtf)));
 

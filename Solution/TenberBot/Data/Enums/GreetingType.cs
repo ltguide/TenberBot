@@ -8,4 +8,6 @@ public enum GreetingType
     Afternoon,
     Evening,
     Night,
+    Day,
+    BotName,
 }

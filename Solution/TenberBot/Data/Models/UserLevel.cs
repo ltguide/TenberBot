@@ -74,6 +74,9 @@ public class UserLevel
     [Precision(20, 0)]
     public decimal ExcludedMessageAttachments { get; set; }
 
+    [ForeignKey("GuildId,UserId")]
+    public ServerUser ServerUser { get; set; } = null!;
+
     public decimal VoiceExperienceTotalCurrentLevel => CalculateExperience(VoiceLevel - 1);
     public decimal VoiceExperienceTotalNextLevel => CalculateExperience(VoiceLevel);
     public decimal VoiceExperienceAmountCurrentLevel => VoiceExperience - VoiceExperienceTotalCurrentLevel;

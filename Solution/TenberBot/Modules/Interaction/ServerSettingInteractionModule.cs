@@ -43,7 +43,7 @@ public class ServerSettingInteractionModule : InteractionModuleBase<SocketIntera
         await Set(settings);
 
         if (settings.Prefix == "")
-            await RespondAsync($"Server setting:\n\n> **Prefix**: *none*\n\nI am not able to respond to chat messages.");
+            await RespondAsync($"Server setting:\n\n> **Prefix**: *none*\n\nI am not able to respond to chat messages except via {Context.Client.CurrentUser.Id.GetUserMention()}.");
         else
             await RespondAsync($"Server setting:\n\n> **Prefix**: {settings.Prefix}");
     }

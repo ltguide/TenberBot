@@ -2,7 +2,6 @@
 using Discord.Commands;
 using System.Text.RegularExpressions;
 using TenberBot.Data.Enums;
-using TenberBot.Data.Models;
 using TenberBot.Data.Services;
 using TenberBot.Extensions;
 
@@ -30,6 +29,12 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         this.greetingDataService = greetingDataService;
         this.userStatDataService = userStatDataService;
         this.logger = logger;
+    }
+
+    [Command("just-bot-name")]
+    public async Task Blank()
+    {
+        await SendRandom(GreetingType.BotName, VisualType.BotName);
     }
 
     [Command("hi", ignoreExtraArgs: true)]
@@ -72,6 +77,15 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         await SendRandom(GreetingType.Evening);
     }
 
+
+    [Command("gd", ignoreExtraArgs: true)]
+    [Alias("goodday", "day")]
+    [Summary("Say a Good Day greeting.")]
+    public async Task Day()
+    {
+        await SendRandom(GreetingType.Day);
+    }
+
     [Command("gn", ignoreExtraArgs: true)]
     [Alias("goodnight", "night")]
     [Summary("Say a Good Night greeting.")]
@@ -80,35 +94,60 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         await SendRandom(GreetingType.Night);
     }
 
-    private async Task SendRandom(GreetingType greetingType, VisualType? visualType = null)
+    private async Task AddStat()
     {
-        var greeting = await greetingDataService.GetRandom(greetingType);
-        if (greeting == null)
-            return;
-
         (await userStatDataService.GetOrAddByContext(Context)).Greetings++;
 
         await userStatDataService.Save();
+    }
 
-        Visual? visual = visualType != null && Random.Shared.Next(2) == 0
-            ? visual = await visualDataService.GetRandom(visualType.Value)
-            : null;
+    private async Task<bool> SendRandom(GreetingType greetingType)
+    {
+        var greeting = await greetingDataService.GetRandom(greetingType);
+        if (greeting == null)
+            return false;
 
-        if (visual == null)
+        var message = Variables.Replace(greeting.Text, (match) =>
         {
-            var message = Variables.Replace(greeting.Text, (match) =>
+            return match.Value.ToLower() switch
             {
-                return match.Value.ToLower() switch
-                {
-                    "%random%" => Context.GetRandomUser()?.GetDisplayNameSanitized() ?? "Random User",
-                    "%user%" => Context.User.GetDisplayNameSanitized(),
-                    _ => match.Value,
-                };
-            });
+                "%random%" => Context.GetRandomUser()?.GetDisplayNameSanitized() ?? "Random User",
+                "%user%" => Context.User.GetDisplayNameSanitized(),
+                _ => match.Value,
+            };
+        });
 
-            await ReplyAsync(message);
+        await ReplyAsync(message);
+
+        await AddStat();
+
+        return true;
+    }
+
+    private async Task<bool> SendRandom(VisualType visualType)
+    {
+        var visual = await visualDataService.GetRandom(visualType);
+        if (visual == null)
+            return false;
+
+        await Context.Channel.SendFileAsync(visual.AsAttachment());
+
+        await AddStat();
+
+        return true;
+    }
+
+    private async Task SendRandom(GreetingType greetingType, VisualType visualType)
+    {
+        if (Random.Shared.Next(2) == 0)
+        {
+            if (await SendRandom(visualType) == false)
+                await SendRandom(greetingType);
         }
         else
-            await Context.Channel.SendFileAsync(visual.AsAttachment());
+        {
+            if (await SendRandom(greetingType) == false)
+                await SendRandom(visualType);
+        }
     }
 }

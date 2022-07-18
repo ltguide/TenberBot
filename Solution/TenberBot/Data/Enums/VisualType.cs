@@ -7,4 +7,5 @@ public enum VisualType
     CoinHead,
     CoinTail,
     EightBall,
+    BotName,
 }
