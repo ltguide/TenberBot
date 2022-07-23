@@ -101,6 +101,8 @@ public class Program
                 services.AddTransient<IBotStatusDataService, BotStatusDataService>();
                 services.AddTransient<IGreetingDataService, GreetingDataService>();
                 services.AddTransient<IHugDataService, HugDataService>();
+                services.AddTransient<IPatDataService, PatDataService>();
+                services.AddTransient<IHighFiveDataService, HighFiveDataService>();
                 services.AddTransient<ISprintSnippetDataService, SprintSnippetDataService>();
                 services.AddTransient<IRankCardDataService, RankCardDataService>();
 

@@ -10,67 +10,68 @@ using TenberBot.Extensions;
 namespace TenberBot.Modules.Command;
 
 [RequireBotPermission(ChannelPermission.SendMessages)]
-public class HugCommandModule : ModuleBase<SocketCommandContext>
+public class PatCommandModule : ModuleBase<SocketCommandContext>
 {
     private readonly static Regex RecipientVariables = new(@"%user%|%recipient%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private readonly static Regex SelfVariables = new(@"%user%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private readonly static Regex StatVariables = new(@"%count%|%s%|%es%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    private readonly IHugDataService hugDataService;
+    private readonly IPatDataService patDataService;
     private readonly IVisualDataService visualDataService;
     private readonly IUserStatDataService userStatDataService;
-    private readonly ILogger<HugCommandModule> logger;
+    private readonly ILogger<PatCommandModule> logger;
 
-    public HugCommandModule(
-        IHugDataService hugDataService,
+    public PatCommandModule(
+        IPatDataService patDataService,
         IVisualDataService visualDataService,
         IUserStatDataService userStatDataService,
-        ILogger<HugCommandModule> logger)
+        ILogger<PatCommandModule> logger)
     {
-        this.hugDataService = hugDataService;
+        this.patDataService = patDataService;
         this.visualDataService = visualDataService;
         this.userStatDataService = userStatDataService;
         this.logger = logger;
     }
 
-    [Command("hug")]
+    [Command("pat")]
+    [Alias("headpat")]
     [Summary("Spreads the love.\n*If you reply to a user, `<user>` is no longer required.*")]
     [Remarks("`<user>` `[message]`")]
-    public async Task Hug([Remainder] string? message = null)
+    public async Task Pat([Remainder] string? message = null)
     {
         var recipient = Context.Message.MentionedUsers.FirstOrDefault();
-        var hugType = (recipient == null || recipient == Context.User) ? VisualType.HugSelf : VisualType.Hug;
+        var patType = (recipient == null || recipient == Context.User) ? VisualType.PatSelf : VisualType.Pat;
 
-        var visual = await visualDataService.GetRandom(hugType);
+        var visual = await visualDataService.GetRandom(patType);
         if (visual == null)
             return;
 
         EmbedBuilder embedBuilder;
 
-        if (hugType == VisualType.HugSelf)
+        if (patType == VisualType.PatSelf)
         {
-            var hug = await hugDataService.GetRandom(HugType.Self);
+            var pat = await patDataService.GetRandom(PatType.Self);
 
-            if (hug == null)
+            if (pat == null)
                 return;
 
-            embedBuilder = GetSelfEmbed(hug);
+            embedBuilder = GetSelfEmbed(pat);
         }
         else
         {
-            var hug = await hugDataService.GetRandom(HugType.Recipient);
-            var stat = await hugDataService.GetRandom(HugType.Stat);
+            var pat = await patDataService.GetRandom(PatType.Recipient);
+            var stat = await patDataService.GetRandom(PatType.Stat);
 
-            if (hug == null || stat == null)
+            if (pat == null || stat == null)
                 return;
 
-            ++(await userStatDataService.GetOrAddByContext(Context)).HugsGiven;
+            ++(await userStatDataService.GetOrAddByContext(Context)).PatsGiven;
 
-            var received = ++(await userStatDataService.GetOrAddByIds(Context.Guild.Id, recipient!.Id)).HugsReceived;
+            var received = ++(await userStatDataService.GetOrAddByIds(Context.Guild.Id, recipient!.Id)).PatsReceived;
 
             await userStatDataService.Save();
 
-            embedBuilder = GetRecipientEmbed(recipient, hug, stat, received);
+            embedBuilder = GetRecipientEmbed(recipient, pat, stat, received);
         }
 
 
@@ -92,9 +93,9 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
             allowedMentions: AllowedMentions.None);
     }
 
-    private EmbedBuilder GetRecipientEmbed(SocketUser recipient, Hug hug, Hug stat, int count)
+    private EmbedBuilder GetRecipientEmbed(SocketUser recipient, Pat pat, Pat stat, int count)
     {
-        var hugText = RecipientVariables.Replace(hug.Text, (match) =>
+        var patText = RecipientVariables.Replace(pat.Text, (match) =>
         {
             return match.Value.ToLower() switch
             {
@@ -118,14 +119,14 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
         return new EmbedBuilder
         {
             Author = Context.User.GetEmbedAuthor("is spreading the love!"),
-            Description = $"{hugText}\n\n{statText}",
+            Description = $"{patText}\n\n{statText}",
             Color = Color.Green,
         };
     }
 
-    private EmbedBuilder GetSelfEmbed(Hug hug)
+    private EmbedBuilder GetSelfEmbed(Pat pat)
     {
-        var hugText = SelfVariables.Replace(hug.Text, (match) =>
+        var patText = SelfVariables.Replace(pat.Text, (match) =>
         {
             return match.Value.ToLower() switch
             {
@@ -137,7 +138,7 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
         return new EmbedBuilder
         {
             Author = Context.User.GetEmbedAuthor("wants to spread the love!"),
-            Description = $"{hugText}",
+            Description = $"{patText}",
             Color = Color.DarkGreen,
         };
     }

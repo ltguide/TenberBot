@@ -10,67 +10,68 @@ using TenberBot.Extensions;
 namespace TenberBot.Modules.Command;
 
 [RequireBotPermission(ChannelPermission.SendMessages)]
-public class HugCommandModule : ModuleBase<SocketCommandContext>
+public class HighFiveCommandModule : ModuleBase<SocketCommandContext>
 {
     private readonly static Regex RecipientVariables = new(@"%user%|%recipient%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private readonly static Regex SelfVariables = new(@"%user%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private readonly static Regex StatVariables = new(@"%count%|%s%|%es%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    private readonly IHugDataService hugDataService;
+    private readonly IHighFiveDataService highFiveDataService;
     private readonly IVisualDataService visualDataService;
     private readonly IUserStatDataService userStatDataService;
-    private readonly ILogger<HugCommandModule> logger;
+    private readonly ILogger<HighFiveCommandModule> logger;
 
-    public HugCommandModule(
-        IHugDataService hugDataService,
+    public HighFiveCommandModule(
+        IHighFiveDataService highFiveDataService,
         IVisualDataService visualDataService,
         IUserStatDataService userStatDataService,
-        ILogger<HugCommandModule> logger)
+        ILogger<HighFiveCommandModule> logger)
     {
-        this.hugDataService = hugDataService;
+        this.highFiveDataService = highFiveDataService;
         this.visualDataService = visualDataService;
         this.userStatDataService = userStatDataService;
         this.logger = logger;
     }
 
-    [Command("hug")]
-    [Summary("Spreads the love.\n*If you reply to a user, `<user>` is no longer required.*")]
+    [Command("high-five")]
+    [Alias("high5", "highfive")]
+    [Summary("Up high!\n*If you reply to a user, `<user>` is no longer required.*")]
     [Remarks("`<user>` `[message]`")]
-    public async Task Hug([Remainder] string? message = null)
+    public async Task HighFive([Remainder] string? message = null)
     {
         var recipient = Context.Message.MentionedUsers.FirstOrDefault();
-        var hugType = (recipient == null || recipient == Context.User) ? VisualType.HugSelf : VisualType.Hug;
+        var highFiveType = (recipient == null || recipient == Context.User) ? VisualType.HighFiveSelf : VisualType.HighFive;
 
-        var visual = await visualDataService.GetRandom(hugType);
+        var visual = await visualDataService.GetRandom(highFiveType);
         if (visual == null)
             return;
 
         EmbedBuilder embedBuilder;
 
-        if (hugType == VisualType.HugSelf)
+        if (highFiveType == VisualType.HighFiveSelf)
         {
-            var hug = await hugDataService.GetRandom(HugType.Self);
+            var highFive = await highFiveDataService.GetRandom(HighFiveType.Self);
 
-            if (hug == null)
+            if (highFive == null)
                 return;
 
-            embedBuilder = GetSelfEmbed(hug);
+            embedBuilder = GetSelfEmbed(highFive);
         }
         else
         {
-            var hug = await hugDataService.GetRandom(HugType.Recipient);
-            var stat = await hugDataService.GetRandom(HugType.Stat);
+            var highFive = await highFiveDataService.GetRandom(HighFiveType.Recipient);
+            var stat = await highFiveDataService.GetRandom(HighFiveType.Stat);
 
-            if (hug == null || stat == null)
+            if (highFive == null || stat == null)
                 return;
 
-            ++(await userStatDataService.GetOrAddByContext(Context)).HugsGiven;
+            ++(await userStatDataService.GetOrAddByContext(Context)).HighFivesGiven;
 
-            var received = ++(await userStatDataService.GetOrAddByIds(Context.Guild.Id, recipient!.Id)).HugsReceived;
+            var received = ++(await userStatDataService.GetOrAddByIds(Context.Guild.Id, recipient!.Id)).HighFivesReceived;
 
             await userStatDataService.Save();
 
-            embedBuilder = GetRecipientEmbed(recipient, hug, stat, received);
+            embedBuilder = GetRecipientEmbed(recipient, highFive, stat, received);
         }
 
 
@@ -92,9 +93,9 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
             allowedMentions: AllowedMentions.None);
     }
 
-    private EmbedBuilder GetRecipientEmbed(SocketUser recipient, Hug hug, Hug stat, int count)
+    private EmbedBuilder GetRecipientEmbed(SocketUser recipient, HighFive highFive, HighFive stat, int count)
     {
-        var hugText = RecipientVariables.Replace(hug.Text, (match) =>
+        var highFiveText = RecipientVariables.Replace(highFive.Text, (match) =>
         {
             return match.Value.ToLower() switch
             {
@@ -117,15 +118,15 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
 
         return new EmbedBuilder
         {
-            Author = Context.User.GetEmbedAuthor("is spreading the love!"),
-            Description = $"{hugText}\n\n{statText}",
+            Author = Context.User.GetEmbedAuthor("is giving out high fives!"),
+            Description = $"{highFiveText}\n\n{statText}",
             Color = Color.Green,
         };
     }
 
-    private EmbedBuilder GetSelfEmbed(Hug hug)
+    private EmbedBuilder GetSelfEmbed(HighFive highFive)
     {
-        var hugText = SelfVariables.Replace(hug.Text, (match) =>
+        var highFiveText = SelfVariables.Replace(highFive.Text, (match) =>
         {
             return match.Value.ToLower() switch
             {
@@ -136,8 +137,8 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
 
         return new EmbedBuilder
         {
-            Author = Context.User.GetEmbedAuthor("wants to spread the love!"),
-            Description = $"{hugText}",
+            Author = Context.User.GetEmbedAuthor("wants to give high fives!"),
+            Description = $"{highFiveText}",
             Color = Color.DarkGreen,
         };
     }

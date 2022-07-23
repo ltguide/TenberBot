@@ -9,4 +9,6 @@ public enum InteractionParentType
     Sprint,
     UserTimer,
     Leaderboard,
+    HighFive,
+    Pat,
 }

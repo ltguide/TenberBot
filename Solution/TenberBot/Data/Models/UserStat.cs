@@ -22,6 +22,14 @@ public class UserStat
 
     public int HugsReceived { get; set; }
 
+    public int PatsGiven { get; set; }
+
+    public int PatsReceived { get; set; }
+
+    public int HighFivesGiven { get; set; }
+
+    public int HighFivesReceived { get; set; }
+
     public int SprintsCreated { get; set; }
 
     public int SprintsJoined { get; set; }

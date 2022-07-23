@@ -8,4 +8,9 @@ public enum VisualType
     CoinTail,
     EightBall,
     BotName,
+    HugSelf,
+    HighFive,
+    HighFiveSelf,
+    Pat,
+    PatSelf,
 }
