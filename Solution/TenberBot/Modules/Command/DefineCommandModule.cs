@@ -151,6 +151,10 @@ public class DefineCommandModule : ModuleBase<SocketCommandContext>
                 sb.Append($"\n**{innerText}**\n");
                 return;
 
+            case "style":
+            case "div":
+                break;
+
             case "p":
             default:
                 sb.Append($"> {innerText}\n");
