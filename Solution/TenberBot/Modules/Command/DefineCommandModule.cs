@@ -119,7 +119,7 @@ public class DefineCommandModule : ModuleBase<SocketCommandContext>
         switch (node.Name)
         {
             case "ol":
-                var liNodes = node.SelectNodes("li[text()]");
+                var liNodes = node.SelectNodes("li[text()]|li[span]");
 
                 for (var i = 0; i < liNodes.Count; i++)
                 {
