@@ -34,7 +34,7 @@ public class HighFiveCommandModule : ModuleBase<SocketCommandContext>
     }
 
     [Command("high-five")]
-    [Alias("high5", "highfive")]
+    [Alias("highfive", "high5", "hi5")]
     [Summary("Up high!\n*If you reply to a user, `<user>` is no longer required.*")]
     [Remarks("`<user>` `[message]`")]
     public async Task HighFive([Remainder] string? message = null)
