@@ -31,7 +31,7 @@ public class DefineCommandModule : ModuleBase<SocketCommandContext>
     [Alias("definition")]
     [Summary("What's that word?!")]
     [Remarks("`<word>`")]
-    public async Task<RuntimeResult> Define([Remainder] string word)
+    public async Task Define([Remainder] string word)
     {
         await Context.Message.AddReactionAsync(cacheService.Get<EmoteServerSettings>(Context.Guild).Busy);
 
@@ -49,26 +49,27 @@ public class DefineCommandModule : ModuleBase<SocketCommandContext>
             var parsedContentInfo = await wikiSite.ParsePageAsync(word, ParsingOptions.ResolveRedirects | ParsingOptions.DisableToc | ParsingOptions.DisableEditSection);
             doc.LoadHtml(parsedContentInfo.Content);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             var results = await wikiSite.OpenSearchAsync(word);
             var search = results.Count != 0 ? $"\nWiktionary suggested: {string.Join(", ", results.Select(x => x.Title))}" : " and Wiktionary had no suggestions for you.";
 
-            return RemainResult.FromError($"Sorry, I couldn't find an exact match 😫{search}");
+            await Context.Message.ReplyAsync($"Sorry, I couldn't find an exact match 😫{search}");
         }
 
-        var embeds = ParseDefinition(doc).ChunkByLines(4096).Select((x, i) => new EmbedBuilder
+        if (doc.DocumentNode.ChildNodes.Count > 0)
         {
-            Author = i == 0 ? Context.User.GetEmbedAuthor($"asked for the definition of {word}") : null,
-            Color = Color.Teal,
-            Description = x,
-        }.Build()).ToArray();
+            var embeds = ParseDefinition(doc).ChunkByLines(4096).Select((x, i) => new EmbedBuilder
+            {
+                Author = i == 0 ? Context.User.GetEmbedAuthor($"asked for the definition of {word}") : null,
+                Color = Color.Teal,
+                Description = x,
+            }.Build()).ToArray();
 
-        await Context.Message.ReplyAsync(embeds: embeds);
+            await Context.Message.ReplyAsync(embeds: embeds);
+        }
 
         await Context.Message.RemoveAllReactionsForEmoteAsync(cacheService.Get<EmoteServerSettings>(Context.Guild).Busy);
-
-        return RemainResult.FromSuccess();
     }
 
     private static string ParseDefinition(HtmlDocument doc)
