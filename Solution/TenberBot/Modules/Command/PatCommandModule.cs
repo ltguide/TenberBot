@@ -13,8 +13,8 @@ namespace TenberBot.Modules.Command;
 public class PatCommandModule : ModuleBase<SocketCommandContext>
 {
     private readonly static Regex RecipientVariables = new(@"%user%|%recipient%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-    private readonly static Regex SelfVariables = new(@"%user%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-    private readonly static Regex StatVariables = new(@"%count%|%s%|%es%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private readonly static Regex SelfVariables = new(@"%user%|%random%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private readonly static Regex StatVariables = new(@"%user%|%count%|%s%|%es%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private readonly IPatDataService patDataService;
     private readonly IVisualDataService visualDataService;
@@ -109,6 +109,7 @@ public class PatCommandModule : ModuleBase<SocketCommandContext>
         {
             return match.Value.ToLower() switch
             {
+                "%user%" => Context.User.GetMention(),
                 "%count%" => count.ToString("N0"),
                 "%s%" => count != 1 ? "s" : "",
                 "%es%" => count != 1 ? "es" : "",
@@ -131,6 +132,7 @@ public class PatCommandModule : ModuleBase<SocketCommandContext>
             return match.Value.ToLower() switch
             {
                 "%user%" => Context.User.GetMention(),
+                "%random%" => Context.GetRandomUser()?.GetDisplayNameSanitized() ?? "Random User",
                 _ => match.Value,
             };
         });

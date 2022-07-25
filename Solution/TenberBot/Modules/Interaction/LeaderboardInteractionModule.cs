@@ -36,6 +36,7 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
         var view = parent.GetReference<LeaderboardView>()!;
 
         view.LeaderboardType = Enum.Parse<LeaderboardType>(leaderboardType, true);
+        view.MinimumExperience = view.CalcMinimumExperience();
         view.UserPage = await userLevelDataService.GetUserPage(parent.GuildId, parent.UserId.Value, view);
         view.CurrentPage = 0;
         view.PageCount = await userLevelDataService.GetCount(Context.Guild.Id, view);

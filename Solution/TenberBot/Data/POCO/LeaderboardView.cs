@@ -31,4 +31,14 @@ public class LeaderboardView
             _ => throw new NotImplementedException(),
         };
     }
+
+    public int CalcMinimumExperience()
+    {
+        return LeaderboardType switch
+        {
+            LeaderboardType.Message => 50,
+            LeaderboardType.Voice => 15,
+            _ => throw new NotImplementedException(),
+        };
+    }
 }
