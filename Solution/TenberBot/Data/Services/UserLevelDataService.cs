@@ -91,16 +91,29 @@ public class UserLevelDataService : IUserLevelDataService
             .Include(x => x.ServerUser)
             .Where(x => x.GuildId == guildId);
 
-        if (view.LeaderboardType == LeaderboardType.Message)
-            query = query
-                .Where(x => x.MessageExperience > view.MinimumExperience)
-                .OrderByDescending(x => x.MessageExperience)
-                .ThenBy(x => x.UserId);
-        else
-            query = query
-                .Where(x => x.VoiceExperience > view.MinimumExperience)
-                .OrderByDescending(x => x.VoiceExperience)
-                .ThenBy(x => x.UserId);
+        switch (view.LeaderboardType)
+        {
+            case LeaderboardType.Message:
+                query = query
+                    .Where(x => x.MessageExperience > view.MinimumExperience)
+                    .OrderByDescending(x => x.MessageExperience)
+                    .ThenBy(x => x.UserId);
+                break;
+
+            case LeaderboardType.Voice:
+                query = query
+                    .Where(x => x.VoiceExperience > view.MinimumExperience)
+                    .OrderByDescending(x => x.VoiceExperience)
+                    .ThenBy(x => x.UserId);
+                break;
+
+            case LeaderboardType.Event:
+                query = query
+                    .Where(x => x.EventExperience > view.MinimumExperience)
+                    .OrderByDescending(x => x.EventExperience)
+                    .ThenBy(x => x.UserId);
+                break;
+        }
 
         return await query
             .Skip(view.PerPage * view.CurrentPage)
@@ -116,23 +129,34 @@ public class UserLevelDataService : IUserLevelDataService
         if (userLevel == null)
             return -1;
 
-        if (view.LeaderboardType == LeaderboardType.Message)
+        switch (view.LeaderboardType)
         {
-            if (userLevel.MessageExperience <= view.MinimumExperience)
+            case LeaderboardType.Message:
+                if (userLevel.MessageExperience <= view.MinimumExperience)
+                    return -1;
+
+                await LoadMessageRank(userLevel);
+
+                return (int)Math.Floor((decimal)userLevel.MessageRank / view.PerPage);
+
+            case LeaderboardType.Voice:
+                if (userLevel.VoiceExperience <= view.MinimumExperience)
+                    return -1;
+
+                await LoadVoiceRank(userLevel);
+
+                return (int)Math.Floor((decimal)userLevel.VoiceRank / view.PerPage);
+
+            case LeaderboardType.Event:
+                if (userLevel.EventExperience <= view.MinimumExperience)
+                    return -1;
+
+                await LoadEventRank(userLevel);
+
+                return (int)Math.Floor((decimal)userLevel.EventRank / view.PerPage);
+
+            default:
                 return -1;
-
-            await LoadMessageRank(userLevel);
-
-            return (int)Math.Floor((decimal)userLevel.MessageRank / view.PerPage);
-        }
-        else
-        {
-            if (userLevel.VoiceExperience <= view.MinimumExperience)
-                return -1;
-
-            await LoadVoiceRank(userLevel);
-
-            return (int)Math.Floor((decimal)userLevel.VoiceRank / view.PerPage);
         }
     }
 
@@ -141,12 +165,20 @@ public class UserLevelDataService : IUserLevelDataService
         var query = dbContext.UserLevels
             .Where(x => x.GuildId == guildId);
 
-        if (view.LeaderboardType == LeaderboardType.Message)
-            query = query
-                .Where(x => x.MessageExperience > view.MinimumExperience);
-        else
-            query = query
-                .Where(x => x.VoiceExperience > view.MinimumExperience);
+        switch (view.LeaderboardType)
+        {
+            case LeaderboardType.Message:
+                query = query.Where(x => x.MessageExperience > view.MinimumExperience);
+                break;
+
+            case LeaderboardType.Voice:
+                query = query.Where(x => x.VoiceExperience > view.MinimumExperience);
+                break;
+
+            case LeaderboardType.Event:
+                query = query.Where(x => x.EventExperience > view.MinimumExperience);
+                break;
+        }
 
         var count = await query
             .CountAsync()
@@ -175,6 +207,18 @@ public class UserLevelDataService : IUserLevelDataService
             .ConfigureAwait(false);
 
         dbObject.MessageRank = messageRank + 1;
+
+        return dbObject;
+    }
+
+    public async Task<UserLevel> LoadEventRank(UserLevel dbObject)
+    {
+        var eventRank = await dbContext.UserLevels
+            .Where(x => x.GuildId == dbObject.GuildId)
+            .CountAsync(x => x.EventExperience > dbObject.EventExperience)
+            .ConfigureAwait(false);
+
+        dbObject.EventRank = eventRank + 1;
 
         return dbObject;
     }

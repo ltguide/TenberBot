@@ -5,4 +5,5 @@ public enum LeaderboardType
     Unknown,
     Message,
     Voice,
+    Event,
 }

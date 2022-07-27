@@ -75,6 +75,9 @@ public class UserLevel
     [Precision(20, 0)]
     public decimal ExcludedMessageAttachments { get; set; }
 
+    [Precision(20, 0)]
+    public decimal EventExperience { get; set; }
+
     [ForeignKey("GuildId,UserId")]
     public ServerUser ServerUser { get; set; } = null!;
 
@@ -95,12 +98,18 @@ public class UserLevel
     [NotMapped]
     public int MessageRank { get; set; }
 
+    [NotMapped]
+    public int EventRank { get; set; }
+
     public (int, decimal) GetLeaderboardData(LeaderboardType leaderboardType)
     {
-        if (leaderboardType == LeaderboardType.Message)
-            return (MessageLevel, MessageExperience);
-
-        return (VoiceLevel, VoiceExperience);
+        return leaderboardType switch
+        {
+            LeaderboardType.Message => (MessageLevel, MessageExperience),
+            LeaderboardType.Voice => (VoiceLevel, VoiceExperience),
+            LeaderboardType.Event => (-1, EventExperience),
+            _ => throw new NotImplementedException(),
+        };
     }
 
     public void UpdateMessageLevel()
@@ -116,8 +125,9 @@ public class UserLevel
     public void AddMessage(ExperienceChannelSettings settings, int attachments, int lines, int words, int characters)
     {
         var experience = 0m;
+        var enabled = settings.Mode != ExperienceMode.Disabled;
 
-        if (settings.Enabled && settings.Message > 0)
+        if (enabled && settings.Message > 0)
         {
             Messages += 1;
             experience += settings.Message;
@@ -127,7 +137,7 @@ public class UserLevel
 
         if (lines > 0)
         {
-            if (settings.Enabled && settings.MessageLine > 0)
+            if (enabled && settings.MessageLine > 0)
             {
                 MessageLines += lines;
                 experience += settings.MessageLine * lines;
@@ -135,7 +145,7 @@ public class UserLevel
             else
                 ExcludedMessageLines += lines;
 
-            if (settings.Enabled && settings.MessageWord > 0)
+            if (enabled && settings.MessageWord > 0)
             {
                 MessageWords += words;
                 experience += settings.MessageWord * words;
@@ -143,7 +153,7 @@ public class UserLevel
             else
                 ExcludedMessageWords += words;
 
-            if (settings.Enabled && settings.MessageCharacter > 0)
+            if (enabled && settings.MessageCharacter > 0)
             {
                 MessageCharacters += characters;
                 experience += settings.MessageCharacter * characters;
@@ -154,7 +164,7 @@ public class UserLevel
 
         if (attachments > 0)
         {
-            if (settings.Enabled && settings.MessageAttachment > 0)
+            if (enabled && settings.MessageAttachment > 0)
             {
                 MessageAttachments += attachments;
                 experience += settings.MessageAttachment * attachments;
@@ -164,19 +174,31 @@ public class UserLevel
         }
 
 #if DEBUG
-        Console.WriteLine($"{UserId} MessageExperience gain: {experience}");
+        Console.WriteLine($"{GuildId} {UserId} AddMessage: {experience}");
 #endif
 
-        MessageExperience += experience;
+        switch (settings.Mode)
+        {
+            case ExperienceMode.Disabled:
+                break;
 
-        UpdateMessageLevel();
+            case ExperienceMode.Normal:
+                MessageExperience += experience;
+                UpdateMessageLevel();
+                break;
+
+            case ExperienceMode.Event:
+                EventExperience += experience;
+                break;
+        }
     }
 
     public void AddVoice(ExperienceChannelSettings settings, decimal minutes, decimal minutesVideo, decimal minutesStream)
     {
         var experience = 0m;
+        var enabled = settings.Mode != ExperienceMode.Disabled;
 
-        if (settings.Enabled && settings.VoiceMinute > 0)
+        if (enabled && settings.VoiceMinute > 0)
         {
             VoiceMinutes += minutes;
             experience += settings.VoiceMinute * minutes;
@@ -186,7 +208,7 @@ public class UserLevel
 
         if (minutesVideo > 0)
         {
-            if (settings.Enabled && settings.VoiceMinuteVideo > 0)
+            if (enabled && settings.VoiceMinuteVideo > 0)
             {
                 VoiceMinutesVideo += minutesVideo;
                 experience += settings.VoiceMinuteVideo * minutesVideo;
@@ -197,7 +219,7 @@ public class UserLevel
 
         if (minutesStream > 0)
         {
-            if (settings.Enabled && settings.VoiceMinuteStream > 0)
+            if (enabled && settings.VoiceMinuteStream > 0)
             {
                 VoiceMinutesStream += minutesStream;
                 experience += settings.VoiceMinuteStream * minutesStream;
@@ -207,12 +229,23 @@ public class UserLevel
         }
 
 #if DEBUG
-        Console.WriteLine($"{UserId} VoiceExperience gain: {experience}");
+        Console.WriteLine($"{GuildId} {UserId} AddVoice: {experience}");
 #endif
 
-        VoiceExperience += experience;
+        switch (settings.Mode)
+        {
+            case ExperienceMode.Disabled:
+                break;
 
-        UpdateVoiceLevel();
+            case ExperienceMode.Normal:
+                VoiceExperience += experience;
+                UpdateVoiceLevel();
+                break;
+
+            case ExperienceMode.Event:
+                EventExperience += experience;
+                break;
+        }
     }
 
     private static int CalculateLevel(decimal experience)

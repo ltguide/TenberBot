@@ -25,7 +25,7 @@ public class ChannelSettingInteractionModule : InteractionModuleBase<SocketInter
         this.cacheService = cacheService;
     }
 
-    [SlashCommand("sprint", "Set the prefix for message commands.")]
+    [SlashCommand("sprint", "Configure the sprint mode/role.")]
     public async Task SetSprint(SprintMode? mode = null, IRole? role = null)
     {
         if (Context.Channel is SocketThreadChannel)
@@ -47,9 +47,9 @@ public class ChannelSettingInteractionModule : InteractionModuleBase<SocketInter
         await RespondAsync($"Channel settings for *sprint*:\n\n> **Mode**: {settings.Mode}\n> **Role**: {settings.Role}");
     }
 
-    [SlashCommand("experience", "Set the experience for leveling.")]
+    [SlashCommand("experience", "Configure the experience gain.")]
     public async Task SetExperience(
-        bool? enabled = null,
+        ExperienceMode? mode = null,
         decimal? message = null,
         [Summary("message-line")] decimal? messageLine = null,
         [Summary("message-word")] decimal? messageWord = null,
@@ -67,8 +67,8 @@ public class ChannelSettingInteractionModule : InteractionModuleBase<SocketInter
 
         var settings = cacheService.Get<ExperienceChannelSettings>(Context.Channel);
 
-        if (enabled != null)
-            settings.Enabled = enabled.Value;
+        if (mode != null)
+            settings.Mode = mode.Value;
 
         if (message != null)
             settings.Message = message.Value;
@@ -96,16 +96,16 @@ public class ChannelSettingInteractionModule : InteractionModuleBase<SocketInter
 
         await Set(settings);
 
-        if (settings.Enabled)
+        if (settings.Mode != ExperienceMode.Disabled)
         {
             var voice = "";
             if (Context.Channel.GetChannelType() == ChannelType.Voice)
                 voice = $"\n\n> **voice-minute**: {settings.VoiceMinute}\n> **voice-minute-video**: {settings.VoiceMinuteVideo}\n> **voice-minute-stream**: {settings.VoiceMinuteStream}";
 
-            await RespondAsync($"Channel settings for *experience*:\n\n> **status**: Enabled\n\n> **message**: {settings.Message}\n> **message-line**: {settings.MessageLine}\n> **message-word**: {settings.MessageWord}\n> **message-character**: {settings.MessageCharacter}\n> **message-attachment**: {settings.MessageAttachment}{voice}");
+            await RespondAsync($"Channel settings for *experience*:\n\n> **mode**: {settings.Mode}\n\n> **message**: {settings.Message}\n> **message-line**: {settings.MessageLine}\n> **message-word**: {settings.MessageWord}\n> **message-character**: {settings.MessageCharacter}\n> **message-attachment**: {settings.MessageAttachment}{voice}");
         }
         else
-            await RespondAsync("Channel settings for *experience*:\n\n> **status**: Disabled");
+            await RespondAsync($"Channel settings for *experience*:\n\n> **mode**: {settings.Mode}");
     }
 
     private async Task Set<T>(T value)

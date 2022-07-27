@@ -38,6 +38,7 @@ public class LeaderboardView
         {
             LeaderboardType.Message => 50,
             LeaderboardType.Voice => 15,
+            LeaderboardType.Event => 1,
             _ => throw new NotImplementedException(),
         };
     }

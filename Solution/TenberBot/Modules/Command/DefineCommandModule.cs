@@ -5,7 +5,6 @@ using System.Net;
 using System.Text;
 using TenberBot.Data.Settings.Server;
 using TenberBot.Extensions;
-using TenberBot.Results.Command;
 using TenberBot.Services;
 using WikiClientLibrary.Client;
 using WikiClientLibrary.Pages.Parsing;

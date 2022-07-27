@@ -3,7 +3,9 @@ using Discord.Interactions;
 using TenberBot.Data.Enums;
 using TenberBot.Data.POCO;
 using TenberBot.Data.Services;
+using TenberBot.Data.Settings.Server;
 using TenberBot.Extensions;
+using TenberBot.Services;
 
 namespace TenberBot.Modules.Interaction;
 
@@ -11,13 +13,16 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
 {
     private readonly IUserLevelDataService userLevelDataService;
     private readonly IInteractionParentDataService interactionParentDataService;
+    private readonly CacheService cacheService;
 
     public LeaderboardInteractionModule(
         IUserLevelDataService userLevelDataService,
-        IInteractionParentDataService interactionParentDataService)
+        IInteractionParentDataService interactionParentDataService,
+        CacheService cacheService)
     {
         this.userLevelDataService = userLevelDataService;
         this.interactionParentDataService = interactionParentDataService;
+        this.cacheService = cacheService;
     }
 
     [ComponentInteraction("leaderboard:view-*,*")]
@@ -36,9 +41,13 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
         var view = parent.GetReference<LeaderboardView>()!;
 
         view.LeaderboardType = Enum.Parse<LeaderboardType>(leaderboardType, true);
+
+        if (view.LeaderboardType == LeaderboardType.Event && cacheService.Get<LeaderboardServerSettings>(Context.Guild).DisplayEvent == false)
+            view.LeaderboardType = LeaderboardType.Message;
+
         view.MinimumExperience = view.CalcMinimumExperience();
-        view.UserPage = await userLevelDataService.GetUserPage(parent.GuildId, parent.UserId.Value, view);
         view.CurrentPage = 0;
+        view.UserPage = await userLevelDataService.GetUserPage(parent.GuildId, parent.UserId.Value, view);
         view.PageCount = await userLevelDataService.GetCount(Context.Guild.Id, view);
 
         parent.SetReference(view);
@@ -72,6 +81,12 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
 
         var view = parent.GetReference<LeaderboardView>()!;
 
+        if (view.LeaderboardType == LeaderboardType.Event && cacheService.Get<LeaderboardServerSettings>(Context.Guild).DisplayEvent == false)
+        {
+            await View(LeaderboardType.Message.ToString(), messageId);
+            return;
+        }
+
         view.UserPage = await userLevelDataService.GetUserPage(parent.GuildId, parent.UserId.Value, view);
         view.PageCount = await userLevelDataService.GetCount(Context.Guild.Id, view);
         view.CurrentPage = view.GetNewPage(page);
@@ -91,7 +106,7 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
         });
     }
 
-    private static MessageComponent GetButtons(ulong messageId, LeaderboardType leaderboardType)
+    private MessageComponent GetButtons(ulong messageId, LeaderboardType leaderboardType)
     {
         var componentBuilder = new ComponentBuilder()
             .WithButton(customId: $"leaderboard:page-first,{messageId}", emote: new Emoji("⏮"))
@@ -100,11 +115,22 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
             .WithButton(customId: $"leaderboard:page-next,{messageId}", emote: new Emoji("⏩"))
             .WithButton(customId: $"leaderboard:page-last,{messageId}", emote: new Emoji("⏭"));
 
-        if (leaderboardType == LeaderboardType.Message)
+        var viewButtons = leaderboardType switch
+        {
+            LeaderboardType.Message => ViewButtons.Voice | ViewButtons.Event,
+            LeaderboardType.Voice => ViewButtons.Message | ViewButtons.Event,
+            LeaderboardType.Event => ViewButtons.Message | ViewButtons.Voice,
+            _ => ViewButtons.None,
+        };
+
+        if (viewButtons.HasFlag(ViewButtons.Message))
+            componentBuilder.WithButton("Switch to Message", $"leaderboard:view-message,{messageId}", ButtonStyle.Secondary, new Emoji("📝"), row: 1);
+
+        if (viewButtons.HasFlag(ViewButtons.Voice))
             componentBuilder.WithButton("Switch to Voice", $"leaderboard:view-voice,{messageId}", ButtonStyle.Secondary, new Emoji("🎤"), row: 1);
 
-        if (leaderboardType == LeaderboardType.Voice)
-            componentBuilder.WithButton("Switch to Message", $"leaderboard:view-message,{messageId}", ButtonStyle.Secondary, new Emoji("📝"), row: 1);
+        if (viewButtons.HasFlag(ViewButtons.Event) && cacheService.Get<LeaderboardServerSettings>(Context.Guild).DisplayEvent)
+            componentBuilder.WithButton("Switch to Event", $"leaderboard:view-event,{messageId}", ButtonStyle.Secondary, new Emoji("🎟"));
 
         componentBuilder.WithButton(customId: $"leaderboard:page-refresh,{messageId}", style: ButtonStyle.Secondary, emote: new Emoji("🔁"), row: 1);
 
@@ -145,11 +171,22 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
 
             var name = x.UserId == Context.User.Id ? x.UserId.GetUserMention() : $"`{x.ServerUser.DisplayName}`";
 
-            return $"`#{index + view.BaseRank,-4}` {name} has {experience:N2} XP (lvl **{level}**)";
+            var levelText = level != -1 ? $" (lvl **{level}**)" : "";
+
+            return $"`#{index + view.BaseRank,-4}` {name} has {experience:N2} XP{levelText}";
         });
 
         embedBuilder.WithDescription(string.Join("\n", lines));
 
         return embedBuilder.Build();
+    }
+
+    [Flags]
+    private enum ViewButtons
+    {
+        None = 0,
+        Message = 1 << 0,
+        Voice = 1 << 1,
+        Event = 1 << 2,
     }
 }

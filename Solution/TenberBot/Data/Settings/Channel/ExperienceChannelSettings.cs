@@ -1,11 +1,12 @@
 ﻿using TenberBot.Attributes;
+using TenberBot.Data.Enums;
 
 namespace TenberBot.Data.Settings.Channel;
 
 [ChannelSettings("experience")]
 public class ExperienceChannelSettings
 {
-    public bool Enabled { get; set; } = true;
+    public ExperienceMode Mode { get; set; } = ExperienceMode.Normal;
 
     public decimal VoiceMinute { get; set; } = 0.3m;
 

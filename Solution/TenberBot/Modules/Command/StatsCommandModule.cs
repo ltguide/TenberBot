@@ -102,6 +102,10 @@ public class StatsCommandModule : ModuleBase<SocketCommandContext>
             .WithButton("Message", $"leaderboard:view-message,{reply.Id}", emote: new Emoji("📝"))
             .WithButton("Voice", $"leaderboard:view-voice,{reply.Id}", emote: new Emoji("🎤"));
 
+        var settings = cacheService.Get<LeaderboardServerSettings>(Context.Guild);
+        if (settings.DisplayEvent)
+            components.WithButton("Event", $"leaderboard:view-event,{reply.Id}", emote: new Emoji("🎟"));
+
         await reply.ModifyAsync(x => x.Components = components.Build());
     }
 

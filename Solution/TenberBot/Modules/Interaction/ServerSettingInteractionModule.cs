@@ -165,6 +165,20 @@ public class ServerSettingInteractionModule : InteractionModuleBase<SocketIntera
             await RespondAsync(text + "*none*");
     }
 
+    [SlashCommand("leaderboard", "Configure the leaderboard.")]
+    public async Task Leaderboard(
+        [Summary("display-event")] bool? displayEvent = null)
+    {
+        var settings = cacheService.Get<LeaderboardServerSettings>(Context.Guild);
+
+        if (displayEvent != null)
+            settings.DisplayEvent = displayEvent.Value;
+
+        await Set(settings);
+
+        await RespondAsync($"Server setting:\n\n> **display-event**: {settings.DisplayEvent}");
+    }
+
     private async Task Set<T>(T value)
     {
         var key = cacheService.GetSettingsKey<T>();
