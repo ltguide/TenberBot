@@ -25,8 +25,8 @@ public class LeaderboardView
             "first" => 0,
             "previous" => Math.Max(0, CurrentPage - 1),
             "user" => Math.Max(0, UserPage),
-            "next" => Math.Min(PageCount, CurrentPage + 1),
-            "last" => PageCount,
+            "next" => Math.Max(0, Math.Min(PageCount, CurrentPage + 1)),
+            "last" => Math.Max(0, PageCount),
             "refresh" => CurrentPage,
             _ => throw new NotImplementedException(),
         };

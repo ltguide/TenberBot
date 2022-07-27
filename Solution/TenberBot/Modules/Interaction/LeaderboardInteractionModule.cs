@@ -161,7 +161,9 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
 
         if (userLevels.Count == 0)
         {
-            embedBuilder.WithDescription("No results found.");
+            embedBuilder
+                .WithDescription("No results found.")
+                .WithFooter("");
             return embedBuilder.Build();
         }
 
