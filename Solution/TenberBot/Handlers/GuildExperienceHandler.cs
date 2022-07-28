@@ -3,7 +3,9 @@ using Discord.Addons.Hosting;
 using Discord.Commands;
 using Discord.WebSocket;
 using System.Text.RegularExpressions;
+using TenberBot.Data.Enums;
 using TenberBot.Data.Models;
+using TenberBot.Data.POCO;
 using TenberBot.Data.Services;
 using TenberBot.Data.Settings.Channel;
 using TenberBot.Data.Settings.Server;
@@ -61,16 +63,23 @@ public class GuildExperienceHandler : DiscordClientService
         if (channel is SocketThreadChannel thread)
             channel = thread.ParentChannel;
 
-        await cacheService.Channel(channel);
-
         var userLevel = await GetUserLevel(channel.Guild.Id, message.Author);
 
-        userLevel.AddMessage(
-            cacheService.Get<ExperienceChannelSettings>(channel),
+        await cacheService.Channel(channel);
+
+        var mode = cacheService.Get<ExperienceChannelSettings>(channel).Mode;
+
+        var stats = new MessageStats(
             message.Attachments.Count,
             Lines.Matches(message.Content).Count + 1,
             Words.Matches(message.Content).Count,
-            message.Content.Length);
+            message.Content.Length
+        );
+
+        userLevel.AddStats(mode.HasFlag(ExperienceModes.Normal), cacheService.Get<NormalExperienceModeChannelSettings>(channel), stats);
+
+        if (mode.HasFlag(ExperienceModes.Event))
+            userLevel.AddStats(cacheService.Get<EventExperienceModeChannelSettings>(channel), stats);
 
         await userLevelDataService.Update(userLevel, null!);
     }
@@ -206,12 +215,18 @@ public class GuildExperienceHandler : DiscordClientService
     {
         await cacheService.Channel(channel);
 
-        userLevel.AddVoice(
-            cacheService.Get<ExperienceChannelSettings>(channel),
+        var mode = cacheService.Get<ExperienceChannelSettings>(channel).Mode;
+
+        var stats = new VoiceStats(
             ToMinutes(userVoiceChannel.ConnectDate),
             ToMinutes(userVoiceChannel.VideoDate) + userVoiceChannel.VideoMinutes,
             ToMinutes(userVoiceChannel.StreamDate) + userVoiceChannel.StreamMinutes
         );
+
+        userLevel.AddStats(mode.HasFlag(ExperienceModes.Normal), cacheService.Get<NormalExperienceModeChannelSettings>(channel), stats);
+
+        if (mode.HasFlag(ExperienceModes.Event))
+            userLevel.AddStats(cacheService.Get<EventExperienceModeChannelSettings>(channel), stats);
 
         await userLevelDataService.Update(userLevel, null!);
     }

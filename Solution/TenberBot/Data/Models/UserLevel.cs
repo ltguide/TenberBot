@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using TenberBot.Data.Enums;
+using TenberBot.Data.POCO;
 using TenberBot.Data.Settings.Channel;
 
 namespace TenberBot.Data.Models;
@@ -122,10 +123,9 @@ public class UserLevel
         VoiceLevel = CalculateLevel(VoiceExperience);
     }
 
-    public void AddMessage(ExperienceChannelSettings settings, int attachments, int lines, int words, int characters)
+    public void AddStats(bool enabled, IExperienceModeChannelSettings settings, MessageStats stats)
     {
         var experience = 0m;
-        var enabled = settings.Mode != ExperienceMode.Disabled;
 
         if (enabled && settings.Message > 0)
         {
@@ -135,117 +135,150 @@ public class UserLevel
         else
             ExcludedMessages += 1;
 
-        if (lines > 0)
+        if (stats.Lines > 0)
         {
             if (enabled && settings.MessageLine > 0)
             {
-                MessageLines += lines;
-                experience += settings.MessageLine * lines;
+                MessageLines += stats.Lines;
+                experience += settings.MessageLine * stats.Lines;
             }
             else
-                ExcludedMessageLines += lines;
+                ExcludedMessageLines += stats.Lines;
 
             if (enabled && settings.MessageWord > 0)
             {
-                MessageWords += words;
-                experience += settings.MessageWord * words;
+                MessageWords += stats.Words;
+                experience += settings.MessageWord * stats.Words;
             }
             else
-                ExcludedMessageWords += words;
+                ExcludedMessageWords += stats.Words;
 
             if (enabled && settings.MessageCharacter > 0)
             {
-                MessageCharacters += characters;
-                experience += settings.MessageCharacter * characters;
+                MessageCharacters += stats.Characters;
+                experience += settings.MessageCharacter * stats.Characters;
             }
             else
-                ExcludedMessageCharacters += characters;
+                ExcludedMessageCharacters += stats.Characters;
         }
 
-        if (attachments > 0)
+        if (stats.Attachments > 0)
         {
             if (enabled && settings.MessageAttachment > 0)
             {
-                MessageAttachments += attachments;
-                experience += settings.MessageAttachment * attachments;
+                MessageAttachments += stats.Attachments;
+                experience += settings.MessageAttachment * stats.Attachments;
             }
             else
-                ExcludedMessageLines += attachments;
+                ExcludedMessageLines += stats.Attachments;
         }
 
 #if DEBUG
-        Console.WriteLine($"{GuildId} {UserId} AddMessage: {experience}");
+        Console.WriteLine($"{GuildId} {UserId} AddStats NormalMessage experience:{experience} enabled:{enabled}");
 #endif
 
-        switch (settings.Mode)
-        {
-            case ExperienceMode.Disabled:
-                break;
-
-            case ExperienceMode.Normal:
-                MessageExperience += experience;
-                UpdateMessageLevel();
-                break;
-
-            case ExperienceMode.Event:
-                EventExperience += experience;
-                break;
-        }
+        MessageExperience += experience;
+        UpdateMessageLevel();
     }
 
-    public void AddVoice(ExperienceChannelSettings settings, decimal minutes, decimal minutesVideo, decimal minutesStream)
+    public void AddStats(IExperienceModeChannelSettings settings, MessageStats stats)
     {
         var experience = 0m;
-        var enabled = settings.Mode != ExperienceMode.Disabled;
+
+        if (settings.Message > 0)
+            experience += settings.Message;
+
+        if (stats.Lines > 0)
+        {
+            if (settings.MessageLine > 0)
+                experience += settings.MessageLine * stats.Lines;
+
+            if (settings.MessageWord > 0)
+                experience += settings.MessageWord * stats.Words;
+
+            if (settings.MessageCharacter > 0)
+                experience += settings.MessageCharacter * stats.Characters;
+        }
+
+        if (stats.Attachments > 0)
+        {
+            if (settings.MessageAttachment > 0)
+                experience += settings.MessageAttachment * stats.Attachments;
+        }
+
+#if DEBUG
+        Console.WriteLine($"{GuildId} {UserId} AddStats EventMessage experience:{experience}");
+#endif
+
+        EventExperience += experience;
+    }
+
+    public void AddStats(bool enabled, IExperienceModeChannelSettings settings, VoiceStats stats)
+    {
+        var experience = 0m;
 
         if (enabled && settings.VoiceMinute > 0)
         {
-            VoiceMinutes += minutes;
-            experience += settings.VoiceMinute * minutes;
+            VoiceMinutes += stats.Minutes;
+            experience += settings.VoiceMinute * stats.Minutes;
         }
         else
-            ExcludedVoiceMinutes += minutes;
+            ExcludedVoiceMinutes += stats.Minutes;
 
-        if (minutesVideo > 0)
+        if (stats.MinutesVideo > 0)
         {
             if (enabled && settings.VoiceMinuteVideo > 0)
             {
-                VoiceMinutesVideo += minutesVideo;
-                experience += settings.VoiceMinuteVideo * minutesVideo;
+                VoiceMinutesVideo += stats.MinutesVideo;
+                experience += settings.VoiceMinuteVideo * stats.MinutesVideo;
             }
             else
-                ExcludedVoiceMinutesVideo += minutesVideo;
+                ExcludedVoiceMinutesVideo += stats.MinutesVideo;
         }
 
-        if (minutesStream > 0)
+        if (stats.MinutesStream > 0)
         {
             if (enabled && settings.VoiceMinuteStream > 0)
             {
-                VoiceMinutesStream += minutesStream;
-                experience += settings.VoiceMinuteStream * minutesStream;
+                VoiceMinutesStream += stats.MinutesStream;
+                experience += settings.VoiceMinuteStream * stats.MinutesStream;
             }
             else
-                ExcludedVoiceMinutesStream += minutesStream;
+                ExcludedVoiceMinutesStream += stats.MinutesStream;
         }
 
 #if DEBUG
-        Console.WriteLine($"{GuildId} {UserId} AddVoice: {experience}");
+        Console.WriteLine($"{GuildId} {UserId} AddStats NormalVoice experience:{experience} enabled:{enabled}");
 #endif
 
-        switch (settings.Mode)
+        VoiceExperience += experience;
+        UpdateVoiceLevel();
+    }
+
+    public void AddStats(IExperienceModeChannelSettings settings, VoiceStats stats)
+    {
+        var experience = 0m;
+
+        if (settings.VoiceMinute > 0)
+            experience += settings.VoiceMinute * stats.Minutes;
+
+        if (stats.MinutesVideo > 0)
         {
-            case ExperienceMode.Disabled:
-                break;
-
-            case ExperienceMode.Normal:
-                VoiceExperience += experience;
-                UpdateVoiceLevel();
-                break;
-
-            case ExperienceMode.Event:
-                EventExperience += experience;
-                break;
+            if (settings.VoiceMinuteVideo > 0)
+                experience += settings.VoiceMinuteVideo * stats.MinutesVideo;
         }
+
+        if (stats.MinutesStream > 0)
+        {
+            if (settings.VoiceMinuteStream > 0)
+                experience += settings.VoiceMinuteStream * stats.MinutesStream;
+        }
+
+#if DEBUG
+        Console.WriteLine($"{GuildId} {UserId} AddStats EventVoice experience:{experience}");
+#endif
+
+        EventExperience += experience;
     }
 
     private static int CalculateLevel(decimal experience)
