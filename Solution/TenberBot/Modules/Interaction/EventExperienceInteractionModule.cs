@@ -25,11 +25,11 @@ public class EventExperienceInteractionModule : InteractionModuleBase<SocketInte
         if (dbUserLevel == null)
             return;
 
-        await SendExperience(dbUserLevel, null);
+        await SendExperience(dbUserLevel, null, null);
     }
 
     [SlashCommand("modify", "Modify event experience for a user.")]
-    public async Task Modify(IUser user, decimal amount)
+    public async Task Modify(IUser user, decimal amount, string? comment = null)
     {
         var dbUserLevel = await GetRecord(user);
         if (dbUserLevel == null)
@@ -41,11 +41,11 @@ public class EventExperienceInteractionModule : InteractionModuleBase<SocketInte
 
         await userLevelDataService.Update(dbUserLevel, null!);
 
-        await SendExperience(dbUserLevel, before);
+        await SendExperience(dbUserLevel, before, comment);
     }
 
     [SlashCommand("set", "Set event experience for a user.")]
-    public async Task Set(IUser user, decimal amount)
+    public async Task Set(IUser user, decimal amount, string? comment = null)
     {
         var dbUserLevel = await GetRecord(user);
         if (dbUserLevel == null)
@@ -57,7 +57,7 @@ public class EventExperienceInteractionModule : InteractionModuleBase<SocketInte
 
         await userLevelDataService.Update(dbUserLevel, null!);
 
-        await SendExperience(dbUserLevel, before);
+        await SendExperience(dbUserLevel, before, comment);
     }
 
     [SlashCommand("reset", "Set event experience for all users to 0.")]
@@ -82,10 +82,12 @@ public class EventExperienceInteractionModule : InteractionModuleBase<SocketInte
         return dbUserLevel;
     }
 
-    private Task SendExperience(UserLevel userLevel, decimal? before)
+    private Task SendExperience(UserLevel userLevel, decimal? before, string? comment)
     {
-        var previous = before != null ? $" It used to be {before:N2}." : "";
+        var beforeText = before != null ? $" It used to be {before:N2}." : "";
 
-        return RespondAsync($"{userLevel.UserId.GetUserMention()} has {userLevel.EventExperience:N2} event experience.{previous}", allowedMentions: AllowedMentions.None);
+        var commentText = comment != null ? $"\nComment: {comment.SanitizeMD()}" : "";
+
+        return RespondAsync($"{userLevel.UserId.GetUserMention()} has {userLevel.EventExperience:N2} event experience.{beforeText}{commentText}", allowedMentions: AllowedMentions.None);
     }
 }
