@@ -167,12 +167,12 @@ public class ServerSettingInteractionModule : InteractionModuleBase<SocketIntera
 
     [SlashCommand("leaderboard", "Configure the leaderboard.")]
     public async Task Leaderboard(
-        [Summary("display-event")] bool? displayEvent = null)
+        [Summary("display-event")] bool? eventEnabled = null)
     {
         var settings = cacheService.Get<LeaderboardServerSettings>(Context.Guild);
 
-        if (displayEvent != null)
-            settings.DisplayEvent = displayEvent.Value;
+        if (eventEnabled != null)
+            settings.DisplayEvent = eventEnabled.Value;
 
         await Set(settings);
 

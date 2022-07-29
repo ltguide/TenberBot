@@ -44,6 +44,7 @@ public class Program
                     MessageCacheSize = 200,
                     AlwaysDownloadUsers = true,
                     GatewayIntents = (GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers) & ~GatewayIntents.GuildScheduledEvents & ~GatewayIntents.GuildInvites,
+                    UseInteractionSnowflakeDate = false,
                 };
 
                 config.Token = context.Configuration["app-token"];

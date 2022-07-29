@@ -124,13 +124,13 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
         };
 
         if (viewButtons.HasFlag(ViewButtons.Message))
-            componentBuilder.WithButton("Switch to Message", $"leaderboard:view-message,{messageId}", ButtonStyle.Secondary, new Emoji("📝"), row: 1);
+            componentBuilder.WithButton("Message", $"leaderboard:view-message,{messageId}", ButtonStyle.Secondary, new Emoji("📝"), row: 1);
 
         if (viewButtons.HasFlag(ViewButtons.Voice))
-            componentBuilder.WithButton("Switch to Voice", $"leaderboard:view-voice,{messageId}", ButtonStyle.Secondary, new Emoji("🎤"), row: 1);
+            componentBuilder.WithButton("Voice", $"leaderboard:view-voice,{messageId}", ButtonStyle.Secondary, new Emoji("🎤"), row: 1);
 
         if (viewButtons.HasFlag(ViewButtons.Event) && cacheService.Get<LeaderboardServerSettings>(Context.Guild).DisplayEvent)
-            componentBuilder.WithButton("Switch to Event", $"leaderboard:view-event,{messageId}", ButtonStyle.Secondary, new Emoji("🎟"));
+            componentBuilder.WithButton("Event", $"leaderboard:view-event,{messageId}", ButtonStyle.Secondary, new Emoji("🎟"));
 
         componentBuilder.WithButton(customId: $"leaderboard:page-refresh,{messageId}", style: ButtonStyle.Secondary, emote: new Emoji("🔁"), row: 1);
 

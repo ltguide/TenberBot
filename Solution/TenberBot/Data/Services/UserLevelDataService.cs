@@ -17,6 +17,8 @@ public interface IUserLevelDataService
 
     Task Delete(UserLevel dbObject);
 
+    Task ResetEventExperience(ulong guildId);
+
     Task<IList<UserLevel>> GetPage(ulong guildId, LeaderboardView view);
 
     Task<int> GetUserPage(ulong guildId, ulong userId, LeaderboardView view);
@@ -26,7 +28,6 @@ public interface IUserLevelDataService
     Task<UserLevel> LoadVoiceRank(UserLevel dbObject);
     Task<UserLevel> LoadMessageRank(UserLevel dbObject);
     Task<UserLevel> LoadRanks(UserLevel dbObject);
-
 }
 
 public class UserLevelDataService : IUserLevelDataService
@@ -81,6 +82,20 @@ public class UserLevelDataService : IUserLevelDataService
             throw new ArgumentNullException(nameof(dbObject));
 
         dbContext.Remove(dbObject);
+
+        await dbContext.SaveChangesAsync().ConfigureAwait(false);
+    }
+
+    public async Task ResetEventExperience(ulong guildId)
+    {
+        var dbObjects = await dbContext.UserLevels
+            .Where(x => x.GuildId == guildId)
+            .Where(x => x.EventExperience > 0)
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        foreach (var dbObject in dbObjects)
+            dbObject.EventExperience = 0;
 
         await dbContext.SaveChangesAsync().ConfigureAwait(false);
     }
