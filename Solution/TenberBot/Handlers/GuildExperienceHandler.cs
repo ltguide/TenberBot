@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Addons.Hosting;
-using Discord.Commands;
 using Discord.WebSocket;
 using System.Text.RegularExpressions;
 using TenberBot.Data.Enums;
@@ -8,7 +7,6 @@ using TenberBot.Data.Models;
 using TenberBot.Data.POCO;
 using TenberBot.Data.Services;
 using TenberBot.Data.Settings.Channel;
-using TenberBot.Data.Settings.Server;
 using TenberBot.Services;
 
 namespace TenberBot.Handlers;
@@ -35,37 +33,18 @@ public class GuildExperienceHandler : DiscordClientService
     }
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        Client.MessageReceived += MessageReceived;
         Client.GuildAvailable += GuildAvailable;
         Client.UserVoiceStateUpdated += UserVoiceStateUpdated;
 
         return Task.CompletedTask;
     }
 
-    private async Task MessageReceived(SocketMessage incomingMessage)
+    public async Task AddMessageExperience(SocketGuildChannel channel, SocketUserMessage message)
     {
-        if (incomingMessage is not SocketUserMessage message)
-            return;
-
-        if (message.Source != MessageSource.User)
-            return;
-
-        if (message.Channel is not SocketGuildChannel channel)
-            return;
-
-        if (cacheService.TryGetValue<BasicServerSettings>(channel.Guild, out var settings) && string.IsNullOrWhiteSpace(settings.Prefix) == false)
-        {
-            int argPos = 0;
-            if (message.HasStringPrefix(settings.Prefix, ref argPos) || message.HasMentionPrefix(Client.CurrentUser, ref argPos))
-                return;
-        }
-
         if (channel is SocketThreadChannel thread)
             channel = thread.ParentChannel;
 
         var userLevel = await GetUserLevel(channel.Guild.Id, message.Author);
-
-        await cacheService.Channel(channel);
 
         var mode = cacheService.Get<ExperienceChannelSettings>(channel).Mode;
 
@@ -74,6 +53,26 @@ public class GuildExperienceHandler : DiscordClientService
             Lines.Matches(message.Content).Count + 1,
             Words.Matches(message.Content).Count,
             message.Content.Length
+        );
+
+        userLevel.AddStats(mode.HasFlag(ExperienceModes.Normal), cacheService.Get<NormalExperienceModeChannelSettings>(channel), stats);
+
+        if (mode.HasFlag(ExperienceModes.Event))
+            userLevel.AddStats(cacheService.Get<EventExperienceModeChannelSettings>(channel), stats);
+
+        await userLevelDataService.Update(userLevel, null!);
+    }
+
+    private async Task AddVoiceExperience(UserLevel userLevel, IChannel channel, UserVoiceChannel userVoiceChannel)
+    {
+        await cacheService.Channel(channel);
+
+        var mode = cacheService.Get<ExperienceChannelSettings>(channel).Mode;
+
+        var stats = new VoiceStats(
+            ToMinutes(userVoiceChannel.ConnectDate),
+            ToMinutes(userVoiceChannel.VideoDate) + userVoiceChannel.VideoMinutes,
+            ToMinutes(userVoiceChannel.StreamDate) + userVoiceChannel.StreamMinutes
         );
 
         userLevel.AddStats(mode.HasFlag(ExperienceModes.Normal), cacheService.Get<NormalExperienceModeChannelSettings>(channel), stats);
@@ -99,7 +98,7 @@ public class GuildExperienceHandler : DiscordClientService
             {
                 var userLevel = await userLevelDataService.GetByIds(guild.Id, userVoiceChannel.UserId);
                 if (userLevel != null)
-                    await VoiceDisconnected(userLevel, channel, userVoiceChannel);
+                    await AddVoiceExperience(userLevel, channel, userVoiceChannel);
             }
 
             await userVoiceChannelDataService.Delete(userVoiceChannel);
@@ -141,7 +140,7 @@ public class GuildExperienceHandler : DiscordClientService
             {
                 var userLevel = await GetUserLevel(userVoiceChannel.GuildId, socketUser);
 
-                await VoiceDisconnected(userLevel, before.VoiceChannel, userVoiceChannel);
+                await AddVoiceExperience(userLevel, before.VoiceChannel, userVoiceChannel);
 
                 await userVoiceChannelDataService.Delete(userVoiceChannel);
             }
@@ -208,27 +207,6 @@ public class GuildExperienceHandler : DiscordClientService
         }
 
         await userVoiceChannelDataService.Update(userVoiceChannel, null!);
-    }
-
-
-    private async Task VoiceDisconnected(UserLevel userLevel, IChannel channel, UserVoiceChannel userVoiceChannel)
-    {
-        await cacheService.Channel(channel);
-
-        var mode = cacheService.Get<ExperienceChannelSettings>(channel).Mode;
-
-        var stats = new VoiceStats(
-            ToMinutes(userVoiceChannel.ConnectDate),
-            ToMinutes(userVoiceChannel.VideoDate) + userVoiceChannel.VideoMinutes,
-            ToMinutes(userVoiceChannel.StreamDate) + userVoiceChannel.StreamMinutes
-        );
-
-        userLevel.AddStats(mode.HasFlag(ExperienceModes.Normal), cacheService.Get<NormalExperienceModeChannelSettings>(channel), stats);
-
-        if (mode.HasFlag(ExperienceModes.Event))
-            userLevel.AddStats(cacheService.Get<EventExperienceModeChannelSettings>(channel), stats);
-
-        await userLevelDataService.Update(userLevel, null!);
     }
 
     private static decimal ToMinutes(DateTime? dateTime)

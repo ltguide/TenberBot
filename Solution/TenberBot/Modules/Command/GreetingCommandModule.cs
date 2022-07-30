@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using System.Text.RegularExpressions;
+using TenberBot.Attributes;
 using TenberBot.Data.Enums;
 using TenberBot.Data.Services;
 using TenberBot.Extensions;
@@ -37,6 +38,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         await SendRandom(GreetingType.BotName, VisualType.BotName);
     }
 
+    [InlineCommand]
     [Command("hi", ignoreExtraArgs: true)]
     [Alias("hello", "hey")]
     [Summary("Say a Hello greeting.")]
@@ -45,6 +47,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         await SendRandom(GreetingType.Hello, VisualType.Hello);
     }
 
+    [InlineCommand]
     [Command("gb", ignoreExtraArgs: true)]
     [Alias("goodbye", "bye", "cya")]
     [Summary("Say a Good Bye greeting.")]
@@ -53,6 +56,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         await SendRandom(GreetingType.Bye);
     }
 
+    [InlineCommand]
     [Command("gm", ignoreExtraArgs: true)]
     [Alias("goodmorning", "morning")]
     [Summary("Say a Good Morning greeting.")]
@@ -61,6 +65,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         await SendRandom(GreetingType.Morning);
     }
 
+    [InlineCommand]
     [Command("ga", ignoreExtraArgs: true)]
     [Alias("goodafternoon", "afternoon")]
     [Summary("Say a Good Afternoon greeting.")]
@@ -69,6 +74,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         await SendRandom(GreetingType.Afternoon);
     }
 
+    [InlineCommand]
     [Command("ge", ignoreExtraArgs: true)]
     [Alias("goodevening", "evening")]
     [Summary("Say a Good Evening greeting.")]
@@ -77,7 +83,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         await SendRandom(GreetingType.Evening);
     }
 
-
+    [InlineCommand]
     [Command("gd", ignoreExtraArgs: true)]
     [Alias("goodday", "day")]
     [Summary("Say a Good Day greeting.")]
@@ -86,6 +92,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         await SendRandom(GreetingType.Day);
     }
 
+    [InlineCommand]
     [Command("gn", ignoreExtraArgs: true)]
     [Alias("goodnight", "night")]
     [Summary("Say a Good Night greeting.")]

@@ -82,7 +82,9 @@ public class Program
                 services.AddHostedService(provider => provider.GetRequiredService<UserTimerService>());
 
                 services.AddHostedService<GuildCommandHandler>();
-                services.AddHostedService<GuildExperienceHandler>();
+
+                services.AddSingleton<GuildExperienceHandler>();
+                services.AddHostedService(provider => provider.GetRequiredService<GuildExperienceHandler>());
 
                 services.AddHostedService<InteractionHandler>();
 
