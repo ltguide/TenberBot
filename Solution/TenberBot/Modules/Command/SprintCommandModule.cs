@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using TenberBot.Data.Enums;
 using TenberBot.Data.Models;
 using TenberBot.Data.Services;
@@ -43,7 +44,7 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
     [Command("sprint")]
     public async Task<RuntimeResult> SprintNoParams()
     {
-        var settings = cacheService.Get<SprintChannelSettings>(Context.Channel);
+        var settings = cacheService.Get<SprintChannelSettings>(Context.Channel is SocketThreadChannel thread ? thread.ParentChannel : Context.Channel);
         if (settings.Mode == SprintMode.Disabled)
             return RemainResult.FromError("The sprint feature isn't configured for this channel.");
 
@@ -66,7 +67,7 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
     [Remarks("`<duration>` `[message]`")]
     public async Task<RuntimeResult> Sprint(TimeSpan duration, [Remainder] string? message = null)
     {
-        var settings = cacheService.Get<SprintChannelSettings>(Context.Channel);
+        var settings = cacheService.Get<SprintChannelSettings>(Context.Channel is SocketThreadChannel thread ? thread.ParentChannel : Context.Channel);
         if (settings.Mode == SprintMode.Disabled)
             return RemainResult.FromError("The sprint feature isn't configured for this channel.");
 
