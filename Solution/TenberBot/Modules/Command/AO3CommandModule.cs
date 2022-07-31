@@ -36,7 +36,7 @@ public class AO3CommandModule : ModuleBase<SocketCommandContext>
         var embedBuilder = new EmbedBuilder
         {
             Author = Context.User.GetEmbedAuthor("shared a story"),
-            Color = Color.Gold,
+            //Color = Color.Gold,
             Description = $"***{a.Name}*** by {a.Author}\n",
         }
         .AddField("Fandom", a.Fandom)
