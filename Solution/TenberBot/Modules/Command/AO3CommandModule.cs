@@ -75,6 +75,6 @@ public class AO3CommandModule : ModuleBase<SocketCommandContext>
     private static void AddField(EmbedBuilder embedBuilder, string name, string? value, bool inline = false)
     {
         if (value != null)
-            embedBuilder.WithFields(value.ChunkByLines(1024).Select(x => new EmbedFieldBuilder { Name = name, Value = x.Replace("\n", ", "), IsInline = inline, }));
+            embedBuilder.WithFields(value.ChunkByLines(1024).Select(x => new EmbedFieldBuilder { Name = name, Value = x.Replace(" \n", ", "), IsInline = inline, }));
     }
 }
