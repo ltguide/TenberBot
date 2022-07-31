@@ -24,12 +24,13 @@ public static class IUserMessageExtensions
         return false;
     }
 
-    public static bool HasInlineTrigger(this IUserMessage message, IDictionary<Regex, string> triggers, out string command)
+    public static bool HasInlineTriggers(this IUserMessage message, IDictionary<Regex, string> triggers, out IList<string> commands)
     {
+        commands = new List<string>();
+
         foreach (var trigger in triggers)
         {
-            var match = trigger.Key.Match(message.Content);
-            if (match.Success)
+            foreach (Match match in trigger.Key.Matches(message.Content))
             {
                 var groups = match.Groups.Cast<Group>()
                     .Skip(1)
@@ -37,12 +38,10 @@ public static class IUserMessageExtensions
                     .Select(x => x.Value)
                     .ToList();
 
-                command = $"{trigger.Value} {(groups.Any() ? string.Join(" ", groups) : match.Groups[0].Value)}";
-                return true;
+                commands.Add($"{trigger.Value} {(groups.Any() ? string.Join(" ", groups) : match.Groups[0].Value)}");
             }
         }
 
-        command = "";
-        return false;
+        return commands.Count != 0;
     }
 }

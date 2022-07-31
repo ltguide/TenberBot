@@ -117,6 +117,7 @@ public class Program
                 services.AddTransient<IUserTimerDataService, UserTimerDataService>();
 
                 services.AddHttpClient<WebService>();
+                services.AddHttpClient<StoryWebService>();
             })
             .Build();
 

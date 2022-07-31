@@ -30,7 +30,7 @@ public class ConvertCommandModule : ModuleBase<SocketCommandContext>
     [Alias("temp")]
     [Summary("Convert temperatures.\nInclude the unit (C or F) to convert from.")]
     [Remarks("`<temp>`")]
-    [InlineTrigger(@"\b(-?\d+(?:\.\d+)?)°? ?([CF])\b", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
+    [InlineTrigger(@"\b(-?\d+(?:\.\d+)?)°? ?([CF])\b", RegexOptions.IgnoreCase)]
     public async Task<RuntimeResult> Temp([Remainder] string? word = null)
     {
         var match = Regex.Match(word ?? "", @"(-?\d+(?:\.\d+)?)°? ?([CF])", RegexOptions.IgnoreCase);

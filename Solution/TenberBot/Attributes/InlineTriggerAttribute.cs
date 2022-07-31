@@ -9,6 +9,6 @@ public class InlineTriggerAttribute : Attribute
 
     public InlineTriggerAttribute(string pattern, RegexOptions options)
     {
-        Regex = new Regex(pattern, options);
+        Regex = new Regex(pattern, options | RegexOptions.Compiled);
     }
 }

@@ -95,8 +95,9 @@ public class GuildCommandHandler : DiscordClientService
             if (message.HasInlineCommand(InlineCommands, settings.Prefix, out var command))
                 await commandService.ExecuteAsync(context, command, provider);
 
-            if (message.HasInlineTrigger(InlineTriggers, out command))
-                await commandService.ExecuteAsync(context, command, provider);
+            if (message.HasInlineTriggers(InlineTriggers, out var commands))
+                foreach (var inlineCommand in commands.Take(5))
+                    await commandService.ExecuteAsync(context, inlineCommand, provider);
         }
     }
 
