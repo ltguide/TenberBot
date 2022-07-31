@@ -1,4 +1,6 @@
-﻿namespace TenberBot.Data.POCO;
+﻿using Discord;
+
+namespace TenberBot.Data.POCO;
 
 public abstract class Story
 {
@@ -6,6 +8,7 @@ public abstract class Story
     public string Author { get; set; } = "";
     public string? Summary { get; set; }
     public string Rating { get; set; } = "";
+    public string RatingText { get; set; } = "";
     public string Language { get; set; } = "";
     public string? Category { get; set; }
     public string? Tags { get; set; }
@@ -24,4 +27,6 @@ public abstract class Story
     public string? Kudos { get; set; }
     public string? Bookmarks { get; set; }
     public string? Hits { get; set; }
+
+    public abstract Color GetRatingColor();
 }

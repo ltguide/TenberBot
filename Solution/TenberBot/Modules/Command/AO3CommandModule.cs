@@ -29,42 +29,43 @@ public class AO3CommandModule : ModuleBase<SocketCommandContext>
     [InlineTrigger(@"\b(https://archiveofourown\.org/works/\d+)", RegexOptions.IgnoreCase)]
     public async Task<RuntimeResult> AO3([Remainder] string url)
     {
-        var a = await storyWebService.GetAO3(url);
-        if (a == null)
+        var story = await storyWebService.GetAO3(url);
+        if (story == null)
             return DeleteResult.FromError("I couldn't load this story 😭");
 
         var embedBuilder = new EmbedBuilder
         {
             Author = Context.User.GetEmbedAuthor("shared a story"),
-            //Color = Color.Gold,
-            Description = $"***{a.Name}*** by {a.Author}\n",
-        }
-        .AddField("Fandom", a.Fandom)
-        .AddField("Rating", a.Rating, true)
-        .AddField("Warning", a.Warning, true);
+            Color = story.GetRatingColor(),
+            Description = $"***{story.Name}*** by {story.Author}\n",
+        };
+        
+        AddField(embedBuilder, "Fandom", story.Fandom);
+        AddField(embedBuilder, "Rating", story.Rating, true);
+        AddField(embedBuilder, "Warning", story.Warning, true);
 
 
-        AddField(embedBuilder, "Category", a.Category);
-        AddField(embedBuilder, "Tags", a.Tags);
-        AddField(embedBuilder, "Characters", a.Characters);
-        AddField(embedBuilder, "Relationships", a.Relationships);
+        AddField(embedBuilder, "Category", story.Category);
+        AddField(embedBuilder, "Tags", story.Tags);
+        AddField(embedBuilder, "Characters", story.Characters);
+        AddField(embedBuilder, "Relationships", story.Relationships);
 
-        AddField(embedBuilder, "Collections", a.Collections, true);
-        AddField(embedBuilder, "Series", a.Series, true);
+        AddField(embedBuilder, "Collections", story.Collections, true);
+        AddField(embedBuilder, "Series", story.Series, true);
 
-        AddField(embedBuilder, "Published", a.Published, true);
-        AddField(embedBuilder, a.StatusName ?? "Status", a.Status, true);
-        AddField(embedBuilder, "Words", a.Words, true);
-        AddField(embedBuilder, "Chapters", a.Chapters, true);
-        AddField(embedBuilder, "Comments", a.Comments, true);
-        AddField(embedBuilder, "Kudos", a.Kudos, true);
-        AddField(embedBuilder, "Bookmarks", a.Bookmarks, true);
-        AddField(embedBuilder, "Hits", a.Hits, true);
+        AddField(embedBuilder, "Published", story.Published, true);
+        AddField(embedBuilder, story.StatusName ?? "Status", story.Status, true);
+        AddField(embedBuilder, "Words", story.Words, true);
+        AddField(embedBuilder, "Chapters", story.Chapters, true);
+        AddField(embedBuilder, "Comments", story.Comments, true);
+        AddField(embedBuilder, "Kudos", story.Kudos, true);
+        AddField(embedBuilder, "Bookmarks", story.Bookmarks, true);
+        AddField(embedBuilder, "Hits", story.Hits, true);
 
-        AddField(embedBuilder, "Language", a.Language, true);
+        AddField(embedBuilder, "Language", story.Language, true);
 
-        if (a.Summary != null)
-            embedBuilder.Description += $"\n**Summary**\n {a.Summary}\n";
+        if (story.Summary != null)
+            embedBuilder.Description += $"\n**Summary**\n {story.Summary}\n";
 
         await Context.Message.ReplyAsync(embed: embedBuilder.Build());
 
