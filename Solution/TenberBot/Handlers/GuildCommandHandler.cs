@@ -17,13 +17,13 @@ public class GuildCommandHandler : DiscordClientService
 {
     private readonly Dictionary<Regex, string> InlineTriggers = new();
     private readonly List<string> InlineCommands = new();
-    private readonly GuildExperienceHandler guildExperienceHandler;
+    private readonly GuildExperienceService guildExperienceHandler;
     private readonly IServiceProvider provider;
     private readonly CommandService commandService;
     private readonly CacheService cacheService;
 
     public GuildCommandHandler(
-        GuildExperienceHandler guildExperienceHandler,
+        GuildExperienceService guildExperienceHandler,
         IServiceProvider provider,
         CommandService commandService,
         CacheService cacheService,

@@ -7,11 +7,10 @@ using TenberBot.Data.Models;
 using TenberBot.Data.POCO;
 using TenberBot.Data.Services;
 using TenberBot.Data.Settings.Channel;
-using TenberBot.Services;
 
-namespace TenberBot.Handlers;
+namespace TenberBot.Services;
 
-public class GuildExperienceHandler : DiscordClientService
+public class GuildExperienceService : DiscordClientService
 {
     private readonly static Regex Lines = new(@"\n", RegexOptions.Multiline | RegexOptions.Compiled);
     private readonly static Regex Words = new(@"\S+", RegexOptions.Multiline | RegexOptions.Compiled);
@@ -20,12 +19,12 @@ public class GuildExperienceHandler : DiscordClientService
     private readonly IUserLevelDataService userLevelDataService;
     private readonly CacheService cacheService;
 
-    public GuildExperienceHandler(
+    public GuildExperienceService(
         IUserVoiceChannelDataService userVoiceChannelDataService,
         IUserLevelDataService userLevelDataService,
         CacheService cacheService,
         DiscordSocketClient client,
-        ILogger<GuildExperienceHandler> logger) : base(client, logger)
+        ILogger<GuildExperienceService> logger) : base(client, logger)
     {
         this.userVoiceChannelDataService = userVoiceChannelDataService;
         this.userLevelDataService = userLevelDataService;
@@ -61,6 +60,43 @@ public class GuildExperienceHandler : DiscordClientService
             userLevel.AddStats(cacheService.Get<EventExperienceModeChannelSettings>(channel), stats);
 
         await userLevelDataService.Update(userLevel, null!);
+    }
+
+    public Task<UserLevel?> GetUserLevel(ulong guildId, ulong userId)
+    {
+        return userLevelDataService.GetByIds(guildId, userId);
+    }
+
+    private async Task<UserLevel> GetUserLevel(ulong guildId, SocketUser user)
+    {
+        var userLevel = await GetUserLevel(guildId, user.Id);
+        if (userLevel == null)
+        {
+            userLevel = new UserLevel
+            {
+                GuildId = guildId,
+                UserId = user.Id,
+                ServerUser = new ServerUser(user) { GuildId = guildId, },
+            };
+
+            await userLevelDataService.Add(userLevel);
+        }
+        else
+            userLevel.ServerUser.Clone(user);
+
+        return userLevel;
+    }
+
+    public Task SetEventExperience(UserLevel dbUserLevel, decimal experience)
+    {
+        dbUserLevel.EventExperience = experience;
+
+        return userLevelDataService.Update(dbUserLevel, null!);
+    }
+
+    public Task ResetEventExperience(ulong guildId)
+    {
+        return userLevelDataService.ResetEventExperience(guildId);
     }
 
     private async Task AddVoiceExperience(UserLevel userLevel, IChannel channel, UserVoiceChannel userVoiceChannel)
@@ -163,26 +199,6 @@ public class GuildExperienceHandler : DiscordClientService
                 ConnectDate = DateTime.Now,
             });
         }
-    }
-
-    private async Task<UserLevel> GetUserLevel(ulong guildId, SocketUser user)
-    {
-        var userLevel = await userLevelDataService.GetByIds(guildId, user.Id);
-        if (userLevel == null)
-        {
-            userLevel = new UserLevel
-            {
-                GuildId = guildId,
-                UserId = user.Id,
-                ServerUser = new ServerUser(user) { GuildId = guildId, },
-            };
-
-            await userLevelDataService.Add(userLevel);
-        }
-        else
-            userLevel.ServerUser.Clone(user);
-
-        return userLevel;
     }
 
     public async Task VoiceStateUpdated(SocketUser socketUser, SocketVoiceState before, SocketVoiceState after)

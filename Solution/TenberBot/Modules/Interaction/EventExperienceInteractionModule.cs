@@ -1,8 +1,8 @@
 ﻿using Discord;
 using Discord.Interactions;
 using TenberBot.Data.Models;
-using TenberBot.Data.Services;
 using TenberBot.Extensions;
+using TenberBot.Services;
 
 namespace TenberBot.Modules.Interaction;
 
@@ -10,12 +10,12 @@ namespace TenberBot.Modules.Interaction;
 [DefaultMemberPermissions(GuildPermission.ManageChannels)]
 public class EventExperienceInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
-    private readonly IUserLevelDataService userLevelDataService;
+    private readonly GuildExperienceService guildExperienceService;
 
     public EventExperienceInteractionModule(
-        IUserLevelDataService userLevelDataService)
+        GuildExperienceService guildExperienceService)
     {
-        this.userLevelDataService = userLevelDataService;
+        this.guildExperienceService = guildExperienceService;
     }
 
     [SlashCommand("get", "Get event experience for a user.")]
@@ -37,9 +37,7 @@ public class EventExperienceInteractionModule : InteractionModuleBase<SocketInte
 
         var before = dbUserLevel.EventExperience;
 
-        dbUserLevel.EventExperience = Math.Max(0, Math.Min(decimal.MaxValue, dbUserLevel.EventExperience + amount));
-
-        await userLevelDataService.Update(dbUserLevel, null!);
+        await guildExperienceService.SetEventExperience(dbUserLevel, Math.Max(0, Math.Min(decimal.MaxValue, dbUserLevel.EventExperience + amount)));
 
         await SendExperience(dbUserLevel, before, comment);
     }
@@ -53,9 +51,7 @@ public class EventExperienceInteractionModule : InteractionModuleBase<SocketInte
 
         var before = dbUserLevel.EventExperience;
 
-        dbUserLevel.EventExperience = Math.Max(0, Math.Min(decimal.MaxValue, amount));
-
-        await userLevelDataService.Update(dbUserLevel, null!);
+        await guildExperienceService.SetEventExperience(dbUserLevel, Math.Max(0, Math.Min(decimal.MaxValue, amount)));
 
         await SendExperience(dbUserLevel, before, comment);
     }
@@ -65,7 +61,7 @@ public class EventExperienceInteractionModule : InteractionModuleBase<SocketInte
     {
         if (confirm)
         {
-            await userLevelDataService.ResetEventExperience(Context.Guild.Id);
+            await guildExperienceService.ResetEventExperience(Context.Guild.Id);
 
             await RespondAsync($"All event experience has been reset.");
         }
@@ -75,7 +71,7 @@ public class EventExperienceInteractionModule : InteractionModuleBase<SocketInte
 
     private async Task<UserLevel?> GetRecord(IUser user)
     {
-        var dbUserLevel = await userLevelDataService.GetByIds(Context.Guild.Id, user.Id);
+        var dbUserLevel = await guildExperienceService.GetUserLevel(Context.Guild.Id, user.Id);
         if (dbUserLevel == null)
             await RespondAsync($"I don't have an experience record for {user.Mention}", ephemeral: true);
 

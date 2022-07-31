@@ -83,8 +83,8 @@ public class Program
 
                 services.AddHostedService<GuildCommandHandler>();
 
-                services.AddSingleton<GuildExperienceHandler>();
-                services.AddHostedService(provider => provider.GetRequiredService<GuildExperienceHandler>());
+                services.AddSingleton<GuildExperienceService>();
+                services.AddHostedService(provider => provider.GetRequiredService<GuildExperienceService>());
 
                 services.AddHostedService<InteractionHandler>();
 
