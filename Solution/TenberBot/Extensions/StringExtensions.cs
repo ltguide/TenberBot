@@ -35,18 +35,19 @@ public static class StringExtensions
         return null;
     }
 
-    public static IEnumerable<string> ChunkByLines(this string value, int size)
+    public static IEnumerable<string> ChunkBy(this string value, int size, string delimiter = "\n")
     {
         if (value.Length <= size)
             yield return value;
         else
         {
             var startIndex = 0;
+            var length = delimiter.Length;
 
             do
             {
-                var lastIndex = value.LastIndexOf('\n', startIndex + size - 1, size);
-                //Console.WriteLine($"inside do; startIndex:{startIndex} lastIndex:{lastIndex}");
+                var lastIndex = value.LastIndexOf(delimiter, startIndex + size - 1, size);
+                //Console.WriteLine($"do; startIndex:{startIndex} lastIndex:{lastIndex}");
 
                 if (lastIndex == -1)
                 {
@@ -55,8 +56,8 @@ public static class StringExtensions
                 }
                 else
                 {
-                    yield return value.Substring(startIndex, lastIndex - startIndex + 1);
-                    startIndex = lastIndex + 1;
+                    yield return value.Substring(startIndex, lastIndex - startIndex + length);
+                    startIndex = lastIndex + length;
                 }
             }
             while (startIndex + size < value.Length);

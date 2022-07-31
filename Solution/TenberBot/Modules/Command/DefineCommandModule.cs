@@ -58,7 +58,7 @@ public class DefineCommandModule : ModuleBase<SocketCommandContext>
 
         if (doc.DocumentNode.ChildNodes.Count > 0)
         {
-            var embeds = ParseDefinition(doc).ChunkByLines(4096).Select((x, i) => new EmbedBuilder
+            var embeds = ParseDefinition(doc).ChunkBy(4096).Select((x, i) => new EmbedBuilder
             {
                 Author = i == 0 ? Context.User.GetEmbedAuthor($"asked for the definition of {word}") : null,
                 Color = Color.Teal,

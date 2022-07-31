@@ -76,7 +76,7 @@ public class AO3Story : Story
             string? GetList(Dictionary<string, HtmlNode> dictionary, string key, bool html = true)
             {
                 if (dictionary.TryGetValue(key, out var node))
-                    return WebUtility.HtmlDecode(string.Join(" \n", node.SelectNodes("ul/li").Select(x => html ? converter.Convert(x.InnerHtml) : x.InnerText)));
+                    return WebUtility.HtmlDecode(string.Join(", ", node.SelectNodes("ul/li").Select(x => html ? converter.Convert(x.InnerHtml) : x.InnerText)));
 
                 return null;
             }
@@ -101,7 +101,7 @@ public class AO3Story : Story
     {
         var rating = Ratings.NotRated;
 
-        foreach (var item in RatingText.Split(" \n"))
+        foreach (var item in RatingText.Split(","))
             rating |= Enum.Parse<Ratings>(item.Replace(" ", ""));
 
         return Enum.GetValues<Ratings>().Where(x => rating.HasFlag(x)).Max() switch
