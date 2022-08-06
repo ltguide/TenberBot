@@ -104,7 +104,7 @@ public class ServerExperienceInteractionModule : InteractionModuleBase<SocketInt
 
         var text = $"Server settings for *rank-card* for {role.Mention}:\n\n> **Guild Color**: #{card.GuildColor}\n> **User Color**: #{card.UserColor}\n> **Role Color**: #{card.RoleColor}\n> **Rank Color**: #{card.RankColor}\n> **Level Color**: #{card.LevelColor}\n> **Experience Color**: #{card.ExperienceColor}\n\n> **Progress Color**: #{card.ProgressColor}\n> **Progress Fill**: #{card.ProgressFill}\n\n> **Background Image**: ";
 
-        if (card.Data != null)
+        if (card.Data != null && card.Data.Length != 0)
         {
             card.Name = "Role Name";
 

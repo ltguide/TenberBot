@@ -114,7 +114,7 @@ public class ExperienceCommandModule : ModuleBase<SocketCommandContext>
         if (Context.User is not SocketGuildUser user)
             return null;
 
-        var cards = (await rankCardDataService.GetAllByGuildId(Context.Guild.Id)).Where(x => x.Data != null).ToDictionary(x => x.RoleId, x => x);
+        var cards = (await rankCardDataService.GetAllByGuildId(Context.Guild.Id)).Where(x => x.Data != null && x.Data.Length != 0).ToDictionary(x => x.RoleId, x => x);
         if (cards.Count == 0)
             return null;
 
