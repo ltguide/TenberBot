@@ -2,26 +2,15 @@ using Discord;
 using Discord.Addons.Hosting;
 using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.EntityFrameworkCore;
 using NLog.Extensions.Logging;
-using System.Text.Json;
-using TenberBot.Converters;
-using TenberBot.Data;
-using TenberBot.Data.Services;
+using System.Reflection;
 using TenberBot.Handlers;
-using TenberBot.Services;
+using TenberBot.Shared.Features;
 
 namespace TenberBot;
 
 public class Program
 {
-    public static readonly DateTime BaseDuration = new(9999, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-
-    public static readonly JsonSerializerOptions JsonSerializerOptions = new()
-    {
-        Converters = { new IEmoteJsonConverter(), }
-    };
-
     public static async Task Main(string[] args)
     {
         var logLevel = LogSeverity.Info;
@@ -70,54 +59,10 @@ public class Program
             {
                 services.AddMemoryCache();
 
-                services.AddHostedService<BotStatusService>();
-
-                services.AddSingleton<CacheService>();
-                services.AddHostedService(provider => provider.GetRequiredService<CacheService>());
-
-                services.AddSingleton<SprintService>();
-                services.AddHostedService(provider => provider.GetRequiredService<SprintService>());
-
-                services.AddSingleton<UserTimerService>();
-                services.AddHostedService(provider => provider.GetRequiredService<UserTimerService>());
-
-                services.AddHostedService<GuildCommandHandler>();
-
-                services.AddSingleton<GuildExperienceService>();
-                services.AddHostedService(provider => provider.GetRequiredService<GuildExperienceService>());
-
+                services.AddHostedService<GuildMessageHandler>();
                 services.AddHostedService<InteractionHandler>();
 
-                services.AddDbContext<DataContext>(builder =>
-                    builder.UseSqlServer(context.Configuration["app-database"], options =>
-                    {
-                        options.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                    }), ServiceLifetime.Transient, ServiceLifetime.Singleton);
-
-                services.AddTransient<IServerSettingDataService, ServerSettingDataService>();
-                services.AddTransient<IChannelSettingDataService, ChannelSettingDataService>();
-
-                services.AddTransient<IVisualDataService, VisualDataService>();
-
-                services.AddTransient<IInteractionParentDataService, InteractionParentDataService>();
-
-                services.AddTransient<IBotStatusDataService, BotStatusDataService>();
-                services.AddTransient<IGreetingDataService, GreetingDataService>();
-                services.AddTransient<IHugDataService, HugDataService>();
-                services.AddTransient<IPatDataService, PatDataService>();
-                services.AddTransient<IHighFiveDataService, HighFiveDataService>();
-                services.AddTransient<ISprintSnippetDataService, SprintSnippetDataService>();
-                services.AddTransient<IRankCardDataService, RankCardDataService>();
-
-                services.AddTransient<ISprintDataService, SprintDataService>();
-
-                services.AddTransient<IUserVoiceChannelDataService, UserVoiceChannelDataService>();
-                services.AddTransient<IUserLevelDataService, UserLevelDataService>();
-                services.AddTransient<IUserStatDataService, UserStatDataService>();
-                services.AddTransient<IUserTimerDataService, UserTimerDataService>();
-
-                services.AddHttpClient<WebService>();
-                services.AddHttpClient<StoryWebService>();
+                SharedFeatures.RegisterFeatures(services, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidOperationException());
             })
             .Build();
 

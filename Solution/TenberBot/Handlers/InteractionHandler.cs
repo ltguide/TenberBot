@@ -3,13 +3,12 @@ using Discord.Addons.Hosting;
 using Discord.Addons.Hosting.Util;
 using Discord.Interactions;
 using Discord.WebSocket;
-using System.Reflection;
 using TenberBot.Parameters;
-using TenberBot.Services;
+using TenberBot.Shared.Features;
+using TenberBot.Shared.Features.Services;
 
 namespace TenberBot.Handlers;
 
-// NOTE: This command handler is specifically for using InteractionService-based commands
 internal class InteractionHandler : DiscordClientService
 {
     private readonly IServiceProvider provider;
@@ -46,7 +45,8 @@ internal class InteractionHandler : DiscordClientService
 
         interactionService.AddTypeConverter<TimeSpan>(new TimeSpanConverter());
 
-        await interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), provider);
+        foreach (var assembly in SharedFeatures.Assemblies)
+            await interactionService.AddModulesAsync(assembly, provider);
 
         await Client.WaitForReadyAsync(stoppingToken);
 
