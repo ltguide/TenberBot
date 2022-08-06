@@ -9,6 +9,7 @@
 	<PropertyGroup>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<OutDir>..\..\bin\$(Configuration)\TenberBot\$(AssemblyName)</OutDir>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -37,9 +38,5 @@
 		<PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
 		<PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta14" />
 	</ItemGroup>
-
-	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
-		<OutDir>$(SolutionDir)..\bin\TenberBot\$(AssemblyName)</OutDir>
-	</PropertyGroup>
 
 </Project>

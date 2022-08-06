@@ -28,11 +28,7 @@
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
-		<OutDir>$(SolutionDir)..\bin\TenberBot</OutDir>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)'=='Release'">
-		<PublishSingleFile>true</PublishSingleFile>
+		<OutDir>..\..\bin\$(Configuration)\TenberBot</OutDir>
 	</PropertyGroup>
 
 </Project>

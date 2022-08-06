@@ -9,6 +9,7 @@
 	<PropertyGroup>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<OutDir>..\..\bin\$(Configuration)\TenberBot\$(AssemblyName)</OutDir>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -23,9 +24,5 @@
 		<PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
 		<PackageReference Include="ReverseMarkdown" Version="3.23.1" />
 	</ItemGroup>
-
-	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
-		<OutDir>$(SolutionDir)..\bin\TenberBot\$(AssemblyName)</OutDir>
-	</PropertyGroup>
 
 </Project>

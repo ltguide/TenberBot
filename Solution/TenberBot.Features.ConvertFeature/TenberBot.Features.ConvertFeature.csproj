@@ -9,6 +9,7 @@
 	<PropertyGroup>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<OutDir>..\..\bin\$(Configuration)\TenberBot\$(AssemblyName)</OutDir>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -18,9 +19,5 @@
 	<ItemGroup>
 		<PackageReference Include="UnitsNet" Version="4.141.0" />
 	</ItemGroup>
-
-	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
-		<OutDir>$(SolutionDir)..\bin\TenberBot\$(AssemblyName)</OutDir>
-	</PropertyGroup>
 
 </Project>

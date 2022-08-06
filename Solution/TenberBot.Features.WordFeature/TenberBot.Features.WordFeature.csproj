@@ -9,6 +9,7 @@
 	<PropertyGroup>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<OutDir>..\..\bin\$(Configuration)\TenberBot\$(AssemblyName)</OutDir>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -19,9 +20,5 @@
 		<PackageReference Include="CXuesong.MW.WikiClientLibrary" Version="0.8.0-int.6" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.11.43" />
 	</ItemGroup>
-
-	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
-		<OutDir>$(SolutionDir)..\bin\TenberBot\$(AssemblyName)</OutDir>
-	</PropertyGroup>
 
 </Project>

@@ -62,7 +62,7 @@ public class Program
                 services.AddHostedService<GuildMessageHandler>();
                 services.AddHostedService<InteractionHandler>();
 
-                SharedFeatures.RegisterFeatures(services, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidOperationException());
+                SharedFeatures.RegisterFeatures(services, AppContext.BaseDirectory);
             })
             .Build();
 

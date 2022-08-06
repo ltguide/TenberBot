@@ -9,14 +9,11 @@
 	<PropertyGroup>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<OutDir>..\..\bin\$(Configuration)\TenberBot\$(AssemblyName)</OutDir>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\TenberBot.Shared.Features\TenberBot.Shared.Features.csproj" />
 	</ItemGroup>
-
-	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
-		<OutDir>$(SolutionDir)..\bin\TenberBot\$(AssemblyName)</OutDir>
-	</PropertyGroup>
 
 </Project>
