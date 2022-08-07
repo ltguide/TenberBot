@@ -3,31 +3,30 @@ using Discord.Addons.Hosting;
 using Discord.Addons.Hosting.Util;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
-using TenberBot.Features.UserTimerFeature.Data.Enums;
-using TenberBot.Features.UserTimerFeature.Data.Models;
-using TenberBot.Features.UserTimerFeature.Data.Services;
+using TenberBot.Features.MessageTimerFeature.Data.Enums;
+using TenberBot.Features.MessageTimerFeature.Data.Models;
+using TenberBot.Features.MessageTimerFeature.Data.Services;
 using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
-using TenberBot.Shared.Features.Extensions.Mentions;
 
-namespace TenberBot.Features.UserTimerFeature.Services;
+namespace TenberBot.Features.MessageTimerFeature.Services;
 
-public class UserTimerService : DiscordClientService
+public class MessageTimerService : DiscordClientService
 {
     private TaskCompletionSource taskCompletionSource = null!;
 
     private readonly IInteractionParentDataService interactionParentDataService;
-    private readonly IUserTimerDataService userTimerDataService;
+    private readonly IMessageTimerDataService messageTimerDataService;
 
-    public UserTimerService(
+    public MessageTimerService(
         IInteractionParentDataService interactionParentDataService,
-        IUserTimerDataService userTimerDataService,
+        IMessageTimerDataService messageTimerDataService,
         DiscordSocketClient client,
         ILogger<DiscordClientService> logger) : base(client, logger)
     {
         this.interactionParentDataService = interactionParentDataService;
-        this.userTimerDataService = userTimerDataService;
+        this.messageTimerDataService = messageTimerDataService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -36,33 +35,29 @@ public class UserTimerService : DiscordClientService
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            var userTimers = await userTimerDataService.GetAllActive();
+            var messageTimers = await messageTimerDataService.GetAllActive();
 
-            foreach (var userTimer in userTimers)
+            foreach (var messageTimer in messageTimers)
             {
-                if (userTimer.GetNextStatus() is not UserTimerStatus status)
+                if (messageTimer.GetNextStatus() is not MessageTimerStatus status)
                     continue;
 
-                await userTimerDataService.Update(userTimer, new UserTimer { UserTimerStatus = status, });
+                await messageTimerDataService.Update(messageTimer, new MessageTimer { MessageTimerStatus = status, });
 
-                var parent = await interactionParentDataService.GetByReference(InteractionParentType.UserTimer, userTimer.UserTimerId.ToString());
-
-                var channel = await Client.GetChannelAsync(userTimer.ChannelId) as SocketTextChannel;
-
-                if (channel != null)
+                if (await Client.GetChannelAsync(messageTimer.TargetChannelId) is SocketTextChannel targetChannel)
                 {
-                    var reference = parent == null ? null : new MessageReference(parent.MessageId);
-
-                    var detail = userTimer.Detail != null ? $"\n\nYou included the message: {userTimer.Detail}" : "";
-
-                    await channel.SendMessageAsync($"Hey, {userTimer.UserId.GetUserMention()}, your timer has run out.{detail}", messageReference: reference);
+                    if (messageTimer.Data == null)
+                        await targetChannel.SendMessageAsync(messageTimer.Detail);
+                    else
+                        await targetChannel.SendFileAsync(messageTimer.AsAttachment(), messageTimer.Detail);
                 }
 
 
+                var parent = await interactionParentDataService.GetByReference(InteractionParentType.MessageTimer, messageTimer.MessageTimerId.ToString());
                 if (parent == null)
                     continue;
 
-                if (channel != null)
+                if (await Client.GetChannelAsync(messageTimer.ChannelId) is SocketTextChannel channel)
                     await channel.GetAndModify(parent.MessageId, x => x.Components = new ComponentBuilder().Build());
 
                 await interactionParentDataService.Delete(parent);
@@ -72,11 +67,11 @@ public class UserTimerService : DiscordClientService
 
             try
             {
-                var delay = GetDelay(userTimers);
+                var delay = GetDelay(messageTimers);
 
                 if (delay != 0)
                 {
-                    Logger.LogInformation($"UserTimerService next delay: {delay}");
+                    Logger.LogInformation($"MessageTimerService next delay: {delay}");
 
                     await taskCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(delay), stoppingToken).ConfigureAwait(false);
                 }
@@ -94,9 +89,9 @@ public class UserTimerService : DiscordClientService
         taskCompletionSource?.TrySetResult();
     }
 
-    private static int GetDelay(IList<UserTimer> userTimers)
+    private static int GetDelay(IList<MessageTimer> messageTimers)
     {
-        var finishDate = userTimers.Where(x => x.UserTimerStatus == UserTimerStatus.Started).OrderBy(x => x.FinishDate).FirstOrDefault()?.FinishDate;
+        var finishDate = messageTimers.Where(x => x.MessageTimerStatus == MessageTimerStatus.Started).OrderBy(x => x.FinishDate).FirstOrDefault()?.FinishDate;
         if (finishDate == null)
             return 0;
 

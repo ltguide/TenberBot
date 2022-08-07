@@ -10,6 +10,8 @@ public interface IInteractionParentDataService
 
     Task<InteractionParent?> GetByMessageId(InteractionParentType parentType, ulong messageId);
 
+    Task<InteractionParent?> GetByReference(InteractionParentType parentType, string reference);
+
     Task Add(InteractionParent newObject);
 
     Task Update(InteractionParent dbObject, InteractionParent newObject);
@@ -39,6 +41,13 @@ public class InteractionParentDataService : IInteractionParentDataService
     {
         return await dbContext.InteractionParents
             .FirstOrDefaultAsync(x => x.InteractionParentType == parentType && x.MessageId == messageId)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<InteractionParent?> GetByReference(InteractionParentType parentType, string reference)
+    {
+        return await dbContext.InteractionParents
+            .FirstOrDefaultAsync(x => x.InteractionParentType == parentType && x.Reference == reference)
             .ConfigureAwait(false);
     }
 

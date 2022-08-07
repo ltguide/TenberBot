@@ -11,4 +11,5 @@ public enum InteractionParentType
     Leaderboard,
     HighFive,
     Pat,
+    MessageTimer,
 }

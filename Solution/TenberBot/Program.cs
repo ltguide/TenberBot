@@ -3,7 +3,6 @@ using Discord.Addons.Hosting;
 using Discord.Commands;
 using Discord.WebSocket;
 using NLog.Extensions.Logging;
-using System.Reflection;
 using TenberBot.Handlers;
 using TenberBot.Shared.Features;
 

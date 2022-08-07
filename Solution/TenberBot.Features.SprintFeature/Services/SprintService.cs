@@ -45,20 +45,21 @@ public class SprintService : DiscordClientService
 
                 await sprintDataService.Update(sprint, new Sprint { SprintStatus = status, });
 
-                if (await Client.GetChannelAsync(sprint.ChannelId) is not SocketTextChannel channel)
-                    continue;
-
-
                 var parent = await interactionParentDataService.GetById(InteractionParentType.Sprint, sprint.ChannelId, sprint.UserId);
 
-                var reference = parent == null ? null : new MessageReference(parent.MessageId);
+                var channel = await Client.GetChannelAsync(sprint.ChannelId) as SocketTextChannel;
 
-                if (status == SprintStatus.Finished)
-                    await channel.SendMessageAsync($"***That's a wrap!***\n\nHey, {sprint.UserMentions}, how'd ya'll do? ", messageReference: reference);
-                else
+                if (channel != null)
                 {
-                    var reply = await channel.SendMessageAsync($"**Here we go!** Your sprint is starting.\n\nHey, {sprint.UserMentions}, do your best! ", messageReference: reference);
-                    reply.DeleteSoon(TimeSpan.FromSeconds(15));
+                    var reference = parent == null ? null : new MessageReference(parent.MessageId);
+
+                    if (status == SprintStatus.Finished)
+                        await channel.SendMessageAsync($"***That's a wrap!***\n\nHey, {sprint.UserMentions}, how'd ya'll do? ", messageReference: reference);
+                    else
+                    {
+                        var reply = await channel.SendMessageAsync($"**Here we go!** Your sprint is starting.\n\nHey, {sprint.UserMentions}, do your best! ", messageReference: reference);
+                        reply.DeleteSoon(TimeSpan.FromSeconds(15));
+                    }
                 }
 
 
@@ -67,15 +68,16 @@ public class SprintService : DiscordClientService
 
                 if (sprint.SprintStatus == SprintStatus.Finished)
                 {
-                    await channel.GetAndModify(parent.MessageId, x =>
-                    {
-                        x.Embed = sprint.GetAsEmbed();
-                        x.Components = new ComponentBuilder().Build();
-                    });
+                    if (channel != null)
+                        await channel.GetAndModify(parent.MessageId, x =>
+                        {
+                            x.Embed = sprint.GetAsEmbed();
+                            x.Components = new ComponentBuilder().Build();
+                        });
 
                     await interactionParentDataService.Delete(parent);
                 }
-                else
+                else if (channel != null)
                     await channel.GetAndModify(parent.MessageId, x =>
                     {
                         x.Embed = sprint.GetAsEmbed();
