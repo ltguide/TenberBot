@@ -9,6 +9,7 @@ using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Models;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordRoot;
+using TenberBot.Shared.Features.Extensions.Mentions;
 using TenberBot.Shared.Features.Services;
 
 namespace TenberBot.Features.MessageTimerFeature.Modules.Interaction;
@@ -86,7 +87,7 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
 
     private async Task SendEmbed(MessageTimer messageTimer)
     {
-        var reply = await Context.Channel.SendMessageAsync($"I've set a timer for you! It'll go off {TimestampTag.FromDateTime(messageTimer.FinishDate.ToUniversalTime(), TimestampTagStyles.LongDateTime)}.");
+        var reply = await Context.Channel.SendMessageAsync($"I've set a timer to send your message to {messageTimer.TargetChannelId.GetChannelMention()}. It'll go off {TimestampTag.FromDateTime(messageTimer.FinishDate.ToUniversalTime(), TimestampTagStyles.LongDateTime)}.");
 
         var parent = await interactionParentDataService.Set(new InteractionParent
         {
