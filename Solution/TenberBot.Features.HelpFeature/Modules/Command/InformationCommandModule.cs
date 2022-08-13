@@ -90,14 +90,20 @@ public class InformationCommandModule : ModuleBase<SocketCommandContext>
         if (Context.User is not SocketGuildUser user)
             return;
 
-        await ReplyAsync($"I think you have these roles: {string.Join(", ", user.Roles.OrderByDescending(x => x.Position).Select(x => x.Mention))}", allowedMentions: AllowedMentions.None);
+        await Context.Message.ReplyAsync($"I think you have these roles: {string.Join(", ", user.Roles.OrderByDescending(x => x.Position).Select(x => x.Mention))}", allowedMentions: AllowedMentions.None);
+    }
+
+    [Command("debug-latency", ignoreExtraArgs: true)]
+    public async Task ShowLatency()
+    {
+        await Context.Message.ReplyAsync($"Most recent latency: {client.Latency}ms");
     }
 
 
     [Command("debug-avatar", ignoreExtraArgs: true)]
     public async Task ShowAvatars()
     {
-        await ReplyAsync($"Out of the available, using this one: <{Context.User.GetCurrentAvatarUrl()}>\n> GetGuildAvatarUrl: {(Context.User as SocketGuildUser)?.GetGuildAvatarUrl()}\n> GetAvatarUrl: {Context.User.GetAvatarUrl()}\n> GetDefaultAvatarUrl: {Context.User.GetDefaultAvatarUrl()}");
+        await Context.Message.ReplyAsync($"Out of the available, using this one: <{Context.User.GetCurrentAvatarUrl()}>\n> GetGuildAvatarUrl: {(Context.User as SocketGuildUser)?.GetGuildAvatarUrl()}\n> GetAvatarUrl: {Context.User.GetAvatarUrl()}\n> GetDefaultAvatarUrl: {Context.User.GetDefaultAvatarUrl()}");
     }
 
 #if DEBUG

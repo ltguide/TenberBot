@@ -42,26 +42,33 @@ public class GuildExperienceService : DiscordClientService, IGuildMessageService
 
     public async Task Handle(SocketGuildChannel channel, SocketUserMessage message)
     {
-        if (channel is SocketThreadChannel thread)
-            channel = thread.ParentChannel;
+        try
+        {
+            if (channel is SocketThreadChannel thread)
+                channel = thread.ParentChannel;
 
-        var userLevel = await GetUserLevel(channel.Guild.Id, message.Author);
+            var userLevel = await GetUserLevel(channel.Guild.Id, message.Author);
 
-        var mode = cacheService.Get<ExperienceChannelSettings>(channel).Mode;
+            var mode = cacheService.Get<ExperienceChannelSettings>(channel).Mode;
 
-        var stats = new MessageStats(
-            message.Attachments.Count,
-            Lines.Matches(message.Content).Count + 1,
-            Words.Matches(message.Content).Count,
-            message.Content.Length
-        );
+            var stats = new MessageStats(
+                message.Attachments.Count,
+                Lines.Matches(message.Content).Count + 1,
+                Words.Matches(message.Content).Count,
+                message.Content.Length
+            );
 
-        userLevel.AddStats(mode.HasFlag(ExperienceModes.Normal), cacheService.Get<NormalExperienceModeChannelSettings>(channel), stats);
+            userLevel.AddStats(mode.HasFlag(ExperienceModes.Normal), cacheService.Get<NormalExperienceModeChannelSettings>(channel), stats);
 
-        if (mode.HasFlag(ExperienceModes.Event))
-            userLevel.AddStats(cacheService.Get<EventExperienceModeChannelSettings>(channel), stats);
+            if (mode.HasFlag(ExperienceModes.Event))
+                userLevel.AddStats(cacheService.Get<EventExperienceModeChannelSettings>(channel), stats);
 
-        await userLevelDataService.Update(userLevel, null!);
+            await userLevelDataService.Update(userLevel, null!);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "");
+        }
     }
 
     public Task<UserLevel?> GetUserLevel(ulong guildId, ulong userId)

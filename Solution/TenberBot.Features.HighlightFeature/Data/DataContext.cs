@@ -35,5 +35,9 @@ public class DataContext : DbContext
         );
     }
 
-    public DbSet<HighFive> HighFives { get; set; }
+    public DbSet<HighlightWord> HighlightWords { get; set; }
+
+    public DbSet<IgnoreUser> IgnoreUsers { get; set; }
+
+    public DbSet<IgnoreChannel> IgnoreChannels { get; set; }
 }

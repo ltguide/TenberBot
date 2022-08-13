@@ -1,8 +1,7 @@
 ﻿namespace TenberBot.Features.HighlightFeature.Data.Enums;
 
-public enum HighFiveType
+public enum IgnoreType
 {
-    Recipient,
-    Self,
-    Stat,
+    Channel,
+    User,
 }

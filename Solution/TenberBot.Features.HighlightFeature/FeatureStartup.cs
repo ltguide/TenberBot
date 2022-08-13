@@ -13,11 +13,14 @@ public class FeatureStartup : IFeatureStartup
 {
     public void AddFeature(IServiceCollection services)
     {
-        //services.AddSingleton<HighlightService>();
-        //services.AddSingleton<IGuildMessageService>(provider => provider.GetRequiredService<HighlightService>());
+        services.AddSingleton<HighlightService>();
+        services.AddHostedService(provider => provider.GetRequiredService<HighlightService>());
+        services.AddSingleton<IGuildMessageService>(provider => provider.GetRequiredService<HighlightService>());
 
-        //services.AddDbContext<DataContext>(ServiceLifetime.Transient, ServiceLifetime.Singleton);
+        services.AddDbContext<DataContext>(ServiceLifetime.Transient, ServiceLifetime.Singleton);
 
-        //services.AddTransient<IHighlightDataService, HighlightDataService>();
+        services.AddTransient<IIgnoreChannelDataService, IgnoreChannelDataService>();
+        services.AddTransient<IIgnoreUserDataService, IgnoreUserDataService>();
+        services.AddTransient<IHighlightWordDataService, HighlightWordDataService>();
     }
 }

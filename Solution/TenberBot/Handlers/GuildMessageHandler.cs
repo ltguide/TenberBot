@@ -92,15 +92,15 @@ public class GuildMessageHandler : DiscordClientService
 
         else
         {
-            if (message.HasInlineCommand(InlineCommands, settings.Prefix, out var command))
+            if (HasInlineCommand(message, InlineCommands, settings.Prefix, out var command))
                 await commandService.ExecuteAsync(context, command, provider);
 
-            if (message.HasInlineTriggers(InlineTriggers, out var commands))
+            if (HasInlineTriggers(message, InlineTriggers, out var commands))
                 foreach (var inlineCommand in commands.Take(5))
                     await commandService.ExecuteAsync(context, inlineCommand, provider);
 
             foreach (var service in GuildMessageServices)
-                _ = Task.Run(async () => { await service.Handle(channel, message); });
+                _ = Task.Run(() => { service.Handle(channel, message); });
         }
     }
 
@@ -123,5 +123,39 @@ public class GuildMessageHandler : DiscordClientService
 
         if (result is DeleteResult)
             reply.DeleteSoon(TimeSpan.FromSeconds(15));
+    }
+
+    private static bool HasInlineCommand(IUserMessage message, IList<string> aliases, string prefix, out string command)
+    {
+        foreach (Match match in Regex.Matches(message.Content, @$" {Regex.Escape(prefix)}([-\w]+)", RegexOptions.IgnoreCase))
+        {
+            command = match.Groups[1].Value.ToLower();
+            if (aliases.Contains(command))
+                return true;
+        }
+
+        command = "";
+        return false;
+    }
+
+    private static bool HasInlineTriggers(IUserMessage message, IDictionary<Regex, string> triggers, out IList<string> commands)
+    {
+        commands = new List<string>();
+
+        foreach (var trigger in triggers)
+        {
+            foreach (Match match in trigger.Key.Matches(message.Content))
+            {
+                var groups = match.Groups.Cast<Group>()
+                    .Skip(1)
+                    .Where(x => x.Value != "")
+                    .Select(x => x.Value)
+                    .ToList();
+
+                commands.Add($"{trigger.Value} {(groups.Any() ? string.Join(" ", groups) : match.Groups[0].Value)}");
+            }
+        }
+
+        return commands.Count != 0;
     }
 }

@@ -39,7 +39,7 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
 
     [SlashCommand("message-timer", "Send message on a timed delay.")]
     public async Task Timer(
-        IChannel channel,
+        [ChannelTypes(ChannelType.Voice, ChannelType.Text)] IChannel channel,
         string message,
         [Summary("date-time")] DateTime dateTime,
         IAttachment? image = null)
@@ -75,19 +75,19 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
 
         await messageTimerDataService.Add(messageTimer);
 
-        await SendEmbed(messageTimer);
-
         if (messageTimer.Data == null)
             await RespondAsync(messageTimer.Detail, allowedMentions: AllowedMentions.None);
         else
             await RespondWithFileAsync(messageTimer.AsAttachment(), messageTimer.Detail, allowedMentions: AllowedMentions.None);
+
+        await SendEmbed(messageTimer);
 
         messageTimerService.Cycle();
     }
 
     private async Task SendEmbed(MessageTimer messageTimer)
     {
-        var reply = await Context.Channel.SendMessageAsync($"I've set a timer to send your message to {messageTimer.TargetChannelId.GetChannelMention()}. It'll go off {TimestampTag.FromDateTime(messageTimer.FinishDate.ToUniversalTime(), TimestampTagStyles.LongDateTime)}.");
+        var reply = await FollowupAsync($"I've set a timer to send your message to {messageTimer.TargetChannelId.GetChannelMention()}. It'll go off {TimestampTag.FromDateTime(messageTimer.FinishDate.ToUniversalTime(), TimestampTagStyles.LongDateTime)}.");
 
         var parent = await interactionParentDataService.Set(new InteractionParent
         {

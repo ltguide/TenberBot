@@ -47,6 +47,7 @@ public class Program
             {
                 config.LogLevel = logLevel;
                 config.UseCompiledLambda = true;
+                config.InteractionCustomIdDelimiters = new[] { ' ', };
             })
             .ConfigureLogging((host, config) =>
             {

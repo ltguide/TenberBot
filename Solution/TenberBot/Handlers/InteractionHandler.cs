@@ -39,9 +39,10 @@ internal class InteractionHandler : DiscordClientService
         Client.InteractionCreated += InteractionCreated;
 
         // Process the command execution results 
-        //_interactionService.SlashCommandExecuted += SlashCommandExecuted;
-        //_interactionService.ContextCommandExecuted += ContextCommandExecuted;
-        //_interactionService.ComponentCommandExecuted += ComponentCommandExecuted;
+        interactionService.SlashCommandExecuted += SlashCommandExecuted;
+        interactionService.ComponentCommandExecuted += ComponentCommandExecuted;
+        interactionService.ModalCommandExecuted += ModalCommandExecuted;
+        //interactionService.ContextCommandExecuted += ContextCommandExecuted;
 
         interactionService.AddTypeConverter<TimeSpan>(new TimeSpanConverter());
 
@@ -62,7 +63,6 @@ internal class InteractionHandler : DiscordClientService
     {
         try
         {
-            // Create an execution context that matches the generic type parameter of your InteractionModuleBase<T> modules
             var context = new SocketInteractionContext(Client, arg);
 
             await cacheService.Channel(context.Channel);
@@ -83,89 +83,96 @@ internal class InteractionHandler : DiscordClientService
         }
     }
 
-    //private Task ComponentCommandExecuted(ComponentCommandInfo commandInfo, IInteractionContext context, IResult result)
+    private async Task SlashCommandExecuted(SlashCommandInfo commandInfo, IInteractionContext context, IResult result)
+    {
+        if (result.IsSuccess)
+        {
+            Logger.LogDebug($"User {context.User.Username}#{context.User.Discriminator} successfully used slash command: {commandInfo.Module.SlashGroupName} {commandInfo.Name}");
+            return;
+        }
+
+        Logger.LogInformation($"User {context.User.Username}#{context.User.Discriminator} failed to use slash command: {commandInfo.Module.SlashGroupName} {commandInfo.Name} | {result.ErrorReason}");
+
+        await context.Interaction.RespondAsync($"{result.Error}: {result.ErrorReason}", ephemeral: true);
+    }
+
+    private Task ComponentCommandExecuted(ComponentCommandInfo commandInfo, IInteractionContext context, IResult result)
+    {
+        if (result.IsSuccess)
+            Logger.LogDebug($"User {context.User.Username}#{context.User.Discriminator} successfully used component command: {commandInfo.Module.SlashGroupName} {commandInfo.Name}");
+
+        else
+            Logger.LogInformation($"User {context.User.Username}#{context.User.Discriminator} failed to use component command: {result.ErrorReason}");
+
+        //    if (!result.IsSuccess)
+        //    {
+        //        switch (result.Error)
+        //        {
+        //            case InteractionCommandError.UnmetPrecondition:
+        //                // implement
+        //                break;
+        //            case InteractionCommandError.UnknownCommand:
+        //                // implement
+        //                break;
+        //            case InteractionCommandError.BadArgs:
+        //                // implement
+        //                break;
+        //            case InteractionCommandError.Exception:
+        //                // implement
+        //                break;
+        //            case InteractionCommandError.Unsuccessful:
+        //                // implement
+        //                break;
+        //            default:
+        //                break;
+        //        }
+        //    }
+
+        return Task.CompletedTask;
+    }
+
+    private Task ModalCommandExecuted(ModalCommandInfo commandInfo, IInteractionContext context, IResult result)
+    {
+        if (result.IsSuccess)
+            Logger.LogDebug($"User {context.User.Username}#{context.User.Discriminator} successfully used modal command: {commandInfo.Module.SlashGroupName} {commandInfo.Name}");
+
+        else
+            Logger.LogInformation($"User {context.User.Username}#{context.User.Discriminator} failed to use modal command: {result.ErrorReason}");
+
+        return Task.CompletedTask;
+    }
+
+    //private Task ContextCommandExecuted(ContextCommandInfo commandInfo, IInteractionContext context, IResult result)
     //{
-    //    if (!result.IsSuccess)
-    //    {
-    //        switch (result.Error)
-    //        {
-    //            case InteractionCommandError.UnmetPrecondition:
-    //                // implement
-    //                break;
-    //            case InteractionCommandError.UnknownCommand:
-    //                // implement
-    //                break;
-    //            case InteractionCommandError.BadArgs:
-    //                // implement
-    //                break;
-    //            case InteractionCommandError.Exception:
-    //                // implement
-    //                break;
-    //            case InteractionCommandError.Unsuccessful:
-    //                // implement
-    //                break;
-    //            default:
-    //                break;
-    //        }
-    //    }
+    //    if (result.IsSuccess)
+    //        Logger.LogDebug($"User {context.User.Username}#{context.User.Discriminator} successfully used context command: {commandInfo.Name}");
 
-    //    return Task.CompletedTask;
-    //}
+    //    else
+    //        Logger.LogInformation($"User {context.User.Username}#{context.User.Discriminator} failed to use context command: {commandInfo.Name}");
 
-    //private Task ContextCommandExecuted(ContextCommandInfo context, IInteractionContext arg2, IResult result)
-    //{
-    //    if (!result.IsSuccess)
-    //    {
-    //        switch (result.Error)
-    //        {
-    //            case InteractionCommandError.UnmetPrecondition:
-    //                // implement
-    //                break;
-    //            case InteractionCommandError.UnknownCommand:
-    //                // implement
-    //                break;
-    //            case InteractionCommandError.BadArgs:
-    //                // implement
-    //                break;
-    //            case InteractionCommandError.Exception:
-    //                // implement
-    //                break;
-    //            case InteractionCommandError.Unsuccessful:
-    //                // implement
-    //                break;
-    //            default:
-    //                break;
-    //        }
-    //    }
-
-    //    return Task.CompletedTask;
-    //}
-
-    //private Task SlashCommandExecuted(SlashCommandInfo commandInfo, IInteractionContext context, IResult result)
-    //{
-    //    if (!result.IsSuccess)
-    //    {
-    //        switch (result.Error)
-    //        {
-    //            case InteractionCommandError.UnmetPrecondition:
-    //                // implement
-    //                break;
-    //            case InteractionCommandError.UnknownCommand:
-    //                // implement
-    //                break;
-    //            case InteractionCommandError.BadArgs:
-    //                // implement
-    //                break;
-    //            case InteractionCommandError.Exception:
-    //                // implement
-    //                break;
-    //            case InteractionCommandError.Unsuccessful:
-    //                // implement
-    //                break;
-    //            default:
-    //                break;
-    //        }
-    //    }
+    //    //    if (!result.IsSuccess)
+    //    //    {
+    //    //        switch (result.Error)
+    //    //        {
+    //    //            case InteractionCommandError.UnmetPrecondition:
+    //    //                // implement
+    //    //                break;
+    //    //            case InteractionCommandError.UnknownCommand:
+    //    //                // implement
+    //    //                break;
+    //    //            case InteractionCommandError.BadArgs:
+    //    //                // implement
+    //    //                break;
+    //    //            case InteractionCommandError.Exception:
+    //    //                // implement
+    //    //                break;
+    //    //            case InteractionCommandError.Unsuccessful:
+    //    //                // implement
+    //    //                break;
+    //    //            default:
+    //    //                break;
+    //    //        }
+    //    //    }
 
     //    return Task.CompletedTask;
     //}
