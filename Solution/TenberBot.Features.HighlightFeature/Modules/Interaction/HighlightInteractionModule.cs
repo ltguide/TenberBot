@@ -14,7 +14,7 @@ namespace TenberBot.Features.HighlightFeature.Modules.Interaction;
 
 [DefaultMemberPermissions(GuildPermission.SendMessages)]
 [RequireUserPermission(GuildPermission.SendMessages)]
-[Group("highlight", "TODO")]
+[Group("highlight", "Manage highlight words and ignores.")]
 public class HighlightInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly static Regex ValidWord = new(@"^(\*?)(...+?)(\*?)$", RegexOptions.Compiled);

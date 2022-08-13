@@ -71,6 +71,9 @@ public class HighlightService : DiscordClientService, IGuildMessageService
 
             foreach (var userId in userIds)
             {
+                if (userId == message.Author.Id)
+                    continue;
+
                 var key = (channel.Guild.Id, userId);
 
                 if (IgnoreChannels.TryGetValue(key, out var values) && values.Contains(channel.Id))
