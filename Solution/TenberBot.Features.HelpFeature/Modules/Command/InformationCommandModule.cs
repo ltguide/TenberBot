@@ -1,6 +1,8 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using System.Reflection;
+using TenberBot.Shared.Features;
 using TenberBot.Shared.Features.Extensions.DiscordRoot;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 using TenberBot.Shared.Features.Extensions.Strings;
@@ -84,6 +86,18 @@ public class InformationCommandModule : ModuleBase<SocketCommandContext>
         await Context.Message.ReplyAsync($"{Context.User.GetDisplayNameSanitized()} told me to say: {text}");
     }
 
+    [Command("debug-version", ignoreExtraArgs: true)]
+    public async Task ShowVersion()
+    {
+        var assembly = Assembly.GetEntryAssembly();
+        if (assembly == null)
+            throw new InvalidOperationException();
+
+        var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "??";
+
+        await Context.Message.ReplyAsync($"**{assembly.GetName().Name}** {version}\n\n*Modules:*\n> {string.Join("\n> ", SharedFeatures.Assemblies.Select(x=> x.GetName().Name))}");
+    }
+
     [Command("debug-roles", ignoreExtraArgs: true)]
     public async Task ShowRoles()
     {
@@ -106,8 +120,7 @@ public class InformationCommandModule : ModuleBase<SocketCommandContext>
         await Context.Message.ReplyAsync($"Out of the available, using this one: <{Context.User.GetCurrentAvatarUrl()}>\n> GetGuildAvatarUrl: {(Context.User as SocketGuildUser)?.GetGuildAvatarUrl()}\n> GetAvatarUrl: {Context.User.GetAvatarUrl()}\n> GetDefaultAvatarUrl: {Context.User.GetDefaultAvatarUrl()}");
     }
 
-#if DEBUG
-    [Command("react", ignoreExtraArgs: true)]
+    [Command("debug-react", ignoreExtraArgs: true)]
     public async Task AddReaction()
     {
         var emotes = cacheService.Get<EmoteServerSettings>(Context.Guild);
@@ -125,7 +138,6 @@ public class InformationCommandModule : ModuleBase<SocketCommandContext>
 
         await ReplyAsync($"{emotes.Success} / {emotes.Fail} / {emotes.Busy}");
     }
-#endif
 
     private async Task<EmbedBuilder?> HelpPage(int page, int perPage, IList<CommandInfo> commands)
     {
