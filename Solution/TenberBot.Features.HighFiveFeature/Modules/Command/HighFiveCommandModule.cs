@@ -17,7 +17,7 @@ public class HighFiveCommandModule : ModuleBase<SocketCommandContext>
 {
     private readonly static Regex RecipientVariables = new(@"%user%|%recipient%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private readonly static Regex SelfVariables = new(@"%user%|%random%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-    private readonly static Regex StatVariables = new(@"%user%|%count%|%s%|%es%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private readonly static Regex StatVariables = new(@"%user%|%recipient%|%count%|%s%|%es%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private readonly IHighFiveDataService highFiveDataService;
     private readonly IVisualDataService visualDataService;
@@ -95,12 +95,12 @@ public class HighFiveCommandModule : ModuleBase<SocketCommandContext>
 
     private EmbedBuilder GetRecipientEmbed(SocketUser recipient, HighFive highFive, HighFive stat, int count)
     {
-        var highFiveText = RecipientVariables.Replace(highFive.Text, (match) =>
+        var primaryText = RecipientVariables.Replace(highFive.Text, (match) =>
         {
             return match.Value.ToLower() switch
             {
-                "%recipient%" => recipient.GetMention(),
                 "%user%" => Context.User.GetMention(),
+                "%recipient%" => recipient.GetMention(),
                 _ => match.Value,
             };
         });
@@ -110,6 +110,7 @@ public class HighFiveCommandModule : ModuleBase<SocketCommandContext>
             return match.Value.ToLower() switch
             {
                 "%user%" => Context.User.GetMention(),
+                "%recipient%" => recipient.GetMention(),
                 "%count%" => count.ToString("N0"),
                 "%s%" => count != 1 ? "s" : "",
                 "%es%" => count != 1 ? "es" : "",
@@ -120,7 +121,7 @@ public class HighFiveCommandModule : ModuleBase<SocketCommandContext>
         return new EmbedBuilder
         {
             Author = Context.User.GetEmbedAuthor("is giving out high fives!"),
-            Description = $"{highFiveText}\n\n{statText}",
+            Description = $"{primaryText}\n\n{statText}",
             Color = Color.Green,
         };
     }
