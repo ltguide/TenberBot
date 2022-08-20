@@ -1,8 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using System.Reflection;
-using TenberBot.Shared.Features;
+using Microsoft.VisualBasic;
 using TenberBot.Shared.Features.Extensions.DiscordRoot;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 using TenberBot.Shared.Features.Extensions.Strings;
@@ -12,14 +11,16 @@ using TenberBot.Shared.Features.Settings.Server;
 namespace TenberBot.Features.HelpFeature.Modules.Command;
 
 [Remarks("Information")]
-public class InformationCommandModule : ModuleBase<SocketCommandContext>
+public class HelpCommandModule : ModuleBase<SocketCommandContext>
 {
+    private const string description = "An option surrounded with `[]` means it is **not** required.\nAn option surrounded with `<>` is *usually* required.\nA `|` symbol means provide one of the values if applicable.";
+
     private readonly IServiceProvider serviceProvider;
     private readonly CommandService commandService;
     private readonly DiscordSocketClient client;
     private readonly CacheService cacheService;
 
-    public InformationCommandModule(
+    public HelpCommandModule(
         IServiceProvider serviceProvider,
         CommandService commandService,
         DiscordSocketClient client,
@@ -34,7 +35,6 @@ public class InformationCommandModule : ModuleBase<SocketCommandContext>
     [Command("help", ignoreExtraArgs: true)]
     public async Task Help(int page = 1)
     {
-
         var embedBuilder = await HelpPage(page, 10, (await commandService.GetExecutableCommandsAsync(Context, serviceProvider)).Where(x => x.Summary != null).ToList());
 
         if (embedBuilder == null)
@@ -43,15 +43,14 @@ public class InformationCommandModule : ModuleBase<SocketCommandContext>
         embedBuilder
             .WithAuthor(Context.User.GetEmbedAuthor("'s Available Commands"));
 
-        await ReplyAsync(embed: embedBuilder.Build());
+        await Context.Message.ReplyAsync(embed: embedBuilder.Build()); //, components: new ComponentBuilder().WithButton(customId: "help-page:first,0", emote: new Emoji("⏮")).Build());
     }
 
     [Command("help-everyone", ignoreExtraArgs: true)]
     [Summary("Show commands that have no permissions.")]
-    [Remarks("`[page#]`")]
     [RequireUserPermission(GuildPermission.ManageGuild)]
     [RequireBotPermission(ChannelPermission.ManageMessages)]
-    public async Task HelpEveryone(int page = 1)
+    public async Task HelpEveryone()
     {
         var commands = new List<CommandInfo>();
 
@@ -63,18 +62,53 @@ public class InformationCommandModule : ModuleBase<SocketCommandContext>
                 commands.Add(command);
         }
 
-        var embedBuilder = await HelpPage(page, 25, commands);
+        commands = commands
+            .OrderBy(x => x.Module.Remarks)
+            .ThenBy(x => x.Aliases[0])
+            .ToList();
 
-        if (embedBuilder == null)
-            return;
+        var embeds = GetFields(commands).Chunk(25).Select((x, i) =>
+        {
+            var embedBuilder = new EmbedBuilder();
 
+            embedBuilder.WithFields(x);
 
-        embedBuilder
-            .WithAuthor("Commands for Everyone", client.CurrentUser.GetCurrentAvatarUrl());
+            if (i == 0)
+                embedBuilder
+                    .WithDescription(description)
+                    .WithAuthor("Commands for Everyone", client.CurrentUser.GetCurrentAvatarUrl());
 
-        await ReplyAsync(embed: embedBuilder.Build());
+            return embedBuilder.Build();
+        }).ToArray();
+
+        await ReplyAsync(embeds: embeds);
 
         Context.Message.DeleteSoon();
+    }
+
+    private IList<EmbedFieldBuilder> GetFields(List<CommandInfo> commands)
+    {
+        var prefix = cacheService.Get<BasicServerSettings>(Context.Guild).Prefix.SanitizeMD();
+
+        var fields = new List<EmbedFieldBuilder>();
+
+        foreach (var q in commands.GroupBy(x => x.Module.Remarks))
+        {
+            fields.Add(new EmbedFieldBuilder { Name = "\u200B", Value = $"__**{q.Key ?? "General"}**__", });
+
+            foreach (var command in q)
+            {
+                var aliases = command.Aliases.Skip(1).ToList();
+
+                var additionally = "";
+                if (aliases.Count > 0)
+                    additionally = $"\n*Alias{(aliases.Count != 1 ? "es" : "")}*: `{prefix}{string.Join($"`, `{prefix}", aliases)}`";
+
+                fields.Add(new EmbedFieldBuilder { Name = $"`{prefix}{command.Aliases[0]}` {command.Remarks}", Value = $"> {command.Summary}{additionally}", });
+            }
+        }
+
+        return fields;
     }
 
     [Command("say")]
@@ -84,59 +118,6 @@ public class InformationCommandModule : ModuleBase<SocketCommandContext>
     public async Task Say([Remainder] string text)
     {
         await Context.Message.ReplyAsync($"{Context.User.GetDisplayNameSanitized()} told me to say: {text}");
-    }
-
-    [Command("debug-version", ignoreExtraArgs: true)]
-    public async Task ShowVersion()
-    {
-        var assembly = Assembly.GetEntryAssembly();
-        if (assembly == null)
-            throw new InvalidOperationException();
-
-        var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "??";
-
-        await Context.Message.ReplyAsync($"**{assembly.GetName().Name}** {version}\n\n*Modules:*\n> {string.Join("\n> ", SharedFeatures.Assemblies.Select(x=> x.GetName().Name))}");
-    }
-
-    [Command("debug-roles", ignoreExtraArgs: true)]
-    public async Task ShowRoles()
-    {
-        if (Context.User is not SocketGuildUser user)
-            return;
-
-        await Context.Message.ReplyAsync($"I think you have these roles: {string.Join(", ", user.Roles.OrderByDescending(x => x.Position).Select(x => x.Mention))}", allowedMentions: AllowedMentions.None);
-    }
-
-    [Command("debug-latency", ignoreExtraArgs: true)]
-    public async Task ShowLatency()
-    {
-        await Context.Message.ReplyAsync($"Most recent latency: {client.Latency}ms");
-    }
-
-
-    [Command("debug-avatar", ignoreExtraArgs: true)]
-    public async Task ShowAvatars()
-    {
-        await Context.Message.ReplyAsync($"Out of the available, using this one: <{Context.User.GetCurrentAvatarUrl()}>\n> GetGuildAvatarUrl: {(Context.User as SocketGuildUser)?.GetGuildAvatarUrl()}\n> GetAvatarUrl: {Context.User.GetAvatarUrl()}\n> GetDefaultAvatarUrl: {Context.User.GetDefaultAvatarUrl()}");
-    }
-
-    [Command("debug-react", ignoreExtraArgs: true)]
-    public async Task AddReaction()
-    {
-        var emotes = cacheService.Get<EmoteServerSettings>(Context.Guild);
-
-        _ = Task.Run(async () =>
-        {
-            await Context.Message.AddReactionsAsync(new[] {
-                emotes.Success,
-                emotes.Fail,
-                emotes.Busy,
-            });
-        });
-
-        await ReplyAsync($"{emotes.Success.ToString()!.SanitizeMD()} / {emotes.Fail.ToString()!.SanitizeMD()} / {emotes.Busy.ToString()!.SanitizeMD()}");
-
-        await ReplyAsync($"{emotes.Success} / {emotes.Fail} / {emotes.Busy}");
     }
 
     private async Task<EmbedBuilder?> HelpPage(int page, int perPage, IList<CommandInfo> commands)
@@ -165,7 +146,7 @@ public class InformationCommandModule : ModuleBase<SocketCommandContext>
             .WithFooter($"Page {page} of {pages}");
 
         if (page == 1)
-            embedBuilder.WithDescription("An option surrounded with `[]` means it is **not** required.\nAn option surrounded with `<>` is *usually* required.\nA `|` symbol means provide one of the values if applicable.");
+            embedBuilder.WithDescription(description);
 
         foreach (var q in commands.GroupBy(x => x.Module.Remarks))
         {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
 using TenberBot.Features.HighlightFeature.Data.Models;
-using TenberBot.Features.HighlightFeature.Data.POCO;
+using TenberBot.Shared.Features.Data.POCO;
 
 namespace TenberBot.Features.HighlightFeature.Data.Services;
 
@@ -17,9 +17,9 @@ public interface IHighlightWordDataService
 
     Task Delete(HighlightWord dbObject);
 
-    Task<IList<HighlightWord>> GetPage(ulong guildId, ulong userId, WordsView view);
+    Task<IList<HighlightWord>> GetPage(ulong guildId, ulong userId, PageView view);
 
-    Task<int> GetCount(ulong guildId, ulong userId, WordsView view);
+    Task<int> GetCount(ulong guildId, ulong userId, PageView view);
 }
 
 public class HighlightWordDataService : IHighlightWordDataService
@@ -84,7 +84,7 @@ public class HighlightWordDataService : IHighlightWordDataService
     }
 
     [SuppressMessage("Performance", "CA1845:Use span-based 'string.Concat'", Justification = "ReadOnlySpan cant be used in expression tree")]
-    public async Task<IList<HighlightWord>> GetPage(ulong guildId, ulong userId, WordsView view)
+    public async Task<IList<HighlightWord>> GetPage(ulong guildId, ulong userId, PageView view)
     {
         return await dbContext.HighlightWords
             .Where(x => x.GuildId == guildId && x.UserId == userId)
@@ -97,13 +97,13 @@ public class HighlightWordDataService : IHighlightWordDataService
             .ConfigureAwait(false);
     }
 
-    public async Task<int> GetCount(ulong guildId, ulong userId, WordsView view)
+    public async Task<int> GetCount(ulong guildId, ulong userId, PageView view)
     {
         var count = await dbContext.HighlightWords
             .Where(x => x.GuildId == guildId && x.UserId == userId)
             .CountAsync()
             .ConfigureAwait(false);
 
-        return (int)Math.Ceiling((decimal)count / view.PerPage) - 1;
+        return view.CalcPages(count);
     }
 }

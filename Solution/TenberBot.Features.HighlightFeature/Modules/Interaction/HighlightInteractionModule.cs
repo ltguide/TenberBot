@@ -3,11 +3,11 @@ using Discord.Interactions;
 using System.Text.RegularExpressions;
 using TenberBot.Features.HighlightFeature.Data.Enums;
 using TenberBot.Features.HighlightFeature.Data.Models;
-using TenberBot.Features.HighlightFeature.Data.POCO;
 using TenberBot.Features.HighlightFeature.Data.Services;
 using TenberBot.Features.HighlightFeature.Modals.Ignore;
 using TenberBot.Features.HighlightFeature.Modals.Word;
 using TenberBot.Features.HighlightFeature.Services;
+using TenberBot.Shared.Features.Data.POCO;
 using TenberBot.Shared.Features.Extensions.Mentions;
 
 namespace TenberBot.Features.HighlightFeature.Modules.Interaction;
@@ -148,7 +148,7 @@ public class HighlightInteractionModule : InteractionModuleBase<SocketInteractio
     [ComponentInteraction("page-words:*,*")]
     public async Task PageWords(string _, int currentPage)
     {
-        var view = new WordsView { CurrentPage = currentPage, };
+        var view = new PageView { CurrentPage = currentPage, };
         view.PageCount = await highlightWordDataService.GetCount(Context.Guild.Id, Context.User.Id, view);
 
         if (Context.Interaction.HasResponded == false)
@@ -249,7 +249,7 @@ public class HighlightInteractionModule : InteractionModuleBase<SocketInteractio
         return embedBuilder.Build();
     }
 
-    private async Task<Embed> GetWordsEmbed(WordsView view)
+    private async Task<Embed> GetWordsEmbed(PageView view)
     {
         //Console.WriteLine($"{view.CurrentPage} of {view.PageCount + 1}");
 
@@ -271,7 +271,7 @@ public class HighlightInteractionModule : InteractionModuleBase<SocketInteractio
         return embedBuilder.Build();
     }
 
-    private static MessageComponent GetWordsButtons(WordsView view)
+    private static MessageComponent GetWordsButtons(PageView view)
     {
         var componentBuilder = new ComponentBuilder()
             .WithButton(customId: "highlight page-words:first,0", emote: new Emoji("⏮"))

@@ -91,18 +91,22 @@ internal class InteractionHandler : DiscordClientService
             return;
         }
 
-        Logger.LogInformation($"User {context.User.Username}#{context.User.Discriminator} failed to use slash command: {commandInfo.Module.SlashGroupName} {commandInfo.Name} | {result.ErrorReason}");
+        Logger.LogInformation($"User {context.User.Username}#{context.User.Discriminator} failed to use slash command: {commandInfo?.Module.SlashGroupName} {commandInfo?.Name} | {result.ErrorReason}");
 
         await context.Interaction.RespondAsync($"{result.Error}: {result.ErrorReason}", ephemeral: true);
     }
 
-    private Task ComponentCommandExecuted(ComponentCommandInfo commandInfo, IInteractionContext context, IResult result)
+    private async Task ComponentCommandExecuted(ComponentCommandInfo commandInfo, IInteractionContext context, IResult result)
     {
         if (result.IsSuccess)
+        {
             Logger.LogDebug($"User {context.User.Username}#{context.User.Discriminator} successfully used component command: {commandInfo.Module.SlashGroupName} {commandInfo.Name}");
+            return;
+        }
 
-        else
-            Logger.LogInformation($"User {context.User.Username}#{context.User.Discriminator} failed to use component command: {result.ErrorReason}");
+        Logger.LogInformation($"User {context.User.Username}#{context.User.Discriminator} failed to use component command: {result.ErrorReason}");
+
+        await context.Interaction.RespondAsync($"{result.Error}: {result.ErrorReason}", ephemeral: true);
 
         //    if (!result.IsSuccess)
         //    {
@@ -127,19 +131,19 @@ internal class InteractionHandler : DiscordClientService
         //                break;
         //        }
         //    }
-
-        return Task.CompletedTask;
     }
 
-    private Task ModalCommandExecuted(ModalCommandInfo commandInfo, IInteractionContext context, IResult result)
+    private async Task ModalCommandExecuted(ModalCommandInfo commandInfo, IInteractionContext context, IResult result)
     {
         if (result.IsSuccess)
+        {
             Logger.LogDebug($"User {context.User.Username}#{context.User.Discriminator} successfully used modal command: {commandInfo.Module.SlashGroupName} {commandInfo.Name}");
+            return;
+        }
 
-        else
-            Logger.LogInformation($"User {context.User.Username}#{context.User.Discriminator} failed to use modal command: {result.ErrorReason}");
+        Logger.LogInformation($"User {context.User.Username}#{context.User.Discriminator} failed to use modal command: {result.ErrorReason}");
 
-        return Task.CompletedTask;
+        await context.Interaction.RespondAsync($"{result.Error}: {result.ErrorReason}", ephemeral: true);
     }
 
     //private Task ContextCommandExecuted(ContextCommandInfo commandInfo, IInteractionContext context, IResult result)
