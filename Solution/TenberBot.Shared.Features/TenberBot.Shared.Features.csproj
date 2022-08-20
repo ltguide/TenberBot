@@ -8,6 +8,7 @@
 
 	<PropertyGroup>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<OutDir>bin\$(Configuration)</OutDir>
 	</PropertyGroup>
 
 	<ItemGroup>

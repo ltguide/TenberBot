@@ -9,6 +9,8 @@
 
 	<PropertyGroup>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<SelfContained>false</SelfContained>
+		<OutDir>bin\$(Configuration)</OutDir>
 	</PropertyGroup>
 
 	<ItemGroup>
