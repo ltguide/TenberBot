@@ -79,7 +79,7 @@ public class HelpService : IHelpService
         return new MessageProperties
         {
             Embed = GetEmbed(context, commands, view),
-            Components = GetComponents(view),
+            Components = GetComponents(context, view),
         };
     }
 
@@ -101,13 +101,13 @@ public class HelpService : IHelpService
         return embedBuilder.Build();
     }
 
-    private static MessageComponent GetComponents(PageView view)
+    private static MessageComponent GetComponents(SocketCommandContext context, PageView view)
     {
         var componentBuilder = new ComponentBuilder()
-            .WithButton(customId: "help-page:first,0", emote: new Emoji("⏮"))
-            .WithButton(customId: $"help-page:previous,{Math.Max(0, view.CurrentPage - 1)}", emote: new Emoji("⏪"))
-            .WithButton(customId: $"help-page:next,{Math.Max(0, Math.Min(view.PageCount, view.CurrentPage + 1))}", emote: new Emoji("⏩"))
-            .WithButton(customId: $"help-page:last,{Math.Max(0, view.PageCount)}", emote: new Emoji("⏭"));
+            .WithButton(customId: $"help-page:{context.User.Id},first,0", emote: new Emoji("⏮"))
+            .WithButton(customId: $"help-page:{context.User.Id},previous,{Math.Max(0, view.CurrentPage - 1)}", emote: new Emoji("⏪"))
+            .WithButton(customId: $"help-page:{context.User.Id},next,{Math.Max(0, Math.Min(view.PageCount, view.CurrentPage + 1))}", emote: new Emoji("⏩"))
+            .WithButton(customId: $"help-page:{context.User.Id},last,{Math.Max(0, view.PageCount)}", emote: new Emoji("⏭"));
 
         return componentBuilder.Build();
     }

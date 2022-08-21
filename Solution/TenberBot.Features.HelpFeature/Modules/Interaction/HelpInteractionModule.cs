@@ -18,13 +18,13 @@ public class HelpInteractionModule : InteractionModuleBase<SocketInteractionCont
         this.helpService = helpService;
     }
 
-    [ComponentInteraction("help-page:*,*")]
-    public async Task Page(string _, int currentPage)
+    [ComponentInteraction("help-page:*,*,*")]
+    public async Task Page(ulong userId, string _, int currentPage)
     {
         if (Context.Interaction is not SocketMessageComponent interaction || interaction.Message is not SocketMessage message)
             return;
 
-        if (interaction.User.Id != Context.User.Id)
+        if (userId != Context.User.Id)
         {
             await RespondAsync("Sorry, you can't interact with this message.", ephemeral: true);
             return;
