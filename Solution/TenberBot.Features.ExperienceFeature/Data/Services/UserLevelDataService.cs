@@ -152,7 +152,7 @@ public class UserLevelDataService : IUserLevelDataService
 
                 await LoadMessageRank(userLevel);
 
-                return (int)Math.Floor((decimal)userLevel.MessageRank / view.PerPage);
+                return (int)Math.Floor((decimal)(userLevel.MessageRank - 1) / view.PerPage);
 
             case LeaderboardType.Voice:
                 if (userLevel.VoiceExperience <= view.MinimumExperience)
@@ -160,7 +160,7 @@ public class UserLevelDataService : IUserLevelDataService
 
                 await LoadVoiceRank(userLevel);
 
-                return (int)Math.Floor((decimal)userLevel.VoiceRank / view.PerPage);
+                return (int)Math.Floor((decimal)(userLevel.VoiceRank - 1) / view.PerPage);
 
             case LeaderboardType.Event:
                 if (userLevel.EventExperience <= view.MinimumExperience)
@@ -168,7 +168,7 @@ public class UserLevelDataService : IUserLevelDataService
 
                 await LoadEventRank(userLevel);
 
-                return (int)Math.Floor((decimal)userLevel.EventRank / view.PerPage);
+                return (int)Math.Floor((decimal)(userLevel.EventRank - 1) / view.PerPage);
 
             default:
                 return -1;

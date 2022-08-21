@@ -63,7 +63,7 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
 
         await ModifyOriginalResponseAsync(x =>
         {
-            x.Components = GetButtons(messageId, view.LeaderboardType);
+            x.Components = GetComponents(messageId, view.LeaderboardType);
             x.Content = GetContent(view);
             x.Embed = embed;
         });
@@ -109,7 +109,7 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
         });
     }
 
-    private MessageComponent GetButtons(ulong messageId, LeaderboardType leaderboardType)
+    private MessageComponent GetComponents(ulong messageId, LeaderboardType leaderboardType)
     {
         var componentBuilder = new ComponentBuilder()
             .WithButton(customId: $"leaderboard:page-first,{messageId}", emote: new Emoji("⏮"))
