@@ -64,7 +64,7 @@ public class HelpService : IHelpService
 
         var view = new PageView
         {
-            PerPage = 7,
+            PerPage = 5,
             CurrentPage = currentPage,
         };
         view.PageCount = view.CalcPages(commands.Count);
