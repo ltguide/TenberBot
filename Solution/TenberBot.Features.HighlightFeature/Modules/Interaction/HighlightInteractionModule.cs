@@ -158,7 +158,7 @@ public class HighlightInteractionModule : InteractionModuleBase<SocketInteractio
         await ModifyOriginalResponseAsync(x =>
         {
             x.Embed = embed;
-            x.Components = GetWordsButtons(view);
+            x.Components = GetWordsComponents(view);
         });
     }
 
@@ -271,7 +271,7 @@ public class HighlightInteractionModule : InteractionModuleBase<SocketInteractio
         return embedBuilder.Build();
     }
 
-    private static MessageComponent GetWordsButtons(PageView view)
+    private static MessageComponent GetWordsComponents(PageView view)
     {
         var componentBuilder = new ComponentBuilder()
             .WithButton(customId: "highlight page-words:first,0", emote: new Emoji("⏮"))

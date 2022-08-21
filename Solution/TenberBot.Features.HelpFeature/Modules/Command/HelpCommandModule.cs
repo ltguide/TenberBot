@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.VisualBasic;
+using TenberBot.Features.HelpFeature.Services;
 using TenberBot.Shared.Features.Extensions.DiscordRoot;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 using TenberBot.Shared.Features.Extensions.Strings;
@@ -13,19 +13,20 @@ namespace TenberBot.Features.HelpFeature.Modules.Command;
 [Remarks("Information")]
 public class HelpCommandModule : ModuleBase<SocketCommandContext>
 {
-    private const string description = "An option surrounded with `[]` means it is **not** required.\nAn option surrounded with `<>` is *usually* required.\nA `|` symbol means provide one of the values if applicable.";
-
+    private readonly IHelpService helpService;
     private readonly IServiceProvider serviceProvider;
     private readonly CommandService commandService;
     private readonly DiscordSocketClient client;
     private readonly CacheService cacheService;
 
     public HelpCommandModule(
+        IHelpService helpService,
         IServiceProvider serviceProvider,
         CommandService commandService,
         DiscordSocketClient client,
         CacheService cacheService)
     {
+        this.helpService = helpService;
         this.serviceProvider = serviceProvider;
         this.commandService = commandService;
         this.client = client;
@@ -33,17 +34,11 @@ public class HelpCommandModule : ModuleBase<SocketCommandContext>
     }
 
     [Command("help", ignoreExtraArgs: true)]
-    public async Task Help(int page = 1)
+    public async Task Help()
     {
-        var embedBuilder = await HelpPage(page, 10, (await commandService.GetExecutableCommandsAsync(Context, serviceProvider)).Where(x => x.Summary != null).ToList());
+        var messageProperties = await helpService.BuildMessage(Context, 0);
 
-        if (embedBuilder == null)
-            return;
-
-        embedBuilder
-            .WithAuthor(Context.User.GetEmbedAuthor("'s Available Commands"));
-
-        await Context.Message.ReplyAsync(embed: embedBuilder.Build()); //, components: new ComponentBuilder().WithButton(customId: "help-page:first,0", emote: new Emoji("⏮")).Build());
+        await Context.Message.ReplyAsync(embed: messageProperties.Embed.Value, components: messageProperties.Components.Value);
     }
 
     [Command("help-everyone", ignoreExtraArgs: true)]
@@ -67,7 +62,8 @@ public class HelpCommandModule : ModuleBase<SocketCommandContext>
             .ThenBy(x => x.Aliases[0])
             .ToList();
 
-        var embeds = GetFields(commands).Chunk(25).Select((x, i) =>
+        var prefix = cacheService.Get<BasicServerSettings>(Context.Guild).Prefix.SanitizeMD();
+        var embeds = helpService.GetFields(prefix, commands).Chunk(25).Select((x, i) =>
         {
             var embedBuilder = new EmbedBuilder();
 
@@ -75,7 +71,7 @@ public class HelpCommandModule : ModuleBase<SocketCommandContext>
 
             if (i == 0)
                 embedBuilder
-                    .WithDescription(description)
+                    .WithDescription(helpService.Description)
                     .WithAuthor("Commands for Everyone", client.CurrentUser.GetCurrentAvatarUrl());
 
             return embedBuilder.Build();
@@ -84,86 +80,5 @@ public class HelpCommandModule : ModuleBase<SocketCommandContext>
         await ReplyAsync(embeds: embeds);
 
         Context.Message.DeleteSoon();
-    }
-
-    private IList<EmbedFieldBuilder> GetFields(List<CommandInfo> commands)
-    {
-        var prefix = cacheService.Get<BasicServerSettings>(Context.Guild).Prefix.SanitizeMD();
-
-        var fields = new List<EmbedFieldBuilder>();
-
-        foreach (var q in commands.GroupBy(x => x.Module.Remarks))
-        {
-            fields.Add(new EmbedFieldBuilder { Name = "\u200B", Value = $"__**{q.Key ?? "General"}**__", });
-
-            foreach (var command in q)
-            {
-                var aliases = command.Aliases.Skip(1).ToList();
-
-                var additionally = "";
-                if (aliases.Count > 0)
-                    additionally = $"\n*Alias{(aliases.Count != 1 ? "es" : "")}*: `{prefix}{string.Join($"`, `{prefix}", aliases)}`";
-
-                fields.Add(new EmbedFieldBuilder { Name = $"`{prefix}{command.Aliases[0]}` {command.Remarks}", Value = $"> {command.Summary}{additionally}", });
-            }
-        }
-
-        return fields;
-    }
-
-    [Command("say")]
-    [Summary("Echo a message.")]
-    [Remarks("`<message>`")]
-    [RequireUserPermission(GuildPermission.ManageChannels)]
-    public async Task Say([Remainder] string text)
-    {
-        await Context.Message.ReplyAsync($"{Context.User.GetDisplayNameSanitized()} told me to say: {text}");
-    }
-
-    private async Task<EmbedBuilder?> HelpPage(int page, int perPage, IList<CommandInfo> commands)
-    {
-        page = Math.Max(1, page);
-
-        var pages = Math.Ceiling((double)commands.Count / perPage);
-
-        if (page > pages)
-        {
-            (await Context.Message.ReplyAsync($"Only pages 1 - {pages} will show any commands. 😏")).DeleteSoon();
-            Context.Message.DeleteSoon();
-            return null;
-        }
-
-        commands = commands
-            .OrderBy(x => x.Module.Remarks)
-            .ThenBy(x => x.Aliases[0])
-            .Skip((page - 1) * perPage)
-            .Take(perPage)
-            .ToList();
-
-        var prefix = cacheService.Get<BasicServerSettings>(Context.Guild).Prefix.SanitizeMD();
-
-        var embedBuilder = new EmbedBuilder()
-            .WithFooter($"Page {page} of {pages}");
-
-        if (page == 1)
-            embedBuilder.WithDescription(description);
-
-        foreach (var q in commands.GroupBy(x => x.Module.Remarks))
-        {
-            embedBuilder.AddField("\u200B", $"__**{q.Key ?? "General"}**__");
-
-            foreach (var command in q)
-            {
-                var aliases = command.Aliases.Skip(1).ToList();
-
-                var additionally = "";
-                if (aliases.Count > 0)
-                    additionally = $"\n*Alias{(aliases.Count != 1 ? "es" : "")}*: `{prefix}{string.Join($"`, `{prefix}", aliases)}`";
-
-                embedBuilder.AddField($"`{prefix}{command.Aliases[0]}` {command.Remarks}", $"> {command.Summary}{additionally}");
-            }
-        }
-
-        return embedBuilder;
     }
 }

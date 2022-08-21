@@ -76,4 +76,13 @@ public class DebugCommandModule : ModuleBase<SocketCommandContext>
 
         await ReplyAsync($"{emotes.Success} / {emotes.Fail} / {emotes.Busy}");
     }
+
+    [Command("say")]
+    [Summary("Echo a message.")]
+    [Remarks("`<message>`")]
+    [RequireUserPermission(GuildPermission.ManageChannels)]
+    public async Task Say([Remainder] string text)
+    {
+        await Context.Message.ReplyAsync($"{Context.User.GetDisplayNameSanitized()} told me to say: {text}");
+    }
 }
