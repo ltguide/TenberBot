@@ -51,6 +51,13 @@ public class DebugCommandModule : ModuleBase<SocketCommandContext>
         await Context.Message.ReplyAsync($"Most recent latency: {client.Latency}ms");
     }
 
+    [Command("debug-datetime", ignoreExtraArgs: true)]
+    public async Task ShowDateTime()
+    {
+        var now = DateTime.Now;
+
+        await Context.Message.ReplyAsync($"It's `{now:yyyy'-'MM'-'dd HH':'mm':'sszzz}` here and `{now.ToUniversalTime():u}` UTC. {TimestampTag.FromDateTime(now.ToUniversalTime(), TimestampTagStyles.LongDateTime)}");
+    }
 
     [Command("debug-avatar", ignoreExtraArgs: true)]
     public async Task ShowAvatars()

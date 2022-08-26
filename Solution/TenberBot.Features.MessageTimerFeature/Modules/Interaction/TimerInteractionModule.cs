@@ -58,7 +58,7 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
             UserId = Context.User.Id,
             TargetChannelId = channel.Id,
             StartDate = DateTime.Now,
-            FinishDate = DateTime.Now.AddSeconds(duration.TotalSeconds),
+            FinishDate = DateTime.Now.AddSeconds(duration.TotalSeconds + 1),
             Duration = SharedFeatures.BaseDuration.AddSeconds(Math.Min(MaxDuration - 1, duration.TotalSeconds)),
             Detail = message.Replace(@"\n", "\n"),
         };
@@ -88,6 +88,8 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
     private async Task SendEmbed(MessageTimer messageTimer)
     {
         var reply = await FollowupAsync($"I've set a timer to send your message to {messageTimer.TargetChannelId.GetChannelMention()}. It'll go off {TimestampTag.FromDateTime(messageTimer.FinishDate.ToUniversalTime(), TimestampTagStyles.LongDateTime)}.");
+
+        // TODO revisit during InteractionParent revamp because we cant clear the first timer if a second is added (Set overwrites)
 
         var parent = await interactionParentDataService.Set(new InteractionParent
         {
