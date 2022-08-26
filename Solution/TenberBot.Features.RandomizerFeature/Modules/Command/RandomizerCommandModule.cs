@@ -1,6 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
-using TenberBot.Shared.Features.Data.Enums;
+using TenberBot.Features.RandomizerFeature.Data.Visuals;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 
@@ -30,18 +30,19 @@ public class RandomizedCommandModule : ModuleBase<SocketCommandContext>
 
         var userStats = await userStatDataService.GetOrAddByContext(Context);
 
-        var visualType = Random.Shared.Next(2) == 0 ? VisualType.CoinHead : VisualType.CoinTail;
+        var flip = Random.Shared.Next(2);
+        var visualType = flip == 0 ? Visuals.CoinHead : Visuals.CoinTail;
 
         var visual = await visualDataService.GetRandom(visualType);
         if (visual == null)
             return;
 
-        if (visualType != userStats.CoinFlipPrevious)
+        if (flip != userStats.CoinFlipPrevious)
         {
             if (userStats.CoinFlipPrevious != null && userStats.CoinFlipStreak > 1)
                 footer = $"Streak lost! Made it to {userStats.CoinFlipStreakText}";
 
-            userStats.CoinFlipPrevious = visualType;
+            userStats.CoinFlipPrevious = flip;
             userStats.CoinFlipStreak = 1;
         }
         else
@@ -65,7 +66,7 @@ public class RandomizedCommandModule : ModuleBase<SocketCommandContext>
         var embedBuilder = new EmbedBuilder
         {
             Author = Context.User.GetEmbedAuthor("flips a coin"),
-            Title = visualType == VisualType.CoinHead ? "Heads!" : "Tails!",
+            Title = visualType == Visuals.CoinHead ? "Heads!" : "Tails!",
             ThumbnailUrl = $"attachment://{visual.AttachmentFilename}",
         }.WithFooter(footer);
 
@@ -81,7 +82,7 @@ public class RandomizedCommandModule : ModuleBase<SocketCommandContext>
     [Remarks("`[yes/no question]`")]
     public async Task EightBall([Remainder] string? question = null)
     {
-        var visual = await visualDataService.GetRandom(VisualType.EightBall);
+        var visual = await visualDataService.GetRandom(Visuals.EightBall);
         if (visual == null)
             return;
 

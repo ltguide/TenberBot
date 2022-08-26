@@ -26,7 +26,7 @@ public class ChannelSetting
         var result = JsonSerializer.Deserialize(Value, type, SharedFeatures.JsonSerializerOptions);
 
         if (result == null)
-            throw new InvalidCastException($"Unable to deserialize ServerSetting: {Name}");
+            throw new InvalidCastException($"Unable to deserialize ChannelSetting: {Name}");
 
         return result;
     }

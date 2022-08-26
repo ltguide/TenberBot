@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text.Json;
 using TenberBot.Shared.Features.Attributes.Modules;
 using TenberBot.Shared.Features.Attributes.Settings;
+using TenberBot.Shared.Features.Attributes.Visuals;
 using TenberBot.Shared.Features.Converters;
 using TenberBot.Shared.Features.Data;
 using TenberBot.Shared.Features.Data.Services;
@@ -16,6 +17,7 @@ public class SharedFeatures : IFeatureStartup
     public static readonly List<Assembly> Assemblies = new();
     public static readonly Dictionary<Type, string> ServerSettings = new();
     public static readonly Dictionary<Type, string> ChannelSettings = new();
+    public static readonly List<string> Visuals = new();
 
     public static readonly DateTime BaseDuration = new(9999, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
 
@@ -88,6 +90,8 @@ public class SharedFeatures : IFeatureStartup
 
             foreach (var x in GetTypesByAttribute<ChannelSettingsAttribute>(types))
                 ChannelSettings.Add(x.Key, x.Value);
+
+            Visuals.AddRange(GetVisuals(types));
         }
         catch (Exception ex)
         {
@@ -97,6 +101,15 @@ public class SharedFeatures : IFeatureStartup
 
     private static Dictionary<Type, string> GetTypesByAttribute<T>(IList<Type> types) where T : SettingsAttribute
     {
-        return types.Where(x => x.GetCustomAttribute<T>() != null).ToDictionary(x => x, x => x.GetCustomAttribute<T>()!.Key);
+        return types.Where(x => x.GetCustomAttribute<T>() != null)
+            .ToDictionary(x => x, x => x.GetCustomAttribute<T>()!.Key);
+    }
+
+    private static IEnumerable<string> GetVisuals(IList<Type> types)
+    {
+        return types.Where(x => x.GetCustomAttribute<VisualsAttribute>() != null)
+            .SelectMany(x => x.GetFields(BindingFlags.Public | BindingFlags.Static)
+            .Where(x => x.FieldType == typeof(string))
+            .Select(x => (string)x.GetValue(null)!));
     }
 }

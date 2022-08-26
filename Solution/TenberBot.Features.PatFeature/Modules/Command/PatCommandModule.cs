@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using TenberBot.Features.PatFeature.Data.Enums;
 using TenberBot.Features.PatFeature.Data.Models;
 using TenberBot.Features.PatFeature.Data.Services;
-using TenberBot.Shared.Features.Data.Enums;
+using TenberBot.Features.PatFeature.Data.Visuals;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordCommands;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
@@ -40,7 +40,7 @@ public class PatCommandModule : ModuleBase<SocketCommandContext>
     public async Task Pat([Remainder] string? message = null)
     {
         var recipient = Context.Message.MentionedUsers.FirstOrDefault();
-        var patType = (recipient == null || recipient == Context.User) ? VisualType.PatSelf : VisualType.Pat;
+        var patType = (recipient == null || recipient == Context.User) ? Visuals.Self : Visuals.Recipient;
 
         var visual = await visualDataService.GetRandom(patType);
         if (visual == null)
@@ -48,7 +48,7 @@ public class PatCommandModule : ModuleBase<SocketCommandContext>
 
         EmbedBuilder embedBuilder;
 
-        if (patType == VisualType.PatSelf)
+        if (patType == Visuals.Self)
         {
             var pat = await patDataService.GetRandom(PatType.Self);
 

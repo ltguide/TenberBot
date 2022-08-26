@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using TenberBot.Features.HighFiveFeature.Data.Enums;
 using TenberBot.Features.HighFiveFeature.Data.Models;
 using TenberBot.Features.HighFiveFeature.Data.Services;
-using TenberBot.Shared.Features.Data.Enums;
+using TenberBot.Features.HighFiveFeature.Data.Visuals;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordCommands;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
@@ -40,7 +40,7 @@ public class HighFiveCommandModule : ModuleBase<SocketCommandContext>
     public async Task HighFive([Remainder] string? message = null)
     {
         var recipient = Context.Message.MentionedUsers.FirstOrDefault();
-        var highFiveType = (recipient == null || recipient == Context.User) ? VisualType.HighFiveSelf : VisualType.HighFive;
+        var highFiveType = (recipient == null || recipient == Context.User) ? Visuals.Self : Visuals.Recipient;
 
         var visual = await visualDataService.GetRandom(highFiveType);
         if (visual == null)
@@ -48,7 +48,7 @@ public class HighFiveCommandModule : ModuleBase<SocketCommandContext>
 
         EmbedBuilder embedBuilder;
 
-        if (highFiveType == VisualType.HighFiveSelf)
+        if (highFiveType == Visuals.Self)
         {
             var highFive = await highFiveDataService.GetRandom(HighFiveType.Self);
 

@@ -1,14 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Models;
 
 namespace TenberBot.Shared.Features.Data.Services;
 
 public interface IVisualDataService
 {
-    Task<Visual?> GetRandom(VisualType visualType);
+    Task<Visual?> GetRandom(string visualType);
 
-    Task<Visual?> GetById(VisualType visualType, int id);
+    Task<Visual?> GetById(string visualType, int id);
 
     Task Add(Visual newObject);
 
@@ -24,7 +23,7 @@ public class VisualDataService : IVisualDataService
         this.dbContext = dbContext;
     }
 
-    public async Task<Visual?> GetRandom(VisualType visualType)
+    public async Task<Visual?> GetRandom(string visualType)
     {
         return await dbContext.Visuals
             .Where(x => x.VisualType == visualType)
@@ -34,7 +33,7 @@ public class VisualDataService : IVisualDataService
             .ConfigureAwait(false);
     }
 
-    public async Task<Visual?> GetById(VisualType visualType, int id)
+    public async Task<Visual?> GetById(string visualType, int id)
     {
         return await dbContext.Visuals
             .Where(x => x.VisualType == visualType)

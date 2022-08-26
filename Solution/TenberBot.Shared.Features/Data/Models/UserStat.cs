@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using TenberBot.Shared.Features.Data.Enums;
 
 namespace TenberBot.Shared.Features.Data.Models;
 
@@ -38,7 +37,7 @@ public class UserStat
 
     public int CoinFlipStreak { get; set; }
 
-    public VisualType? CoinFlipPrevious { get; set; }
+    public int? CoinFlipPrevious { get; set; }
 
     public int CoinFlipRecord { get; set; }
 

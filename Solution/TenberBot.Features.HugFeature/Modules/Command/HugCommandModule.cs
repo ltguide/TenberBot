@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using TenberBot.Features.HugFeature.Data.Enums;
 using TenberBot.Features.HugFeature.Data.Models;
 using TenberBot.Features.HugFeature.Data.Services;
-using TenberBot.Shared.Features.Data.Enums;
+using TenberBot.Features.HugFeature.Data.Visuals;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordCommands;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
@@ -39,7 +39,7 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
     public async Task Hug([Remainder] string? message = null)
     {
         var recipient = Context.Message.MentionedUsers.FirstOrDefault();
-        var hugType = (recipient == null || recipient == Context.User) ? VisualType.HugSelf : VisualType.Hug;
+        var hugType = (recipient == null || recipient == Context.User) ? Visuals.Self : Visuals.Recipient;
 
         var visual = await visualDataService.GetRandom(hugType);
         if (visual == null)
@@ -47,7 +47,7 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
 
         EmbedBuilder embedBuilder;
 
-        if (hugType == VisualType.HugSelf)
+        if (hugType == Visuals.Self)
         {
             var hug = await hugDataService.GetRandom(HugType.Self);
 

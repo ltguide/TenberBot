@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using TenberBot.Shared.Features.Data.Enums;
 
 namespace TenberBot.Shared.Features.Data.Models;
 
@@ -13,7 +12,7 @@ public class Visual
     [Key]
     public int VisualId { get; set; }
 
-    public VisualType VisualType { get; set; }
+    public string VisualType { get; set; } = "";
 
     public string Filename { get; set; } = "";
 

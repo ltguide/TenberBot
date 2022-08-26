@@ -3,8 +3,8 @@ using Discord.Commands;
 using System.Text.RegularExpressions;
 using TenberBot.Features.GreetingFeature.Data.Enums;
 using TenberBot.Features.GreetingFeature.Data.Services;
+using TenberBot.Features.GreetingFeature.Data.Visuals;
 using TenberBot.Shared.Features.Attributes.Modules;
-using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordCommands;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
@@ -34,7 +34,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
     [Command("just-bot-name")]
     public async Task Blank()
     {
-        await SendRandom(GreetingType.BotName, VisualType.BotName);
+        await SendRandom(GreetingType.BotName, Visuals.BotName);
     }
 
     [InlineCommand]
@@ -43,7 +43,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
     [Summary("Say a Hello greeting.")]
     public async Task Hello()
     {
-        await SendRandom(GreetingType.Hello, VisualType.Hello);
+        await SendRandom(GreetingType.Hello, Visuals.Hello);
     }
 
     [InlineCommand]
@@ -130,7 +130,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         return true;
     }
 
-    private async Task<bool> SendRandom(VisualType visualType)
+    private async Task<bool> SendRandom(string visualType)
     {
         var visual = await visualDataService.GetRandom(visualType);
         if (visual == null)
@@ -143,7 +143,7 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         return true;
     }
 
-    private async Task SendRandom(GreetingType greetingType, VisualType visualType)
+    private async Task SendRandom(GreetingType greetingType, string visualType)
     {
         if (Random.Shared.Next(2) == 0)
         {
