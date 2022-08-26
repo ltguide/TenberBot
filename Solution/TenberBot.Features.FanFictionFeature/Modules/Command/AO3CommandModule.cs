@@ -31,7 +31,7 @@ public class AO3CommandModule : ModuleBase<SocketCommandContext>
         if (story == null)
             return DeleteResult.FromError("I couldn't load this story 😭");
 
-        var embedBuilder = new EmbedBuilder
+        var embed = new EmbedBuilder
         {
             Author = Context.User.GetEmbedAuthor("shared a story"),
             Color = story.GetRatingColor(),
@@ -57,9 +57,25 @@ public class AO3CommandModule : ModuleBase<SocketCommandContext>
         .AddFieldChunkByComma("Language", story.Language, true);
 
         if (story.Summary != null)
-            embedBuilder.Description += $"\n**Summary**\n {story.Summary}\n";
+            embed.Description += $"\n**Summary**\n {story.Summary}\n";
 
-        await Context.Message.ReplyAsync(embed: embedBuilder.Build());
+        EmbedBuilder? extraEmbed = null;
+
+        while (embed.Length > EmbedBuilder.MaxEmbedLength || embed.Fields.Count > EmbedBuilder.MaxFieldCount)
+        {
+            var index = embed.Fields.Count - 1;
+            var field = embed.Fields[index];
+            embed.Fields.RemoveAt(index);
+
+            extraEmbed ??= new();
+
+            extraEmbed.Fields.Insert(0, field);
+        }
+
+        await Context.Message.ReplyAsync(embed: embed.Build());
+
+        if (extraEmbed != null)
+            await ReplyAsync(embed: extraEmbed.Build());
 
         return DeleteResult.FromSuccess();
     }

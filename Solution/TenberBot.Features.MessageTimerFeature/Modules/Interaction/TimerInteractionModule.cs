@@ -15,7 +15,6 @@ using TenberBot.Shared.Features.Services;
 namespace TenberBot.Features.MessageTimerFeature.Modules.Interaction;
 
 [DefaultMemberPermissions(GuildPermission.ManageGuild)]
-[RequireUserPermission(GuildPermission.ManageGuild)]
 public class TimerInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private const int MaxDuration = 86400 * 90;
