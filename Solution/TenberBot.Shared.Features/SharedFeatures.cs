@@ -41,7 +41,7 @@ public class SharedFeatures : IFeatureStartup
 
         services.AddTransient<IUserStatDataService, UserStatDataService>();
 
-        services.AddHttpClient<WebService>();
+        services.AddHttpClient<VisualWebService>();
     }
 
     public static void RegisterFeatures(IServiceCollection services, string path)

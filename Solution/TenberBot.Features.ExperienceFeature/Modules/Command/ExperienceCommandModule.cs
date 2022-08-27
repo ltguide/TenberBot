@@ -21,20 +21,20 @@ public class ExperienceCommandModule : ModuleBase<SocketCommandContext>
 {
     private readonly IInteractionParentDataService interactionParentDataService;
     private readonly IUserLevelDataService userLevelDataService;
-    private readonly WebService webService;
+    private readonly VisualWebService visualWebService;
     private readonly IRankCardDataService rankCardDataService;
     private readonly CacheService cacheService;
 
     public ExperienceCommandModule(
         IInteractionParentDataService interactionParentDataService,
         IUserLevelDataService userLevelDataService,
-        WebService webService,
+        VisualWebService visualWebService,
         IRankCardDataService rankCardDataService,
         CacheService cacheService)
     {
         this.interactionParentDataService = interactionParentDataService;
         this.userLevelDataService = userLevelDataService;
-        this.webService = webService;
+        this.visualWebService = visualWebService;
         this.rankCardDataService = rankCardDataService;
         this.cacheService = cacheService;
     }
@@ -54,11 +54,11 @@ public class ExperienceCommandModule : ModuleBase<SocketCommandContext>
         if (card == null)
             return DeleteResult.FromError("Unable to find a configured rank card.");
 
-        var myAvatar = await webService.GetBytes(Context.Client.CurrentUser.GetCurrentAvatarUrl(), TimeSpan.FromMinutes(60));
+        var myAvatar = await visualWebService.GetBytes(Context.Client.CurrentUser.GetCurrentAvatarUrl(), TimeSpan.FromMinutes(60));
         if (myAvatar == null)
             return DeleteResult.FromError("Failed to load my avatar. Please try again.");
 
-        var userAvatar = await webService.GetBytes(Context.User.GetCurrentAvatarUrl(), TimeSpan.FromMinutes(5));
+        var userAvatar = await visualWebService.GetBytes(Context.User.GetCurrentAvatarUrl(), TimeSpan.FromMinutes(5));
         if (userAvatar == null)
             return DeleteResult.FromError("Failed to load your avatar. Please try again.");
 

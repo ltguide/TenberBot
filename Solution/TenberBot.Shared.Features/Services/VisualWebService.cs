@@ -5,16 +5,16 @@ using TenberBot.Shared.Features.Extensions.DiscordRoot;
 
 namespace TenberBot.Shared.Features.Services;
 
-public class WebService
+public class VisualWebService
 {
     private readonly IMemoryCache memoryCache;
     private readonly HttpClient client;
-    private readonly ILogger<WebService> logger;
+    private readonly ILogger<VisualWebService> logger;
 
-    public WebService(
+    public VisualWebService(
         IMemoryCache memoryCache,
         HttpClient client,
-        ILogger<WebService> logger)
+        ILogger<VisualWebService> logger)
     {
         this.memoryCache = memoryCache;
         this.client = client;

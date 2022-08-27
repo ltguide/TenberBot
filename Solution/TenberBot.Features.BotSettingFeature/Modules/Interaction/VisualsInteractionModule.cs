@@ -17,14 +17,14 @@ namespace TenberBot.Features.CommandPrefixFeature.Modules.Interaction;
 public class VisualsInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IVisualDataService visualDataService;
-    private readonly WebService webService;
+    private readonly VisualWebService visualWebService;
 
     public VisualsInteractionModule(
         IVisualDataService visualDataService,
-        WebService webService)
+        VisualWebService visualWebService)
     {
         this.visualDataService = visualDataService;
-        this.webService = webService;
+        this.visualWebService = visualWebService;
     }
 
     [SlashCommand("add", "Add a visual.")]
@@ -40,7 +40,7 @@ public class VisualsInteractionModule : InteractionModuleBase<SocketInteractionC
         if (url == null)
             return EphemeralResult.FromError($"I couldn't locate a file in your message.");
 
-        var file = await webService.GetFileAttachment(url);
+        var file = await visualWebService.GetFileAttachment(url);
         if (file == null)
             return EphemeralResult.FromError($"I failed to download the file. Is it an image? 😦");
 

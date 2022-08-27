@@ -23,18 +23,18 @@ public class ServerExperienceInteractionModule : InteractionModuleBase<SocketInt
 {
     private readonly IRankCardDataService rankCardDataService;
     private readonly IServerSettingDataService serverSettingDataService;
-    private readonly WebService webService;
+    private readonly VisualWebService visualWebService;
     private readonly CacheService cacheService;
 
     public ServerExperienceInteractionModule(
         IRankCardDataService rankCardDataService,
         IServerSettingDataService serverSettingDataService,
-        WebService webService,
+        VisualWebService visualWebService,
         CacheService cacheService)
     {
         this.rankCardDataService = rankCardDataService;
         this.serverSettingDataService = serverSettingDataService;
-        this.webService = webService;
+        this.visualWebService = visualWebService;
         this.cacheService = cacheService;
     }
 
@@ -59,7 +59,7 @@ public class ServerExperienceInteractionModule : InteractionModuleBase<SocketInt
 
         if (image != null)
         {
-            var file = await webService.GetFileAttachment(image.Url);
+            var file = await visualWebService.GetFileAttachment(image.Url);
             if (file != null)
             {
                 card.Data = file.Value.GetBytes();
@@ -123,8 +123,8 @@ public class ServerExperienceInteractionModule : InteractionModuleBase<SocketInt
             userLevel.UpdateVoiceLevel();
             userLevel.UpdateMessageLevel();
 
-            var myAvatar = await webService.GetBytes(Context.Client.CurrentUser.GetCurrentAvatarUrl(), TimeSpan.FromMinutes(60));
-            var userAvatar = await webService.GetBytes(Context.User.GetCurrentAvatarUrl(), TimeSpan.FromMinutes(5));
+            var myAvatar = await visualWebService.GetBytes(Context.Client.CurrentUser.GetCurrentAvatarUrl(), TimeSpan.FromMinutes(60));
+            var userAvatar = await visualWebService.GetBytes(Context.User.GetCurrentAvatarUrl(), TimeSpan.FromMinutes(5));
 
             using var memoryStream = RankCardHelper.GetStream(card, Context.Guild, Context.User, userLevel, myAvatar, userAvatar);
 

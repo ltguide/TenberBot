@@ -24,18 +24,18 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
 
     private readonly MessageTimerService messageTimerService;
     private readonly IMessageTimerDataService messageTimerDataService;
-    private readonly WebService webService;
+    private readonly VisualWebService visualWebService;
     private readonly IInteractionParentDataService interactionParentDataService;
 
     public TimerInteractionModule(
         MessageTimerService messageTimerService,
         IMessageTimerDataService messageTimerDataService,
-        WebService webService,
+        VisualWebService visualWebService,
         IInteractionParentDataService interactionParentDataService)
     {
         this.messageTimerService = messageTimerService;
         this.messageTimerDataService = messageTimerDataService;
-        this.webService = webService;
+        this.visualWebService = visualWebService;
         this.interactionParentDataService = interactionParentDataService;
     }
 
@@ -68,7 +68,7 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
 
         if (image != null)
         {
-            var file = await webService.GetFileAttachment(image.Url);
+            var file = await visualWebService.GetFileAttachment(image.Url);
             if (file != null)
             {
                 messageTimer.Filename = image.Filename;
