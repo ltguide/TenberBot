@@ -11,6 +11,7 @@ using TenberBot.Shared.Features.Extensions.Strings;
 namespace TenberBot.Features.BotStatusFeature.Modules.Interaction;
 
 [RequireUserPermission(GuildPermission.ManageGuild)]
+[EnabledInDm(false)]
 public class BotStatusInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IBotStatusDataService botStatusDataService;

@@ -2,13 +2,16 @@
 using Discord.Interactions;
 using TenberBot.Features.ExperienceFeature.Data.Models;
 using TenberBot.Features.ExperienceFeature.Services;
+using TenberBot.Shared.Features.Attributes.Modules;
 using TenberBot.Shared.Features.Extensions.Mentions;
 using TenberBot.Shared.Features.Extensions.Strings;
 
 namespace TenberBot.Features.ExperienceFeature.Modules.Interaction;
 
 [Group("event-experience", "Manage event experience.")]
+[HelpCommand(group: "Server Management")]
 [DefaultMemberPermissions(GuildPermission.ManageChannels)]
+[EnabledInDm(false)]
 public class EventExperienceInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly GuildExperienceService guildExperienceService;
@@ -20,6 +23,7 @@ public class EventExperienceInteractionModule : InteractionModuleBase<SocketInte
     }
 
     [SlashCommand("get", "Get event experience for a user.")]
+    [HelpCommand("`<user>`")]
     public async Task Get(IUser user)
     {
         var dbUserLevel = await GetRecord(user);
@@ -30,6 +34,7 @@ public class EventExperienceInteractionModule : InteractionModuleBase<SocketInte
     }
 
     [SlashCommand("modify", "Modify event experience for a user.")]
+    [HelpCommand("`<user>` `<amount>` `[comment]`")]
     public async Task Modify(IUser user, decimal amount, string? comment = null)
     {
         var dbUserLevel = await GetRecord(user);
@@ -44,6 +49,7 @@ public class EventExperienceInteractionModule : InteractionModuleBase<SocketInte
     }
 
     [SlashCommand("set", "Set event experience for a user.")]
+    [HelpCommand("`<user>` `<amount>` `[comment]`")]
     public async Task Set(IUser user, decimal amount, string? comment = null)
     {
         var dbUserLevel = await GetRecord(user);
@@ -58,6 +64,7 @@ public class EventExperienceInteractionModule : InteractionModuleBase<SocketInte
     }
 
     [SlashCommand("reset", "Set event experience for all users to 0.")]
+    [HelpCommand("`<confirm>`")]
     public async Task Reset(bool confirm)
     {
         if (confirm)

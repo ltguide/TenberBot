@@ -12,6 +12,7 @@ using TenberBot.Shared.Features.Extensions.Strings;
 namespace TenberBot.Features.HugFeature.Modules.Interaction;
 
 [RequireUserPermission(GuildPermission.ManageGuild)]
+[EnabledInDm(false)]
 public class HugInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IHugDataService hugDataService;

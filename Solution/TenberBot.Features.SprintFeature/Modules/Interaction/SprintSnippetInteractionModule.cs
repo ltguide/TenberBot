@@ -12,6 +12,7 @@ using TenberBot.Shared.Features.Extensions.Strings;
 namespace TenberBot.Features.SprintFeature.Modules.Interaction;
 
 [RequireUserPermission(GuildPermission.ManageGuild)]
+[EnabledInDm(false)]
 public class SprintSnippetInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly ISprintSnippetDataService sprintSnippetDataService;

@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using TenberBot.Features.BotEmoteFeature.Data.Enums;
+using TenberBot.Shared.Features.Attributes.Modules;
 using TenberBot.Shared.Features.Data.Models;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.Caches;
@@ -12,7 +13,9 @@ using TenberBot.Shared.Features.Settings.Server;
 namespace TenberBot.Features.CommandPrefixFeature.Modules.Interaction;
 
 [Group("bot-setting", "Manage server settings for the bot.")]
+[HelpCommand(group: "Server Management")]
 [DefaultMemberPermissions(GuildPermission.ManageGuild)]
+[EnabledInDm(false)]
 public class BotSettingInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IServerSettingDataService serverSettingDataService;
@@ -27,6 +30,7 @@ public class BotSettingInteractionModule : InteractionModuleBase<SocketInteracti
     }
 
     [SlashCommand("prefix", "Configure the prefix for message commands.")]
+    [HelpCommand("`[value]`")]
     public async Task Prefix(string? value = null)
     {
         var settings = cacheService.Get<BasicServerSettings>(Context.Guild);
@@ -43,6 +47,7 @@ public class BotSettingInteractionModule : InteractionModuleBase<SocketInteracti
     }
 
     [SlashCommand("emote", "Configure the reaction emotes.")]
+    [HelpCommand("`[success]` `[fail]` `[busy]`")]
     public async Task Emote(
         string? success = null,
         string? fail = null,

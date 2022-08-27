@@ -1,12 +1,15 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using TenberBot.Features.HelpFeature.Data.POCO;
 using TenberBot.Features.HelpFeature.Services;
+using TenberBot.Shared.Features.Attributes.Modules;
 using TenberBot.Shared.Features.Extensions.DiscordRoot;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 using TenberBot.Shared.Features.Extensions.Strings;
 using TenberBot.Shared.Features.Services;
 using TenberBot.Shared.Features.Settings.Server;
+using InteractionService = Discord.Interactions.InteractionService;
 
 namespace TenberBot.Features.HelpFeature.Modules.Command;
 
@@ -15,6 +18,7 @@ public class HelpCommandModule : ModuleBase<SocketCommandContext>
 {
     private readonly IHelpService helpService;
     private readonly IServiceProvider serviceProvider;
+    private readonly InteractionService interactionService;
     private readonly CommandService commandService;
     private readonly DiscordSocketClient client;
     private readonly CacheService cacheService;
@@ -22,12 +26,14 @@ public class HelpCommandModule : ModuleBase<SocketCommandContext>
     public HelpCommandModule(
         IHelpService helpService,
         IServiceProvider serviceProvider,
+        InteractionService interactionService,
         CommandService commandService,
         DiscordSocketClient client,
         CacheService cacheService)
     {
         this.helpService = helpService;
         this.serviceProvider = serviceProvider;
+        this.interactionService = interactionService;
         this.commandService = commandService;
         this.client = client;
         this.cacheService = cacheService;
@@ -47,23 +53,26 @@ public class HelpCommandModule : ModuleBase<SocketCommandContext>
     [RequireBotPermission(ChannelPermission.ManageMessages)]
     public async Task HelpEveryone()
     {
-        var commands = new List<CommandInfo>();
+        var prefix = cacheService.Get<BasicServerSettings>(Context.Guild).Prefix.SanitizeMD();
+        var commands = new List<HelpCommandInfo>();
 
         foreach (var command in commandService.Commands.Where(x => x.Summary != null && x.Module.Preconditions.All(x => x is not RequireUserPermissionAttribute) && x.Preconditions.All(x => x is not RequireUserPermissionAttribute)))
         {
             var result = await command.CheckPreconditionsAsync(Context, serviceProvider);
 
             if (result.IsSuccess)
-                commands.Add(command);
+                commands.Add(new HelpCommandInfo(prefix, command));
         }
 
+        foreach (var command in interactionService.SlashCommands.Where(x => x.Attributes.Any(x => x is HelpCommandAttribute) && x.Module.DefaultMemberPermissions == null && x.DefaultMemberPermissions == null))
+            commands.Add(new HelpCommandInfo(command));
+
         commands = commands
-            .OrderBy(x => x.Module.Remarks)
-            .ThenBy(x => x.Aliases[0])
+            .OrderBy(x => x.Group)
+            .ThenBy(x => x.Name)
             .ToList();
 
-        var prefix = cacheService.Get<BasicServerSettings>(Context.Guild).Prefix.SanitizeMD();
-        var embeds = helpService.GetFields(prefix, commands).Chunk(25).Select((x, i) =>
+        var embeds = helpService.GetFields(commands).Chunk(25).Select((x, i) =>
         {
             var embedBuilder = new EmbedBuilder();
 

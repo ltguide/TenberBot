@@ -12,6 +12,7 @@ using TenberBot.Shared.Features.Extensions.Strings;
 namespace TenberBot.Features.GreetingFeature.Modules.Interaction;
 
 [RequireUserPermission(GuildPermission.ManageGuild)]
+[EnabledInDm(false)]
 public class GreetingInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IGreetingDataService greetingDataService;

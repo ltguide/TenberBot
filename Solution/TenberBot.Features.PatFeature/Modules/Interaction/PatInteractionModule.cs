@@ -12,6 +12,7 @@ using TenberBot.Shared.Features.Extensions.Strings;
 namespace TenberBot.Features.PatFeature.Modules.Interaction;
 
 [RequireUserPermission(GuildPermission.ManageGuild)]
+[EnabledInDm(false)]
 public class PatInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IPatDataService patDataService;

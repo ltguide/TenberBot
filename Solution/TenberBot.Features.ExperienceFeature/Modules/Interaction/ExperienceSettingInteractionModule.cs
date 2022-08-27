@@ -3,6 +3,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using TenberBot.Features.ExperienceFeature.Data.Enums;
 using TenberBot.Features.ExperienceFeature.Settings.Channel;
+using TenberBot.Shared.Features.Attributes.Modules;
 using TenberBot.Shared.Features.Data.Models;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.Caches;
@@ -11,7 +12,9 @@ using TenberBot.Shared.Features.Services;
 namespace TenberBot.Features.ExperienceFeature.Modules.Interaction;
 
 [Group("channel-experience", "Manage channel settings for the bot.")]
+[HelpCommand(group: "Channel Management")]
 [DefaultMemberPermissions(GuildPermission.ManageChannels)]
+[EnabledInDm(false)]
 public class ChannelExperienceInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IChannelSettingDataService channelSettingDataService;
@@ -26,6 +29,7 @@ public class ChannelExperienceInteractionModule : InteractionModuleBase<SocketIn
     }
 
     [SlashCommand("modes", "Configure the experience mode.")]
+    [HelpCommand("`[normal]` `[event]`")]
     public async Task SetExperience(
         [Summary("normal")] bool? normalEnabled = null,
         [Summary("event")] bool? eventEnabled = null)
@@ -54,6 +58,7 @@ public class ChannelExperienceInteractionModule : InteractionModuleBase<SocketIn
     }
 
     [SlashCommand("experience-values", "Configure the experience values.")]
+    [HelpCommand("`<mode>` `[various ...]`")]
     public async Task SetExperienceValues(
     ExperienceModeChoice mode,
     decimal? message = null,

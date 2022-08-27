@@ -5,6 +5,7 @@ using TenberBot.Features.MessageTimerFeature.Data.Models;
 using TenberBot.Features.MessageTimerFeature.Data.Services;
 using TenberBot.Features.MessageTimerFeature.Services;
 using TenberBot.Shared.Features;
+using TenberBot.Shared.Features.Attributes.Modules;
 using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Models;
 using TenberBot.Shared.Features.Data.Services;
@@ -15,6 +16,8 @@ using TenberBot.Shared.Features.Services;
 namespace TenberBot.Features.MessageTimerFeature.Modules.Interaction;
 
 [DefaultMemberPermissions(GuildPermission.ManageGuild)]
+[HelpCommand(group: "Server Management")]
+[EnabledInDm(false)]
 public class TimerInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private const int MaxDuration = 86400 * 90;
@@ -37,6 +40,7 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
     }
 
     [SlashCommand("message-timer", "Send message on a timed delay.")]
+    [HelpCommand("`<channel>` `<message>` `<date-time>` `[image]`")]
     public async Task Timer(
         [ChannelTypes(ChannelType.Voice, ChannelType.Text)] IChannel channel,
         string message,

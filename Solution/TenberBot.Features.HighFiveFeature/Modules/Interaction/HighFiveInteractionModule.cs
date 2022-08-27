@@ -12,6 +12,7 @@ using TenberBot.Shared.Features.Extensions.Strings;
 namespace TenberBot.Features.HighFiveFeature.Modules.Interaction;
 
 [RequireUserPermission(GuildPermission.ManageGuild)]
+[EnabledInDm(false)]
 public class HighFiveInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IHighFiveDataService highFiveDataService;

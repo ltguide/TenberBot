@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using TenberBot.Features.BotSettingFeature.Handlers;
+using TenberBot.Shared.Features.Attributes.Modules;
 using TenberBot.Shared.Features.Data.Models;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.Strings;
@@ -10,7 +11,9 @@ using TenberBot.Shared.Features.Services;
 namespace TenberBot.Features.CommandPrefixFeature.Modules.Interaction;
 
 [Group("visuals", "Manage visuals for the bot.")]
+[HelpCommand(group: "Server Management")]
 [DefaultMemberPermissions(GuildPermission.ManageGuild)]
+[EnabledInDm(false)]
 public class VisualsInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IVisualDataService visualDataService;
@@ -25,6 +28,7 @@ public class VisualsInteractionModule : InteractionModuleBase<SocketInteractionC
     }
 
     [SlashCommand("add", "Add a visual.")]
+    [HelpCommand("`<type>` `[url|image]`")]
     public async Task<RuntimeResult> Add(
         [Summary("visual-type"), Autocomplete(typeof(VisualTypeAutocompleteHandler))] string visualType,
         string? url = null,
@@ -50,6 +54,7 @@ public class VisualsInteractionModule : InteractionModuleBase<SocketInteractionC
     }
 
     [SlashCommand("delete", "Delete a visual.")]
+    [HelpCommand("`<type>` `<id>`")]
     public async Task<RuntimeResult> Add(
         [Summary("visual-type"), Autocomplete(typeof(VisualTypeAutocompleteHandler))] string visualType,
         int id)

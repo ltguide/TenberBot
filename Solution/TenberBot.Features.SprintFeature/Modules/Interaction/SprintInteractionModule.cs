@@ -10,6 +10,7 @@ using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 
 namespace TenberBot.Features.SprintFeature.Modules.Interaction;
 
+[EnabledInDm(false)]
 public class SprintInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly ISprintDataService sprintDataService;

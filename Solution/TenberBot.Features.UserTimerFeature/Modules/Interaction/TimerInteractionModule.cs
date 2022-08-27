@@ -8,6 +8,7 @@ using TenberBot.Shared.Features.Data.Services;
 
 namespace TenberBot.Features.UserTimerFeature.Modules.Interaction;
 
+[EnabledInDm(false)]
 public class TimerInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IUserTimerDataService userTimerDataService;

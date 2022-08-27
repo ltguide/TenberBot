@@ -3,6 +3,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using TenberBot.Features.SprintFeature.Data.Enums;
 using TenberBot.Features.SprintFeature.Settings.Channel;
+using TenberBot.Shared.Features.Attributes.Modules;
 using TenberBot.Shared.Features.Data.Models;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.Caches;
@@ -11,6 +12,8 @@ using TenberBot.Shared.Features.Services;
 namespace TenberBot.Features.SprintFeature.Modules.Interaction;
 
 [DefaultMemberPermissions(GuildPermission.ManageChannels)]
+[HelpCommand(group: "Channel Management")]
+[EnabledInDm(false)]
 public class ChannelSprintInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IChannelSettingDataService channelSettingDataService;
@@ -25,6 +28,7 @@ public class ChannelSprintInteractionModule : InteractionModuleBase<SocketIntera
     }
 
     [SlashCommand("channel-sprint", "Configure the sprint mode/role.")]
+    [HelpCommand("`[mode]` `[role]`")]
     public async Task SetSprint(SprintMode? mode = null, IRole? role = null)
     {
         if (Context.Channel is SocketThreadChannel)

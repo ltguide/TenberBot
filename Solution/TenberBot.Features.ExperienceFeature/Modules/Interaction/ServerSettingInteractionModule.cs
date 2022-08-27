@@ -4,6 +4,7 @@ using TenberBot.Features.ExperienceFeature.Data.Models;
 using TenberBot.Features.ExperienceFeature.Data.Services;
 using TenberBot.Features.ExperienceFeature.Helpers;
 using TenberBot.Features.ExperienceFeature.Settings.Server;
+using TenberBot.Shared.Features.Attributes.Modules;
 using TenberBot.Shared.Features.Data.Models;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.Caches;
@@ -15,7 +16,9 @@ using Color = SixLabors.ImageSharp.Color;
 namespace TenberBot.Features.ExperienceFeature.Modules.Interaction;
 
 [Group("server-experience", "Manage server settings for the bot.")]
+[HelpCommand(group: "Server Management")]
 [DefaultMemberPermissions(GuildPermission.ManageGuild)]
+[EnabledInDm(false)]
 public class ServerExperienceInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IRankCardDataService rankCardDataService;
@@ -36,6 +39,7 @@ public class ServerExperienceInteractionModule : InteractionModuleBase<SocketInt
     }
 
     [SlashCommand("rank-card", "Configure the rank cards.")]
+    [HelpCommand("`<role>` `[various ...]`")]
     public async Task Rank(
         IRole role,
         [Summary("image")] IAttachment? image = null,
@@ -131,6 +135,7 @@ public class ServerExperienceInteractionModule : InteractionModuleBase<SocketInt
     }
 
     [SlashCommand("leaderboard", "Configure the leaderboard.")]
+    [HelpCommand("`<display-event>`")]
     public async Task Leaderboard(
         [Summary("display-event")] bool? eventEnabled = null)
     {

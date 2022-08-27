@@ -12,6 +12,7 @@ using TenberBot.Shared.Features.Services;
 
 namespace TenberBot.Features.ExperienceFeature.Modules.Interaction;
 
+[EnabledInDm(false)]
 public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IUserLevelDataService userLevelDataService;

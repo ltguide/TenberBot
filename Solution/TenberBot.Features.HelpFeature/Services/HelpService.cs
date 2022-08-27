@@ -1,5 +1,9 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.Interactions;
+using Discord.WebSocket;
+using TenberBot.Features.HelpFeature.Data.POCO;
+using TenberBot.Shared.Features.Attributes.Modules;
 using TenberBot.Shared.Features.Data.POCO;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 using TenberBot.Shared.Features.Extensions.Strings;
@@ -12,46 +16,47 @@ public interface IHelpService
 {
     string Description { get; }
 
-    IList<EmbedFieldBuilder> GetFields(string prefix, IList<CommandInfo> commands);
+    IList<EmbedFieldBuilder> GetFields(IList<HelpCommandInfo> commands);
 
     Task<MessageProperties> BuildMessage(SocketCommandContext context, int currentPage);
 }
 
 public class HelpService : IHelpService
 {
-    public string Description => "An option surrounded with `[]` means it is **not** required.\nAn option surrounded with `<>` is *usually* required.\nA `|` symbol means provide one of the values if applicable.";
+    public string Description => "An option surrounded with `[]` means it is **not** required.\nAn option surrounded with `<>` is *usually* required.\nA `|` symbol means provide one of the values if applicable.\nNote: slash commands may appear that you cannot access.";
 
     private readonly IServiceProvider serviceProvider;
+    private readonly InteractionService interactionService;
     private readonly CommandService commandService;
     private readonly CacheService cacheService;
 
     public HelpService(
         IServiceProvider serviceProvider,
+        InteractionService interactionService,
         CommandService commandService,
         CacheService cacheService)
     {
         this.serviceProvider = serviceProvider;
+        this.interactionService = interactionService;
         this.commandService = commandService;
         this.cacheService = cacheService;
     }
 
-    public IList<EmbedFieldBuilder> GetFields(string prefix, IList<CommandInfo> commands)
+    public IList<EmbedFieldBuilder> GetFields(IList<HelpCommandInfo> commands)
     {
         var fields = new List<EmbedFieldBuilder>();
 
-        foreach (var grouping in commands.GroupBy(x => x.Module.Remarks))
+        foreach (var grouping in commands.GroupBy(x => x.Group))
         {
-            fields.Add(new EmbedFieldBuilder { Name = "\u200B", Value = $"__**{grouping.Key ?? "General"}**__", });
+            fields.Add(new EmbedFieldBuilder { Name = "\u200B", Value = $"__**{grouping.Key}**__", });
 
             foreach (var command in grouping)
             {
-                var aliases = command.Aliases.Skip(1).ToList();
-
                 var additionally = "";
-                if (aliases.Count > 0)
-                    additionally = $"\n*Alias{(aliases.Count != 1 ? "es" : "")}*: `{prefix}{string.Join($"`, `{prefix}", aliases)}`";
+                if (command.Aliases?.Length > 0)
+                    additionally = $"\n*Alias{(command.Aliases.Length != 1 ? "es" : "")}*: `{string.Join("`, `", command.Aliases)}`";
 
-                fields.Add(new EmbedFieldBuilder { Name = $"`{prefix}{command.Aliases[0]}` {command.Remarks}", Value = $"> {command.Summary}{additionally}", });
+                fields.Add(new EmbedFieldBuilder { Name = $"`{command.Name}` {command.Arguments}", Value = $"> {command.Description}{additionally}", });
             }
         }
 
@@ -60,7 +65,11 @@ public class HelpService : IHelpService
 
     public async Task<MessageProperties> BuildMessage(SocketCommandContext context, int currentPage)
     {
-        var commands = (await commandService.GetExecutableCommandsAsync(context, serviceProvider)).Where(x => x.Summary != null).ToList();
+        var prefix = cacheService.Get<BasicServerSettings>(context.Guild).Prefix.SanitizeMD();
+
+        var commands = (await commandService.GetExecutableCommandsAsync(context, serviceProvider)).Where(x => x.Summary != null).Select(x => new HelpCommandInfo(prefix, x))
+            .Concat(GetDefaultSlashCommands(context.User))
+            .ToList();
 
         var view = new PageView
         {
@@ -70,8 +79,8 @@ public class HelpService : IHelpService
         view.PageCount = view.CalcPages(commands.Count);
 
         commands = commands
-            .OrderBy(x => x.Module.Remarks)
-            .ThenBy(x => x.Aliases[0])
+            .OrderBy(x => x.Group)
+            .ThenBy(x => x.Name)
             .Skip(view.CurrentPage * view.PerPage)
             .Take(view.PerPage)
             .ToList();
@@ -83,7 +92,31 @@ public class HelpService : IHelpService
         };
     }
 
-    private Embed GetEmbed(SocketCommandContext context, IList<CommandInfo> commands, PageView view)
+    private List<HelpCommandInfo> GetDefaultSlashCommands(SocketUser socketUser)
+    {
+        var commands = new List<HelpCommandInfo>();
+
+        if (socketUser is not SocketGuildUser socketGuildUser)
+            return commands;
+
+        foreach (var command in interactionService.SlashCommands)
+        {
+            if (command.Attributes.Any(x => x is HelpCommandAttribute) == false)
+                continue;
+
+            if (command.Module.DefaultMemberPermissions != null && socketGuildUser.GuildPermissions.Has(command.Module.DefaultMemberPermissions.Value) == false)
+                continue;
+
+            if (command.DefaultMemberPermissions != null && socketGuildUser.GuildPermissions.Has(command.DefaultMemberPermissions.Value) == false)
+                continue;
+
+            commands.Add(new HelpCommandInfo(command));
+        }
+
+        return commands;
+    }
+
+    private Embed GetEmbed(SocketCommandContext context, IList<HelpCommandInfo> commands, PageView view)
     {
         var embedBuilder = new EmbedBuilder
         {
@@ -95,7 +128,7 @@ public class HelpService : IHelpService
             embedBuilder.Description += "\n*No results found.*";
         else
             embedBuilder
-                .WithFields(GetFields(cacheService.Get<BasicServerSettings>(context.Guild).Prefix.SanitizeMD(), commands))
+                .WithFields(GetFields(commands))
                 .WithFooter($"Page {view.CurrentPage + 1} of {view.PageCount + 1}");
 
         return embedBuilder.Build();

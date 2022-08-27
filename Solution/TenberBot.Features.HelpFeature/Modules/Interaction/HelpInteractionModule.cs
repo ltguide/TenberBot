@@ -7,7 +7,7 @@ using TenberBot.Features.HelpFeature.Services;
 namespace TenberBot.Features.HelpFeature.Modules.Interaction;
 
 [DefaultMemberPermissions(GuildPermission.SendMessages)]
-[Discord.Interactions.RequireUserPermission(GuildPermission.SendMessages)]
+[EnabledInDm(false)]
 public class HelpInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IHelpService helpService;

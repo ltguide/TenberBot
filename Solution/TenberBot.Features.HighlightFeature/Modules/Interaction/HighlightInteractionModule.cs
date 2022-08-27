@@ -7,13 +7,15 @@ using TenberBot.Features.HighlightFeature.Data.Services;
 using TenberBot.Features.HighlightFeature.Modals.Ignore;
 using TenberBot.Features.HighlightFeature.Modals.Word;
 using TenberBot.Features.HighlightFeature.Services;
+using TenberBot.Shared.Features.Attributes.Modules;
 using TenberBot.Shared.Features.Data.POCO;
 using TenberBot.Shared.Features.Extensions.Mentions;
 
 namespace TenberBot.Features.HighlightFeature.Modules.Interaction;
 
-[DefaultMemberPermissions(GuildPermission.SendMessages)]
 [Group("highlight", "Manage highlight words and ignores.")]
+[HelpCommand(group: "Highlight")]
+[EnabledInDm(false)]
 public class HighlightInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly static Regex ValidWord = new(@"^(\*?)(...+?)(\*?)$", RegexOptions.Compiled);
@@ -36,6 +38,7 @@ public class HighlightInteractionModule : InteractionModuleBase<SocketInteractio
     }
 
     [SlashCommand("ignore-channels", "Manage list of channels in which all messages are ignored. Optionally, provide a channel to add.")]
+    [HelpCommand("`[channel]`")]
     public async Task IgnoreChannel(
         [Summary("add")][ChannelTypes(ChannelType.Voice, ChannelType.Text)] IChannel? channel = null)
     {
@@ -62,6 +65,7 @@ public class HighlightInteractionModule : InteractionModuleBase<SocketInteractio
     }
 
     [SlashCommand("ignore-users", "Manage list of users of which all messages are ignored. Optionally, provide a user to add.")]
+    [HelpCommand("`[user]`")]
     public async Task IgnoreUser(
         [Summary("add")] IUser? user = null)
     {
@@ -137,6 +141,7 @@ public class HighlightInteractionModule : InteractionModuleBase<SocketInteractio
     }
 
     [SlashCommand("words", "Manage list of words.")]
+    [HelpCommand]
     public async Task Words()
     {
         await RespondAsync("You can use a `*` at the beginning and/or end to partially match words, e.g. `monkey`, `*key`, `mon*`, and `*nke*` will all match **monkey**. Any other `*` will be treated as a normal character.", ephemeral: true);
