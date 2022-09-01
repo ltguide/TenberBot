@@ -40,11 +40,12 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
     }
 
     [SlashCommand("message-timer", "Send message on a timed delay.")]
-    [HelpCommand("`<channel>` `<message>` `<date-time>` `[image]`")]
+    [HelpCommand("`<channel>` `<message>` `<date-time>` `[pin]` `[image]`")]
     public async Task Timer(
         [ChannelTypes(ChannelType.Voice, ChannelType.Text)] IChannel channel,
         string message,
         [Summary("date-time")] DateTime dateTime,
+        bool pin = false,
         IAttachment? image = null)
     {
         var duration = dateTime.Subtract(DateTime.Now);
@@ -60,10 +61,11 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
             ChannelId = Context.Channel.Id,
             UserId = Context.User.Id,
             TargetChannelId = channel.Id,
+            Detail = message.Replace(@"\n", "\n"),
+            Pin = pin,
+            Duration = SharedFeatures.BaseDuration.AddSeconds(Math.Min(MaxDuration - 1, duration.TotalSeconds)),
             StartDate = DateTime.Now,
             FinishDate = DateTime.Now.AddSeconds(duration.TotalSeconds + 1),
-            Duration = SharedFeatures.BaseDuration.AddSeconds(Math.Min(MaxDuration - 1, duration.TotalSeconds)),
-            Detail = message.Replace(@"\n", "\n"),
         };
 
         if (image != null)
@@ -90,7 +92,7 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
 
     private async Task SendEmbed(MessageTimer messageTimer)
     {
-        var reply = await FollowupAsync($"I've set a timer to send your message to {messageTimer.TargetChannelId.GetChannelMention()}. It'll go off {TimestampTag.FromDateTime(messageTimer.FinishDate.ToUniversalTime(), TimestampTagStyles.LongDateTime)}.");
+        var reply = await FollowupAsync($"I've set a timer to send your message to {messageTimer.TargetChannelId.GetChannelMention()}{(messageTimer.Pin ? " and pin it" : "")}. It'll go off {TimestampTag.FromDateTime(messageTimer.FinishDate.ToUniversalTime(), TimestampTagStyles.LongDateTime)}.");
 
         // TODO revisit during InteractionParent revamp because we cant clear the first timer if a second is added (Set overwrites)
 

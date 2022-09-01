@@ -50,9 +50,9 @@ public class TimerCommandModule : ModuleBase<SocketCommandContext>
         {
             ChannelId = Context.Channel.Id,
             UserId = Context.User.Id,
+            Duration = SharedFeatures.BaseDuration.AddSeconds(Math.Min(MaxDuration - 1, duration.TotalSeconds)),
             StartDate = DateTime.Now,
             FinishDate = DateTime.Now.AddSeconds(duration.TotalSeconds),
-            Duration = SharedFeatures.BaseDuration.AddSeconds(Math.Min(MaxDuration - 1, duration.TotalSeconds)),
             Detail = message,
         };
 

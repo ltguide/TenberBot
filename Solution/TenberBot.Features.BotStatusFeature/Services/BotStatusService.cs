@@ -24,14 +24,21 @@ public class BotStatusService : DiscordClientService
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            var botStatus = await botStatusDataService.GetRandom();
+            try
+            {
+                var botStatus = await botStatusDataService.GetRandom();
 
-            if (botStatus != null)
-                await Client.SetGameAsync(botStatus.Text);
-            else
-                await Client.SetGameAsync("");
+                if (botStatus != null)
+                    await Client.SetGameAsync(botStatus.Text);
+                else
+                    await Client.SetGameAsync("");
 
-            await Task.Delay(TimeSpan.FromMinutes(4), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(4), stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "oops");
+            }
         }
     }
 }

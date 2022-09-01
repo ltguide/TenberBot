@@ -36,72 +36,78 @@ public class SprintService : DiscordClientService
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            var sprints = await sprintDataService.GetAllActive();
-
-            foreach (var sprint in sprints)
+            try
             {
-                if (sprint.GetNextStatus() is not SprintStatus status)
-                    continue;
+                var sprints = await sprintDataService.GetAllActive();
 
-                await sprintDataService.Update(sprint, new Sprint { SprintStatus = status, });
-
-                var parent = await interactionParentDataService.GetById(InteractionParentType.Sprint, sprint.ChannelId, sprint.UserId);
-
-                var channel = await Client.GetChannelAsync(sprint.ChannelId) as SocketTextChannel;
-
-                if (channel != null)
+                foreach (var sprint in sprints)
                 {
-                    var reference = parent == null ? null : new MessageReference(parent.MessageId);
+                    if (sprint.GetNextStatus() is not SprintStatus status)
+                        continue;
 
-                    if (status == SprintStatus.Finished)
-                        await channel.SendMessageAsync($"***That's a wrap!***\n\nHey, {sprint.UserMentions}, how'd ya'll do? ", messageReference: reference);
-                    else
-                    {
-                        var reply = await channel.SendMessageAsync($"**Here we go!** Your sprint is starting.\n\nHey, {sprint.UserMentions}, do your best! ", messageReference: reference);
-                        reply.DeleteSoon(TimeSpan.FromSeconds(15));
-                    }
-                }
+                    await sprintDataService.Update(sprint, new Sprint { SprintStatus = status, });
 
+                    var parent = await interactionParentDataService.GetById(InteractionParentType.Sprint, sprint.ChannelId, sprint.UserId);
 
-                if (parent == null)
-                    continue;
+                    var channel = await Client.GetChannelAsync(sprint.ChannelId) as SocketTextChannel;
 
-                if (sprint.SprintStatus == SprintStatus.Finished)
-                {
                     if (channel != null)
+                    {
+                        var reference = parent == null ? null : new MessageReference(parent.MessageId);
+
+                        if (status == SprintStatus.Finished)
+                            await channel.SendMessageAsync($"***That's a wrap!***\n\nHey, {sprint.UserMentions}, how'd ya'll do? ", messageReference: reference);
+                        else
+                        {
+                            var reply = await channel.SendMessageAsync($"**Here we go!** Your sprint is starting.\n\nHey, {sprint.UserMentions}, do your best! ", messageReference: reference);
+                            reply.DeleteSoon(TimeSpan.FromSeconds(15));
+                        }
+                    }
+
+
+                    if (parent == null)
+                        continue;
+
+                    if (sprint.SprintStatus == SprintStatus.Finished)
+                    {
+                        if (channel != null)
+                            await channel.GetAndModify(parent.MessageId, x =>
+                            {
+                                x.Embed = sprint.GetAsEmbed();
+                                x.Components = new ComponentBuilder().Build();
+                            });
+
+                        await interactionParentDataService.Delete(parent);
+                    }
+                    else if (channel != null)
                         await channel.GetAndModify(parent.MessageId, x =>
                         {
                             x.Embed = sprint.GetAsEmbed();
-                            x.Components = new ComponentBuilder().Build();
+                            x.Content = null;
                         });
-
-                    await interactionParentDataService.Delete(parent);
                 }
-                else if (channel != null)
-                    await channel.GetAndModify(parent.MessageId, x =>
-                    {
-                        x.Embed = sprint.GetAsEmbed();
-                        x.Content = null;
-                    });
-            }
 
-            taskCompletionSource = new();
+                taskCompletionSource = new();
 
-            try
-            {
-                var delay = GetDelay(sprints);
-
-                if (delay != 0)
+                try
                 {
-                    Logger.LogInformation($"SprintService next delay: {delay}");
+                    var delay = GetDelay(sprints);
 
-                    await taskCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(delay), stoppingToken).ConfigureAwait(false);
+                    if (delay != 0)
+                    {
+                        Logger.LogInformation($"SprintService next delay: {delay}");
+
+                        await taskCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(delay), stoppingToken).ConfigureAwait(false);
+                    }
+                    else
+                        await taskCompletionSource.Task.WaitAsync(stoppingToken).ConfigureAwait(false);
                 }
-                else
-                    await taskCompletionSource.Task.WaitAsync(stoppingToken).ConfigureAwait(false);
+                catch (TimeoutException)
+                { }
             }
-            catch (TimeoutException)
+            catch (Exception ex)
             {
+                Logger.LogError(ex, "oops");
             }
         }
     }

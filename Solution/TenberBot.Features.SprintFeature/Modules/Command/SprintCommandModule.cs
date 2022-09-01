@@ -86,9 +86,9 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
             ChannelId = Context.Channel.Id,
             UserId = Context.User.Id,
             SprintMode = settings.Mode,
+            Duration = SharedFeatures.BaseDuration.AddSeconds(Math.Min(MaxDuration - 1, duration.TotalSeconds)),
             StartDate = DateTime.Now.AddSeconds(180),
             FinishDate = DateTime.Now.AddSeconds(180 + duration.TotalSeconds),
-            Duration = SharedFeatures.BaseDuration.AddSeconds(Math.Min(MaxDuration - 1, duration.TotalSeconds)),
             Users = { new UserSprint { UserId = Context.User.Id, JoinDate = DateTime.Now, Message = message } },
         };
 

@@ -36,55 +36,61 @@ public class UserTimerService : DiscordClientService
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            var userTimers = await userTimerDataService.GetAllActive();
-
-            foreach (var userTimer in userTimers)
-            {
-                if (userTimer.GetNextStatus() is not UserTimerStatus status)
-                    continue;
-
-                await userTimerDataService.Update(userTimer, new UserTimer { UserTimerStatus = status, });
-
-                var parent = await interactionParentDataService.GetByReference(InteractionParentType.UserTimer, userTimer.UserTimerId.ToString());
-
-                var channel = await Client.GetChannelAsync(userTimer.ChannelId) as SocketTextChannel;
-
-                if (channel != null)
-                {
-                    var reference = parent == null ? null : new MessageReference(parent.MessageId);
-
-                    var detail = userTimer.Detail != null ? $"\n\nYou included the message: {userTimer.Detail}" : "";
-
-                    await channel.SendMessageAsync($"Hey, {userTimer.UserId.GetUserMention()}, your timer has run out.{detail}", messageReference: reference);
-                }
-
-
-                if (parent == null)
-                    continue;
-
-                if (channel != null)
-                    await channel.GetAndModify(parent.MessageId, x => x.Components = new ComponentBuilder().Build());
-
-                await interactionParentDataService.Delete(parent);
-            }
-
-            taskCompletionSource = new();
-
             try
             {
-                var delay = GetDelay(userTimers);
+                var userTimers = await userTimerDataService.GetAllActive();
 
-                if (delay != 0)
+                foreach (var userTimer in userTimers)
                 {
-                    Logger.LogInformation($"UserTimerService next delay: {delay}");
+                    if (userTimer.GetNextStatus() is not UserTimerStatus status)
+                        continue;
 
-                    await taskCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(delay), stoppingToken).ConfigureAwait(false);
+                    await userTimerDataService.Update(userTimer, new UserTimer { UserTimerStatus = status, });
+
+                    var parent = await interactionParentDataService.GetByReference(InteractionParentType.UserTimer, userTimer.UserTimerId.ToString());
+
+                    var channel = await Client.GetChannelAsync(userTimer.ChannelId) as SocketTextChannel;
+
+                    if (channel != null)
+                    {
+                        var reference = parent == null ? null : new MessageReference(parent.MessageId);
+
+                        var detail = userTimer.Detail != null ? $"\n\nYou included the message: {userTimer.Detail}" : "";
+
+                        await channel.SendMessageAsync($"Hey, {userTimer.UserId.GetUserMention()}, your timer has run out.{detail}", messageReference: reference);
+                    }
+
+
+                    if (parent == null)
+                        continue;
+
+                    if (channel != null)
+                        await channel.GetAndModify(parent.MessageId, x => x.Components = new ComponentBuilder().Build());
+
+                    await interactionParentDataService.Delete(parent);
                 }
-                else
-                    await taskCompletionSource.Task.WaitAsync(stoppingToken).ConfigureAwait(false);
+
+                taskCompletionSource = new();
+
+                try
+                {
+                    var delay = GetDelay(userTimers);
+
+                    if (delay != 0)
+                    {
+                        Logger.LogInformation($"UserTimerService next delay: {delay}");
+
+                        await taskCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(delay), stoppingToken).ConfigureAwait(false);
+                    }
+                    else
+                        await taskCompletionSource.Task.WaitAsync(stoppingToken).ConfigureAwait(false);
+                }
+                catch (TimeoutException)
+                { }
             }
-            catch (TimeoutException)
+            catch (Exception ex)
             {
+                Logger.LogError(ex, "oops");
             }
         }
     }

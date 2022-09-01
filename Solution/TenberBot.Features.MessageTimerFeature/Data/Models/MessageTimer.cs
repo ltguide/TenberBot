@@ -23,6 +23,8 @@ public class MessageTimer
 
     public string Detail { get; set; } = "\u200B";
 
+    public bool Pin { get; set; }
+
     public string? Filename { get; set; }
 
     public byte[]? Data { get; set; }
