@@ -35,7 +35,7 @@ public class BotStatusService : DiscordClientService
 
                 await Task.Delay(TimeSpan.FromMinutes(4), stoppingToken);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not TaskCanceledException)
             {
                 Logger.LogError(ex, "oops");
             }

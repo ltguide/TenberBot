@@ -88,7 +88,7 @@ public class UserTimerService : DiscordClientService
                 catch (TimeoutException)
                 { }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not TaskCanceledException)
             {
                 Logger.LogError(ex, "oops");
             }

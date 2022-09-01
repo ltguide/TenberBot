@@ -56,7 +56,6 @@ internal class InteractionHandler : DiscordClientService
             await interactionService.RegisterCommandsToGuildAsync(configuration.GetValue<ulong>("devguild"));
         else
             await interactionService.RegisterCommandsGloballyAsync();
-
     }
 
     private async Task InteractionCreated(SocketInteraction arg)
