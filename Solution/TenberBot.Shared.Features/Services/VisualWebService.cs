@@ -34,9 +34,9 @@ public class VisualWebService
 
             var mediaType = response.Content.Headers.ContentType?.MediaType ?? "";
 
-            if (mediaType.StartsWith("image/") == false)
+            if (mediaType.StartsWith("image/") == false && mediaType.StartsWith("video/") == false)
             {
-                logger.LogInformation($"Got {mediaType} (not an image) from: {url}");
+                logger.LogInformation($"Got {mediaType} (not a visual) from: {url}");
                 return null;
             }
 

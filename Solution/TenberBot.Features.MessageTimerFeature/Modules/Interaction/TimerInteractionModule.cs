@@ -40,12 +40,13 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
     }
 
     [SlashCommand("message-timer", "Send message on a timed delay.")]
-    [HelpCommand("`<channel>` `<message>` `<date-time>` `[pin]` `[image]`")]
+    [HelpCommand("`<channel>` `<message>` `<date-time>` `[pin]` `[url|image]`")]
     public async Task Timer(
         [ChannelTypes(ChannelType.Voice, ChannelType.Text)] IChannel channel,
         string message,
         [Summary("date-time")] DateTime dateTime,
         bool pin = false,
+        string? url = null,
         IAttachment? image = null)
     {
         var duration = dateTime.Subtract(DateTime.Now);
@@ -69,11 +70,14 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
         };
 
         if (image != null)
+            url = image.Url;
+
+        if (url != null)
         {
-            var file = await visualWebService.GetFileAttachment(image.Url);
+            var file = await visualWebService.GetFileAttachment(url);
             if (file != null)
             {
-                messageTimer.Filename = image.Filename;
+                messageTimer.Filename = file.Value.FileName;
                 messageTimer.Data = file.Value.GetBytes();
             }
         }
