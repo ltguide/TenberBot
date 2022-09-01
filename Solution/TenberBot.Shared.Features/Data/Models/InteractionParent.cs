@@ -7,7 +7,7 @@ using TenberBot.Shared.Features.Data.Enums;
 namespace TenberBot.Shared.Features.Data.Models;
 
 [Table("InteractionParents")]
-[Index(nameof(InteractionParentType), nameof(ChannelId), nameof(UserId), IsUnique = true)]
+[Index(nameof(InteractionParentType), nameof(ChannelId), nameof(UserId))]
 [Index(nameof(InteractionParentType), nameof(MessageId), IsUnique = true)]
 [Index(nameof(GuildId))]
 public class InteractionParent

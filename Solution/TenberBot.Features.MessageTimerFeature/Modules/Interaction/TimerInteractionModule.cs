@@ -94,9 +94,7 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
     {
         var reply = await FollowupAsync($"I've set a timer to send your message to {messageTimer.TargetChannelId.GetChannelMention()}{(messageTimer.Pin ? " and pin it" : "")}. It'll go off {TimestampTag.FromDateTime(messageTimer.FinishDate.ToUniversalTime(), TimestampTagStyles.LongDateTime)}.");
 
-        // TODO revisit during InteractionParent revamp because we cant clear the first timer if a second is added (Set overwrites)
-
-        var parent = await interactionParentDataService.Set(new InteractionParent
+        await interactionParentDataService.Add(new InteractionParent
         {
             GuildId = Context.Guild.Id,
             ChannelId = messageTimer.ChannelId,
