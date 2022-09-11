@@ -19,9 +19,9 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
-		<PackageReference Include="NLog" Version="5.0.1" />
-		<PackageReference Include="NLog.Database" Version="5.0.1" />
-		<PackageReference Include="NLog.Extensions.Logging" Version="5.0.1" />
+		<PackageReference Include="NLog" Version="5.0.4" />
+		<PackageReference Include="NLog.Database" Version="5.0.4" />
+		<PackageReference Include="NLog.Extensions.Logging" Version="5.0.4" />
 		<PackageReference Include="TimeSpanParserUtil" Version="1.2.0" />
 	</ItemGroup>
 
