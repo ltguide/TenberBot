@@ -3,9 +3,9 @@ using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Processing;
-using System.Reflection;
 using TenberBot.Features.ExperienceFeature.Data.Models;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
+using TenberBot.Shared.ImageGeneration;
 using Color = SixLabors.ImageSharp.Color;
 
 namespace TenberBot.Features.ExperienceFeature.Extensions.ImageSharp;
@@ -19,26 +19,14 @@ public static class RankCardImageSharpExtensions
         SocketUser user,
         UserLevel userLevel)
     {
-        var assembly = Assembly.GetExecutingAssembly()!;
-        var assemblyName = assembly.GetName().Name;
+        var fonts = new ImageFonts();
 
-        var fontCollection = new FontCollection();
-
-        var segoeui = fontCollection.Add(assembly.GetManifestResourceStream($"{assemblyName}.Fonts.segoeui.ttf")!);
-        var seguiemj = fontCollection.Add(assembly.GetManifestResourceStream($"{assemblyName}.Fonts.seguiemj.ttf")!);
-        var seguihis = fontCollection.Add(assembly.GetManifestResourceStream($"{assemblyName}.Fonts.seguihis.ttf")!);
-
-        fontCollection.Add(assembly.GetManifestResourceStream($"{assemblyName}.Fonts.segoeuii.ttf")!);
-        fontCollection.Add(assembly.GetManifestResourceStream($"{assemblyName}.Fonts.segoeuib.ttf")!);
-
-        var fallbackFontFamilies = new List<FontFamily>() { seguiemj, seguihis };
-
-        var font24 = segoeui.CreateFont(24);
-        var font24b = segoeui.CreateFont(24, FontStyle.Bold);
-        var font28 = segoeui.CreateFont(28);
-        var font28b = segoeui.CreateFont(28, FontStyle.Bold);
-        var font24i = segoeui.CreateFont(24, FontStyle.Italic);
-        var font32b = segoeui.CreateFont(32, FontStyle.Bold);
+        var font24 = fonts.Segoeui.CreateFont(24);
+        var font24b = fonts.Segoeui.CreateFont(24, FontStyle.Bold);
+        var font28 = fonts.Segoeui.CreateFont(28);
+        var font28b = fonts.Segoeui.CreateFont(28, FontStyle.Bold);
+        var font24i = fonts.Segoeui.CreateFont(24, FontStyle.Italic);
+        var font32b = fonts.Segoeui.CreateFont(32, FontStyle.Bold);
 
         return processingContext
             // Guild Name
@@ -47,7 +35,7 @@ public static class RankCardImageSharpExtensions
                 {
                     Origin = new PointF(795, 0),
                     HorizontalAlignment = HorizontalAlignment.Right,
-                    FallbackFontFamilies = fallbackFontFamilies,
+                    FallbackFontFamilies = fonts.FallbackFontFamilies,
                 },
                 guild.Name,
                 Color.ParseHex(card.GuildColor)
@@ -57,7 +45,7 @@ public static class RankCardImageSharpExtensions
                 new TextOptions(font32b)
                 {
                     Origin = new PointF(210, 40),
-                    FallbackFontFamilies = fallbackFontFamilies,
+                    FallbackFontFamilies = fonts.FallbackFontFamilies,
                 },
                 user.GetDisplayName(),
                 Color.ParseHex(card.UserColor)
@@ -68,7 +56,7 @@ public static class RankCardImageSharpExtensions
                 {
                     Origin = new PointF(5, 268),
                     VerticalAlignment = VerticalAlignment.Bottom,
-                    FallbackFontFamilies = fallbackFontFamilies,
+                    FallbackFontFamilies = fonts.FallbackFontFamilies,
                 },
                 card.Name,
                 Color.ParseHex(card.RoleColor)

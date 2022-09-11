@@ -13,6 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenberBot", "TenberBot\Tenb
 		{4FAF0088-CEE4-4F5B-AF7F-94C9D23E4BCD} = {4FAF0088-CEE4-4F5B-AF7F-94C9D23E4BCD}
 		{534DB886-ABBF-4FBA-944F-CEDB87DD440B} = {534DB886-ABBF-4FBA-944F-CEDB87DD440B}
 		{5E46AFDF-F5CD-4649-AF34-66DE3A58AD72} = {5E46AFDF-F5CD-4649-AF34-66DE3A58AD72}
+		{6CDD7254-A4C1-4A97-A5F2-3768C9C01668} = {6CDD7254-A4C1-4A97-A5F2-3768C9C01668}
 		{8C85C32D-11A7-449D-B153-9DC4F178B12F} = {8C85C32D-11A7-449D-B153-9DC4F178B12F}
 		{8E56EE04-5D07-4213-866F-C3B699F51CDF} = {8E56EE04-5D07-4213-866F-C3B699F51CDF}
 		{9F266641-62D7-45B0-AB07-5ECA7F954811} = {9F266641-62D7-45B0-AB07-5ECA7F954811}
@@ -61,7 +62,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenberBot.Features.Highligh
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenberBot.Features.MessageTimerFeature", "TenberBot.Features.MessageTimerFeature\TenberBot.Features.MessageTimerFeature.csproj", "{4FAF0088-CEE4-4F5B-AF7F-94C9D23E4BCD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenberBot.Features.DebugFeature", "TenberBot.Features.DebugFeature\TenberBot.Features.DebugFeature.csproj", "{CAC22042-5510-4E14-B138-4503D0BCE37A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenberBot.Features.DebugFeature", "TenberBot.Features.DebugFeature\TenberBot.Features.DebugFeature.csproj", "{CAC22042-5510-4E14-B138-4503D0BCE37A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenberBot.Features.FortuneFeature", "TenberBot.Features.FortuneFeature\TenberBot.Features.FortuneFeature.csproj", "{6CDD7254-A4C1-4A97-A5F2-3768C9C01668}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenberBot.Shared.ImageGeneration", "TenberBot.Shared.ImageGeneration\TenberBot.Shared.ImageGeneration.csproj", "{B437EFC1-346B-4A34-A061-B73A22890501}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -149,6 +154,14 @@ Global
 		{CAC22042-5510-4E14-B138-4503D0BCE37A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CAC22042-5510-4E14-B138-4503D0BCE37A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CAC22042-5510-4E14-B138-4503D0BCE37A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6CDD7254-A4C1-4A97-A5F2-3768C9C01668}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6CDD7254-A4C1-4A97-A5F2-3768C9C01668}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6CDD7254-A4C1-4A97-A5F2-3768C9C01668}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6CDD7254-A4C1-4A97-A5F2-3768C9C01668}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B437EFC1-346B-4A34-A061-B73A22890501}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B437EFC1-346B-4A34-A061-B73A22890501}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B437EFC1-346B-4A34-A061-B73A22890501}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B437EFC1-346B-4A34-A061-B73A22890501}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

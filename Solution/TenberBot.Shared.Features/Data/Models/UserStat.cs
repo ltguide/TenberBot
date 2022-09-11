@@ -44,4 +44,6 @@ public class UserStat
     public string CoinFlipStreakText => $"{CoinFlipStreak} flip{(CoinFlipStreak != 1 ? "s" : "")}";
 
     public int TimersCreated { get; set; }
+
+    public int Fortunes { get; set; }
 }

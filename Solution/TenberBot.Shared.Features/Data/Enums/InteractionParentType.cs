@@ -12,4 +12,5 @@ public enum InteractionParentType
     HighFive,
     Pat,
     MessageTimer,
+    Fortune,
 }
