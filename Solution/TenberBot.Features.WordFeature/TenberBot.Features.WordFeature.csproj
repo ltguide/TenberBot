@@ -19,7 +19,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="CXuesong.MW.WikiClientLibrary" Version="0.8.0-int.6" />
-		<PackageReference Include="HtmlAgilityPack" Version="1.11.45" />
+		<PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
 	</ItemGroup>
 
 </Project>
