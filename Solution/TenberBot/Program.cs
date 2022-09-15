@@ -31,7 +31,7 @@ public class Program
                     LogLevel = logLevel,
                     MessageCacheSize = 200,
                     AlwaysDownloadUsers = true,
-                    GatewayIntents = (GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers) & ~GatewayIntents.GuildScheduledEvents & ~GatewayIntents.GuildInvites,
+                    GatewayIntents = (GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers | GatewayIntents.MessageContent) & ~GatewayIntents.GuildScheduledEvents & ~GatewayIntents.GuildInvites,
                     UseInteractionSnowflakeDate = false,
                 };
 
