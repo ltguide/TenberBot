@@ -55,7 +55,7 @@ public class ChannelExperienceInteractionModule : InteractionModuleBase<SocketIn
         else if (eventEnabled == false)
             settings.Mode &= ~ExperienceModes.Event;
 
-        await Set(settings);
+        await Set(channel, settings);
 
         await RespondAsync($"Channel settings for *experience* in {channel.Id.GetChannelMention()}:{GetExperienceModeText(channel, ExperienceModes.Normal)}{GetExperienceModeText(channel, ExperienceModes.Event)}");
     }
@@ -108,22 +108,22 @@ public class ChannelExperienceInteractionModule : InteractionModuleBase<SocketIn
             settings.VoiceMinuteStream = voiceMinuteStream.Value;
 
         if (mode == ExperienceModeChoice.Normal)
-            await Set((NormalExperienceModeChannelSettings)settings);
+            await Set(channel, (NormalExperienceModeChannelSettings)settings);
         else
-            await Set((EventExperienceModeChannelSettings)settings);
+            await Set(channel, (EventExperienceModeChannelSettings)settings);
 
         await RespondAsync($"Channel settings for *experience* in {channel.Id.GetChannelMention()}:{GetExperienceModeText(channel, ExperienceModes.Normal)}{GetExperienceModeText(channel, ExperienceModes.Event)}");
     }
 
-    private async Task Set<T>(T value)
+    private async Task Set<T>(IChannel channel, T value)
     {
         var key = CacheService.GetSettingsKey<T>();
 
-        cacheService.Cache.Set(Context.Channel, key, value);
+        cacheService.Cache.Set(channel, key, value);
 
-        var setting = await channelSettingDataService.GetByName(Context.Channel.Id, key);
+        var setting = await channelSettingDataService.GetByName(channel.Id, key);
         if (setting == null)
-            await channelSettingDataService.Add(new ChannelSetting { GuildId = Context.Guild.Id, ChannelId = Context.Channel.Id, Name = key, }.SetValue(value));
+            await channelSettingDataService.Add(new ChannelSetting { GuildId = Context.Guild.Id, ChannelId = channel.Id, Name = key, }.SetValue(value));
         else
             await channelSettingDataService.Update(setting, new ChannelSetting().SetValue(value));
     }
@@ -135,7 +135,7 @@ public class ChannelExperienceInteractionModule : InteractionModuleBase<SocketIn
             var settings = GetExperienceModeChannelSettings(channel, mode == ExperienceModes.Normal ? ExperienceModeChoice.Normal : ExperienceModeChoice.Event);
 
             var voice = "";
-            if (Context.Channel.GetChannelType() == ChannelType.Voice)
+            if (channel.GetChannelType() == ChannelType.Voice)
                 voice = $"\n\n> **voice-minute**: {settings.VoiceMinute}\n> **voice-minute-video**: {settings.VoiceMinuteVideo}\n> **voice-minute-stream**: {settings.VoiceMinuteStream}";
 
             return $"\n\n> **__{mode}__**: Enabled\n> **message**: {settings.Message}\n> **message-line**: {settings.MessageLine}\n> **message-word**: {settings.MessageWord}\n> **message-character**: {settings.MessageCharacter}\n> **message-attachment**: {settings.MessageAttachment}{voice}";
