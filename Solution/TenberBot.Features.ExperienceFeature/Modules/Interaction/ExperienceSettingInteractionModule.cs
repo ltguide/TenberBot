@@ -7,6 +7,7 @@ using TenberBot.Shared.Features.Attributes.Modules;
 using TenberBot.Shared.Features.Data.Models;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.Caches;
+using TenberBot.Shared.Features.Extensions.Mentions;
 using TenberBot.Shared.Features.Services;
 
 namespace TenberBot.Features.ExperienceFeature.Modules.Interaction;
@@ -32,15 +33,17 @@ public class ChannelExperienceInteractionModule : InteractionModuleBase<SocketIn
     [HelpCommand("`[normal]` `[event]`")]
     public async Task SetExperience(
         [Summary("normal")] bool? normalEnabled = null,
-        [Summary("event")] bool? eventEnabled = null)
+        [Summary("event")] bool? eventEnabled = null,
+        IChannel? channel = null)
     {
-        if (Context.Channel is SocketThreadChannel)
-        {
-            await RespondAsync("Threads use the settings of their parent channel.", ephemeral: true);
-            return;
-        }
+        channel ??= Context.Channel;
 
-        var settings = cacheService.Get<ExperienceChannelSettings>(Context.Channel);
+        if (channel is SocketThreadChannel thread)
+            channel = thread.ParentChannel;
+
+        await cacheService.Channel(channel);
+
+        var settings = cacheService.Get<ExperienceChannelSettings>(channel);
 
         if (normalEnabled == true)
             settings.Mode |= ExperienceModes.Normal;
@@ -54,29 +57,31 @@ public class ChannelExperienceInteractionModule : InteractionModuleBase<SocketIn
 
         await Set(settings);
 
-        await RespondAsync($"Channel settings for *experience*:{GetExperienceModeText(ExperienceModes.Normal)}{GetExperienceModeText(ExperienceModes.Event)}");
+        await RespondAsync($"Channel settings for *experience* in {channel.Id.GetChannelMention()}:{GetExperienceModeText(channel, ExperienceModes.Normal)}{GetExperienceModeText(channel, ExperienceModes.Event)}");
     }
 
     [SlashCommand("experience-values", "Configure the experience values.")]
     [HelpCommand("`<mode>` `[various ...]`")]
     public async Task SetExperienceValues(
-    ExperienceModeChoice mode,
-    decimal? message = null,
-    [Summary("message-line")] decimal? messageLine = null,
-    [Summary("message-word")] decimal? messageWord = null,
-    [Summary("message-character")] decimal? messageCharacter = null,
-    [Summary("message-attachment")] decimal? messageAttachment = null,
-    [Summary("voice-minute")] decimal? voiceMinute = null,
-    [Summary("voice-minute-video")] decimal? voiceMinuteVideo = null,
-    [Summary("voice-minute-stream")] decimal? voiceMinuteStream = null)
+        ExperienceModeChoice mode,
+        decimal? message = null,
+        [Summary("message-line")] decimal? messageLine = null,
+        [Summary("message-word")] decimal? messageWord = null,
+        [Summary("message-character")] decimal? messageCharacter = null,
+        [Summary("message-attachment")] decimal? messageAttachment = null,
+        [Summary("voice-minute")] decimal? voiceMinute = null,
+        [Summary("voice-minute-video")] decimal? voiceMinuteVideo = null,
+        [Summary("voice-minute-stream")] decimal? voiceMinuteStream = null,
+        IChannel? channel = null)
     {
-        if (Context.Channel is SocketThreadChannel)
-        {
-            await RespondAsync("Threads use the settings of their parent channel.", ephemeral: true);
-            return;
-        }
+        channel ??= Context.Channel;
 
-        var settings = GetExperienceModeChannelSettings(mode);
+        if (channel is SocketThreadChannel thread)
+            channel = thread.ParentChannel;
+
+        await cacheService.Channel(channel);
+
+        var settings = GetExperienceModeChannelSettings(channel, mode);
 
         if (message != null)
             settings.Message = message.Value;
@@ -107,7 +112,7 @@ public class ChannelExperienceInteractionModule : InteractionModuleBase<SocketIn
         else
             await Set((EventExperienceModeChannelSettings)settings);
 
-        await RespondAsync($"Channel settings for *experience*:{GetExperienceModeText(ExperienceModes.Normal)}{GetExperienceModeText(ExperienceModes.Event)}");
+        await RespondAsync($"Channel settings for *experience* in {channel.Id.GetChannelMention()}:{GetExperienceModeText(channel, ExperienceModes.Normal)}{GetExperienceModeText(channel, ExperienceModes.Event)}");
     }
 
     private async Task Set<T>(T value)
@@ -123,11 +128,11 @@ public class ChannelExperienceInteractionModule : InteractionModuleBase<SocketIn
             await channelSettingDataService.Update(setting, new ChannelSetting().SetValue(value));
     }
 
-    private string GetExperienceModeText(ExperienceModes mode)
+    private string GetExperienceModeText(IChannel channel, ExperienceModes mode)
     {
-        if (cacheService.Get<ExperienceChannelSettings>(Context.Channel).Mode.HasFlag(mode))
+        if (cacheService.Get<ExperienceChannelSettings>(channel).Mode.HasFlag(mode))
         {
-            var settings = GetExperienceModeChannelSettings(mode == ExperienceModes.Normal ? ExperienceModeChoice.Normal : ExperienceModeChoice.Event);
+            var settings = GetExperienceModeChannelSettings(channel, mode == ExperienceModes.Normal ? ExperienceModeChoice.Normal : ExperienceModeChoice.Event);
 
             var voice = "";
             if (Context.Channel.GetChannelType() == ChannelType.Voice)
@@ -139,12 +144,12 @@ public class ChannelExperienceInteractionModule : InteractionModuleBase<SocketIn
             return $"\n\n> **__{mode}__**: Disabled";
     }
 
-    private IExperienceModeChannelSettings GetExperienceModeChannelSettings(ExperienceModeChoice mode)
+    private IExperienceModeChannelSettings GetExperienceModeChannelSettings(IChannel channel, ExperienceModeChoice mode)
     {
         return mode switch
         {
-            ExperienceModeChoice.Normal => cacheService.Get<NormalExperienceModeChannelSettings>(Context.Channel),
-            ExperienceModeChoice.Event => cacheService.Get<EventExperienceModeChannelSettings>(Context.Channel),
+            ExperienceModeChoice.Normal => cacheService.Get<NormalExperienceModeChannelSettings>(channel),
+            ExperienceModeChoice.Event => cacheService.Get<EventExperienceModeChannelSettings>(channel),
             _ => throw new NotImplementedException(),
         };
     }

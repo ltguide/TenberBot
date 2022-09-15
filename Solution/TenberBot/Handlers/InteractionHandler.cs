@@ -3,6 +3,7 @@ using Discord.Addons.Hosting;
 using Discord.Addons.Hosting.Util;
 using Discord.Interactions;
 using Discord.WebSocket;
+using System.Threading.Channels;
 using TenberBot.Parameters;
 using TenberBot.Shared.Features;
 using TenberBot.Shared.Features.Services;
@@ -65,6 +66,9 @@ internal class InteractionHandler : DiscordClientService
             var context = new SocketInteractionContext(Client, arg);
 
             await cacheService.Channel(context.Channel);
+
+            if (context.Channel is SocketThreadChannel thread)
+                await cacheService.Channel(thread.ParentChannel);
 
             await interactionService.ExecuteCommandAsync(context, provider);
         }
