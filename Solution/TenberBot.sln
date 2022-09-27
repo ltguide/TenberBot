@@ -16,6 +16,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenberBot", "TenberBot\Tenb
 		{6CDD7254-A4C1-4A97-A5F2-3768C9C01668} = {6CDD7254-A4C1-4A97-A5F2-3768C9C01668}
 		{8C85C32D-11A7-449D-B153-9DC4F178B12F} = {8C85C32D-11A7-449D-B153-9DC4F178B12F}
 		{8E56EE04-5D07-4213-866F-C3B699F51CDF} = {8E56EE04-5D07-4213-866F-C3B699F51CDF}
+		{97DC2CDB-A013-4A91-9F03-FC0767998F1F} = {97DC2CDB-A013-4A91-9F03-FC0767998F1F}
 		{9F266641-62D7-45B0-AB07-5ECA7F954811} = {9F266641-62D7-45B0-AB07-5ECA7F954811}
 		{A0AABFB5-7631-43B0-86AF-934073F64202} = {A0AABFB5-7631-43B0-86AF-934073F64202}
 		{BFCE2BF0-896B-4452-B828-F6DA629D84E8} = {BFCE2BF0-896B-4452-B828-F6DA629D84E8}
@@ -64,9 +65,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenberBot.Features.MessageT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenberBot.Features.DebugFeature", "TenberBot.Features.DebugFeature\TenberBot.Features.DebugFeature.csproj", "{CAC22042-5510-4E14-B138-4503D0BCE37A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenberBot.Features.FortuneFeature", "TenberBot.Features.FortuneFeature\TenberBot.Features.FortuneFeature.csproj", "{6CDD7254-A4C1-4A97-A5F2-3768C9C01668}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenberBot.Features.FortuneFeature", "TenberBot.Features.FortuneFeature\TenberBot.Features.FortuneFeature.csproj", "{6CDD7254-A4C1-4A97-A5F2-3768C9C01668}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenberBot.Shared.ImageGeneration", "TenberBot.Shared.ImageGeneration\TenberBot.Shared.ImageGeneration.csproj", "{B437EFC1-346B-4A34-A061-B73A22890501}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenberBot.Shared.ImageGeneration", "TenberBot.Shared.ImageGeneration\TenberBot.Shared.ImageGeneration.csproj", "{B437EFC1-346B-4A34-A061-B73A22890501}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenberBot.Features.AuditFeature", "TenberBot.Features.AuditFeature\TenberBot.Features.AuditFeature.csproj", "{97DC2CDB-A013-4A91-9F03-FC0767998F1F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -162,6 +165,10 @@ Global
 		{B437EFC1-346B-4A34-A061-B73A22890501}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B437EFC1-346B-4A34-A061-B73A22890501}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B437EFC1-346B-4A34-A061-B73A22890501}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97DC2CDB-A013-4A91-9F03-FC0767998F1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97DC2CDB-A013-4A91-9F03-FC0767998F1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97DC2CDB-A013-4A91-9F03-FC0767998F1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97DC2CDB-A013-4A91-9F03-FC0767998F1F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
