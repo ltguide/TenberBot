@@ -29,6 +29,9 @@ namespace TenberBot.Features.AuditFeature.Services
 
         private async Task UserVoiceStateUpdated(SocketUser socketUser, SocketVoiceState before, SocketVoiceState after)
         {
+            if (before.VoiceChannel?.Id == after.VoiceChannel?.Id)
+                return;
+
             if (before.VoiceChannel != null)
             {
                 var embed = new EmbedBuilder
@@ -39,8 +42,6 @@ namespace TenberBot.Features.AuditFeature.Services
                 }
                 .WithCurrentTimestamp()
                 .Build();
-
-                Console.WriteLine(before.VoiceChannel.ConnectedUsers.Count);
 
                 await SendToChannel(before.VoiceChannel, embed);
             }
