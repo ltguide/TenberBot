@@ -38,7 +38,6 @@ namespace TenberBot.Features.AuditFeature.Services
                 {
                     Author = socketUser.GetEmbedAuthor("left voice"),
                     Color = Color.Red,
-                    Description = "Hope to see you again!",
                     Footer = new EmbedFooterBuilder { Text = $"{socketUser.Username}#{socketUser.Discriminator}", },
                 }
                 .WithCurrentTimestamp()
@@ -49,17 +48,18 @@ namespace TenberBot.Features.AuditFeature.Services
 
             if (after.VoiceChannel != null)
             {
-                var embed = new EmbedBuilder
+                var embedBuilder = new EmbedBuilder
                 {
                     Author = socketUser.GetEmbedAuthor("joined voice"),
                     Color = Color.Green,
-                    Description = after.VoiceChannel.ConnectedUsers.Count == 1 ? "You are the first one in here. Send out a voice ping!" : "Welcome to the party!",
                     Footer = new EmbedFooterBuilder { Text = $"{socketUser.Username}#{socketUser.Discriminator}", },
                 }
-                .WithCurrentTimestamp()
-                .Build();
+                .WithCurrentTimestamp();
 
-                await SendToChannel(after.VoiceChannel, embed);
+                if (after.VoiceChannel.ConnectedUsers.Count == 1)
+                    embedBuilder.WithDescription("You are the first one in here. Send out a voice ping!");
+
+                await SendToChannel(after.VoiceChannel, embedBuilder.Build());
             }
         }
 
