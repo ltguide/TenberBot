@@ -35,7 +35,10 @@ public class AO3Story : Story
             story.Name = $"[{preface.SelectSingleNode("h2").InnerText.Trim()}]({url})";
 
             var author = preface.SelectSingleNode("h3/a");
-            story.Author = $"[{author.InnerText}]({BaseHref}{author.GetAttributeValue("href", "")})";
+            if (author != null)
+                story.Author = $"[{author.InnerText}]({BaseHref}{author.GetAttributeValue("href", "")})";
+            else
+                story.Author = preface.SelectSingleNode("h3").InnerText.Trim();
 
             story.Summary = converter.Convert(preface.SelectSingleNode("//blockquote").InnerHtml);
 
