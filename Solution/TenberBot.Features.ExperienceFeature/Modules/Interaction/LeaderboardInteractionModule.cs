@@ -46,8 +46,10 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
 
         view.LeaderboardType = Enum.Parse<LeaderboardType>(leaderboardType, true);
 
-        if (view.LeaderboardType == LeaderboardType.Event && cacheService.Get<LeaderboardServerSettings>(Context.Guild).DisplayEvent == false)
+        if ((view.LeaderboardType == LeaderboardType.EventA && cacheService.Get<LeaderboardServerSettings>(Context.Guild).DisplayEventA == false)
+            || (view.LeaderboardType == LeaderboardType.EventB && cacheService.Get<LeaderboardServerSettings>(Context.Guild).DisplayEventB == false))
             view.LeaderboardType = LeaderboardType.Message;
+
 
         view.MinimumExperience = view.CalcMinimumExperience();
         view.CurrentPage = 0;
@@ -85,7 +87,8 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
 
         var view = parent.GetReference<LeaderboardView>()!;
 
-        if (view.LeaderboardType == LeaderboardType.Event && cacheService.Get<LeaderboardServerSettings>(Context.Guild).DisplayEvent == false)
+        if ((view.LeaderboardType == LeaderboardType.EventA && cacheService.Get<LeaderboardServerSettings>(Context.Guild).DisplayEventA == false)
+            || (view.LeaderboardType == LeaderboardType.EventB && cacheService.Get<LeaderboardServerSettings>(Context.Guild).DisplayEventB == false))
         {
             await View(LeaderboardType.Message.ToString(), messageId);
             return;
@@ -121,9 +124,10 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
 
         var viewButtons = leaderboardType switch
         {
-            LeaderboardType.Message => ViewButtons.Voice | ViewButtons.Event,
-            LeaderboardType.Voice => ViewButtons.Message | ViewButtons.Event,
-            LeaderboardType.Event => ViewButtons.Message | ViewButtons.Voice,
+            LeaderboardType.Message => ViewButtons.Voice | ViewButtons.EventA | ViewButtons.EventB,
+            LeaderboardType.Voice => ViewButtons.Message | ViewButtons.EventA | ViewButtons.EventB,
+            LeaderboardType.EventA => ViewButtons.Message | ViewButtons.Voice | ViewButtons.EventB,
+            LeaderboardType.EventB => ViewButtons.Message | ViewButtons.Voice | ViewButtons.EventA,
             _ => ViewButtons.None,
         };
 
@@ -133,8 +137,11 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
         if (viewButtons.HasFlag(ViewButtons.Voice))
             componentBuilder.WithButton("Voice", $"leaderboard:view-voice,{messageId}", ButtonStyle.Secondary, new Emoji("🎤"), row: 1);
 
-        if (viewButtons.HasFlag(ViewButtons.Event) && cacheService.Get<LeaderboardServerSettings>(Context.Guild).DisplayEvent)
-            componentBuilder.WithButton("Event", $"leaderboard:view-event,{messageId}", ButtonStyle.Secondary, new Emoji("🎟"));
+        if (viewButtons.HasFlag(ViewButtons.EventA) && cacheService.Get<LeaderboardServerSettings>(Context.Guild).DisplayEventA)
+            componentBuilder.WithButton("Event A", $"leaderboard:view-eventa,{messageId}", ButtonStyle.Secondary, new Emoji("🎟"));
+
+        if (viewButtons.HasFlag(ViewButtons.EventB) && cacheService.Get<LeaderboardServerSettings>(Context.Guild).DisplayEventB)
+            componentBuilder.WithButton("Event B", $"leaderboard:view-eventb,{messageId}", ButtonStyle.Secondary, new Emoji("🎫"));
 
         componentBuilder.WithButton(customId: $"leaderboard:page-refresh,{messageId}", style: ButtonStyle.Secondary, emote: new Emoji("🔁"), row: 1);
 
@@ -193,6 +200,7 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
         None = 0,
         Message = 1 << 0,
         Voice = 1 << 1,
-        Event = 1 << 2,
+        EventA = 1 << 2,
+        EventB = 1 << 3,
     }
 }

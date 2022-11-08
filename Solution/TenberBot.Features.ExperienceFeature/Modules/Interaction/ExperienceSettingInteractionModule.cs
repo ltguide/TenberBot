@@ -30,10 +30,11 @@ public class ChannelExperienceInteractionModule : InteractionModuleBase<SocketIn
     }
 
     [SlashCommand("modes", "Configure the experience mode.")]
-    [HelpCommand("`[normal]` `[event]`")]
+    [HelpCommand("`[normal]` `[event-a]` `[event-b]`")]
     public async Task SetExperience(
         [Summary("normal")] bool? normalEnabled = null,
-        [Summary("event")] bool? eventEnabled = null,
+        [Summary("event-a")] bool? eventAEnabled = null,
+        [Summary("event-b")] bool? eventBEnabled = null,
         IChannel? channel = null)
     {
         channel ??= Context.Channel;
@@ -50,14 +51,19 @@ public class ChannelExperienceInteractionModule : InteractionModuleBase<SocketIn
         else if (normalEnabled == false)
             settings.Mode &= ~ExperienceModes.Normal;
 
-        if (eventEnabled == true)
-            settings.Mode |= ExperienceModes.Event;
-        else if (eventEnabled == false)
-            settings.Mode &= ~ExperienceModes.Event;
+        if (eventAEnabled == true)
+            settings.Mode |= ExperienceModes.EventA;
+        else if (eventAEnabled == false)
+            settings.Mode &= ~ExperienceModes.EventA;
+
+        if (eventBEnabled == true)
+            settings.Mode |= ExperienceModes.EventB;
+        else if (eventBEnabled == false)
+            settings.Mode &= ~ExperienceModes.EventB;
 
         await Set(channel, settings);
 
-        await RespondAsync($"Channel settings for *experience* in {channel.Id.GetChannelMention()}:{GetExperienceModeText(channel, ExperienceModes.Normal)}{GetExperienceModeText(channel, ExperienceModes.Event)}");
+        await RespondAsync($"Channel settings for *experience* in {channel.Id.GetChannelMention()}:{GetExperienceModeText(channel, ExperienceModes.Normal)}{GetExperienceModeText(channel, ExperienceModes.EventA)}{GetExperienceModeText(channel, ExperienceModes.EventB)}");
     }
 
     [SlashCommand("experience-values", "Configure the experience values.")]
@@ -112,7 +118,7 @@ public class ChannelExperienceInteractionModule : InteractionModuleBase<SocketIn
         else
             await Set(channel, (EventExperienceModeChannelSettings)settings);
 
-        await RespondAsync($"Channel settings for *experience* in {channel.Id.GetChannelMention()}:{GetExperienceModeText(channel, ExperienceModes.Normal)}{GetExperienceModeText(channel, ExperienceModes.Event)}");
+        await RespondAsync($"Channel settings for *experience* in {channel.Id.GetChannelMention()}:{GetExperienceModeText(channel, ExperienceModes.Normal)}{GetExperienceModeText(channel, ExperienceModes.EventA)}{GetExperienceModeText(channel, ExperienceModes.EventB)}");
     }
 
     private async Task Set<T>(IChannel channel, T value)

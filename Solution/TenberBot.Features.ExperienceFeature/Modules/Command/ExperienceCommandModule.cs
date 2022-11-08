@@ -103,8 +103,11 @@ public class ExperienceCommandModule : ModuleBase<SocketCommandContext>
             .WithButton("Voice", $"leaderboard:view-voice,{reply.Id}", emote: new Emoji("🎤"));
 
         var settings = cacheService.Get<LeaderboardServerSettings>(Context.Guild);
-        if (settings.DisplayEvent)
-            components.WithButton("Event", $"leaderboard:view-event,{reply.Id}", emote: new Emoji("🎟"));
+        if (settings.DisplayEventA)
+            components.WithButton("Event A", $"leaderboard:view-eventa,{reply.Id}", emote: new Emoji("🎟"));
+
+        if (settings.DisplayEventB)
+            components.WithButton("Event B", $"leaderboard:view-eventb,{reply.Id}", emote: new Emoji("🎫"));
 
         await reply.ModifyAsync(x => x.Components = components.Build());
     }

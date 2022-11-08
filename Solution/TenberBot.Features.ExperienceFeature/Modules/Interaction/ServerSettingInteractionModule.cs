@@ -135,18 +135,22 @@ public class ServerExperienceInteractionModule : InteractionModuleBase<SocketInt
     }
 
     [SlashCommand("leaderboard", "Configure the leaderboard.")]
-    [HelpCommand("`<display-event>`")]
+    [HelpCommand("`[display-event-a]` `[display-event-b]`")]
     public async Task Leaderboard(
-        [Summary("display-event")] bool? eventEnabled = null)
+        [Summary("display-event-a")] bool? eventAEnabled = null,
+        [Summary("display-event-b")] bool? eventBEnabled = null)
     {
         var settings = cacheService.Get<LeaderboardServerSettings>(Context.Guild);
 
-        if (eventEnabled != null)
-            settings.DisplayEvent = eventEnabled.Value;
+        if (eventAEnabled != null)
+            settings.DisplayEventA = eventAEnabled.Value;
+
+        if (eventBEnabled != null)
+            settings.DisplayEventB = eventBEnabled.Value;
 
         await Set(settings);
 
-        await RespondAsync($"Server setting:\n\n> **display-event**: {settings.DisplayEvent}");
+        await RespondAsync($"Server setting:\n\n> **display-event-a**: {settings.DisplayEventA}\n> **display-event-b**: {settings.DisplayEventB}");
     }
 
     private async Task Set<T>(T value)

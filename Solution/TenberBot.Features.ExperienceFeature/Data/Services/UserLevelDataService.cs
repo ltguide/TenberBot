@@ -17,7 +17,8 @@ public interface IUserLevelDataService
 
     Task Delete(UserLevel dbObject);
 
-    Task ResetEventExperience(ulong guildId);
+    Task ResetEventAExperience(ulong guildId);
+    Task ResetEventBExperience(ulong guildId);
 
     Task<IList<UserLevel>> GetPage(ulong guildId, LeaderboardView view);
 
@@ -86,16 +87,30 @@ public class UserLevelDataService : IUserLevelDataService
         await dbContext.SaveChangesAsync().ConfigureAwait(false);
     }
 
-    public async Task ResetEventExperience(ulong guildId)
+    public async Task ResetEventAExperience(ulong guildId)
     {
         var dbObjects = await dbContext.UserLevels
             .Where(x => x.GuildId == guildId)
-            .Where(x => x.EventExperience > 0)
+            .Where(x => x.EventAExperience > 0)
             .ToListAsync()
             .ConfigureAwait(false);
 
         foreach (var dbObject in dbObjects)
-            dbObject.EventExperience = 0;
+            dbObject.EventAExperience = 0;
+
+        await dbContext.SaveChangesAsync().ConfigureAwait(false);
+    }
+
+    public async Task ResetEventBExperience(ulong guildId)
+    {
+        var dbObjects = await dbContext.UserLevels
+            .Where(x => x.GuildId == guildId)
+            .Where(x => x.EventBExperience > 0)
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        foreach (var dbObject in dbObjects)
+            dbObject.EventBExperience = 0;
 
         await dbContext.SaveChangesAsync().ConfigureAwait(false);
     }
@@ -110,22 +125,29 @@ public class UserLevelDataService : IUserLevelDataService
         {
             case LeaderboardType.Message:
                 query = query
-                    .Where(x => x.MessageExperience > view.MinimumExperience)
+                    .Where(x => x.MessageExperience >= view.MinimumExperience)
                     .OrderByDescending(x => x.MessageExperience)
                     .ThenBy(x => x.UserId);
                 break;
 
             case LeaderboardType.Voice:
                 query = query
-                    .Where(x => x.VoiceExperience > view.MinimumExperience)
+                    .Where(x => x.VoiceExperience >= view.MinimumExperience)
                     .OrderByDescending(x => x.VoiceExperience)
                     .ThenBy(x => x.UserId);
                 break;
 
-            case LeaderboardType.Event:
+            case LeaderboardType.EventA:
                 query = query
-                    .Where(x => x.EventExperience > view.MinimumExperience)
-                    .OrderByDescending(x => x.EventExperience)
+                    .Where(x => x.EventAExperience >= view.MinimumExperience)
+                    .OrderByDescending(x => x.EventAExperience)
+                    .ThenBy(x => x.UserId);
+                break;
+
+            case LeaderboardType.EventB:
+                query = query
+                    .Where(x => x.EventBExperience >= view.MinimumExperience)
+                    .OrderByDescending(x => x.EventBExperience)
                     .ThenBy(x => x.UserId);
                 break;
         }
@@ -162,11 +184,19 @@ public class UserLevelDataService : IUserLevelDataService
 
                 return (int)Math.Floor((decimal)(userLevel.VoiceRank - 1) / view.PerPage);
 
-            case LeaderboardType.Event:
-                if (userLevel.EventExperience <= view.MinimumExperience)
+            case LeaderboardType.EventA:
+                if (userLevel.EventAExperience <= view.MinimumExperience)
                     return -1;
 
-                await LoadEventRank(userLevel);
+                await LoadEventARank(userLevel);
+
+                return (int)Math.Floor((decimal)(userLevel.EventRank - 1) / view.PerPage);
+
+            case LeaderboardType.EventB:
+                if (userLevel.EventBExperience <= view.MinimumExperience)
+                    return -1;
+
+                await LoadEventBRank(userLevel);
 
                 return (int)Math.Floor((decimal)(userLevel.EventRank - 1) / view.PerPage);
 
@@ -190,8 +220,12 @@ public class UserLevelDataService : IUserLevelDataService
                 query = query.Where(x => x.VoiceExperience > view.MinimumExperience);
                 break;
 
-            case LeaderboardType.Event:
-                query = query.Where(x => x.EventExperience > view.MinimumExperience);
+            case LeaderboardType.EventA:
+                query = query.Where(x => x.EventAExperience > view.MinimumExperience);
+                break;
+
+            case LeaderboardType.EventB:
+                query = query.Where(x => x.EventBExperience > view.MinimumExperience);
                 break;
         }
 
@@ -226,11 +260,23 @@ public class UserLevelDataService : IUserLevelDataService
         return dbObject;
     }
 
-    public async Task<UserLevel> LoadEventRank(UserLevel dbObject)
+    public async Task<UserLevel> LoadEventARank(UserLevel dbObject)
     {
         var eventRank = await dbContext.UserLevels
             .Where(x => x.GuildId == dbObject.GuildId)
-            .CountAsync(x => x.EventExperience > dbObject.EventExperience)
+            .CountAsync(x => x.EventAExperience > dbObject.EventAExperience)
+            .ConfigureAwait(false);
+
+        dbObject.EventRank = eventRank + 1;
+
+        return dbObject;
+    }
+
+    public async Task<UserLevel> LoadEventBRank(UserLevel dbObject)
+    {
+        var eventRank = await dbContext.UserLevels
+            .Where(x => x.GuildId == dbObject.GuildId)
+            .CountAsync(x => x.EventBExperience > dbObject.EventBExperience)
             .ConfigureAwait(false);
 
         dbObject.EventRank = eventRank + 1;

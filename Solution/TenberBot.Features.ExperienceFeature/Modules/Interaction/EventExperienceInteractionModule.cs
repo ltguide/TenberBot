@@ -23,55 +23,67 @@ public class EventExperienceInteractionModule : InteractionModuleBase<SocketInte
     }
 
     [SlashCommand("get", "Get event experience for a user.")]
-    [HelpCommand("`<user>`")]
-    public async Task Get(IUser user)
+    [HelpCommand("`<event>` `<user>`")]
+    public async Task Get(
+        [Summary("event-name")][Choice("event-a", "EventA"), Choice("event-b", "EventB")] string eventName,
+        IUser user)
     {
         var dbUserLevel = await GetRecord(user);
         if (dbUserLevel == null)
             return;
 
-        await SendExperience(dbUserLevel, null, null);
+        await SendExperience(eventName, dbUserLevel, null, null);
     }
 
     [SlashCommand("modify", "Modify event experience for a user.")]
-    [HelpCommand("`<user>` `<amount>` `[comment]`")]
-    public async Task Modify(IUser user, decimal amount, string? comment = null)
+    [HelpCommand("`<event>` `<user>` `<amount>` `[comment]`")]
+    public async Task Modify(
+        [Summary("event-name")][Choice("event-a", "EventA"), Choice("event-b", "EventB")] string eventName,
+        IUser user,
+        decimal amount,
+        string? comment = null)
     {
         var dbUserLevel = await GetRecord(user);
         if (dbUserLevel == null)
             return;
 
-        var before = dbUserLevel.EventExperience;
+        var before = eventName == "EventA" ? dbUserLevel.EventAExperience : dbUserLevel.EventBExperience;
 
-        await guildExperienceService.SetEventExperience(dbUserLevel, Math.Max(0, Math.Min(decimal.MaxValue, dbUserLevel.EventExperience + amount)));
+        await guildExperienceService.SetEventExperience(eventName, dbUserLevel, Math.Max(0, Math.Min(decimal.MaxValue, before + amount)));
 
-        await SendExperience(dbUserLevel, before, comment);
+        await SendExperience(eventName, dbUserLevel, before, comment);
     }
 
     [SlashCommand("set", "Set event experience for a user.")]
-    [HelpCommand("`<user>` `<amount>` `[comment]`")]
-    public async Task Set(IUser user, decimal amount, string? comment = null)
+    [HelpCommand("`<event>` `<user>` `<amount>` `[comment]`")]
+    public async Task Set(
+        [Summary("event-name")][Choice("event-a", "EventA"), Choice("event-b", "EventB")] string eventName,
+        IUser user,
+        decimal amount,
+        string? comment = null)
     {
         var dbUserLevel = await GetRecord(user);
         if (dbUserLevel == null)
             return;
 
-        var before = dbUserLevel.EventExperience;
+        var before = eventName == "EventA" ? dbUserLevel.EventAExperience : dbUserLevel.EventBExperience;
 
-        await guildExperienceService.SetEventExperience(dbUserLevel, Math.Max(0, Math.Min(decimal.MaxValue, amount)));
+        await guildExperienceService.SetEventExperience(eventName, dbUserLevel, Math.Max(0, Math.Min(decimal.MaxValue, amount)));
 
-        await SendExperience(dbUserLevel, before, comment);
+        await SendExperience(eventName, dbUserLevel, before, comment);
     }
 
     [SlashCommand("reset", "Set event experience for all users to 0.")]
-    [HelpCommand("`<confirm>`")]
-    public async Task Reset(bool confirm)
+    [HelpCommand("`<event>` `<confirm>`")]
+    public async Task Reset(
+        [Summary("event-name")][Choice("event-a", "EventA"), Choice("event-b", "EventB")] string eventName,
+        bool confirm)
     {
         if (confirm)
         {
-            await guildExperienceService.ResetEventExperience(Context.Guild.Id);
+                await guildExperienceService.ResetEventExperience(eventName, Context.Guild.Id);
 
-            await RespondAsync($"All event experience has been reset.");
+            await RespondAsync($"All {eventName} experience has been reset.");
         }
         else
             await RespondAsync("I didn't reset the event experience.", ephemeral: true);
@@ -86,12 +98,14 @@ public class EventExperienceInteractionModule : InteractionModuleBase<SocketInte
         return dbUserLevel;
     }
 
-    private Task SendExperience(UserLevel userLevel, decimal? before, string? comment)
+    private Task SendExperience(string eventName, UserLevel userLevel, decimal? before, string? comment)
     {
+        var current = eventName == "EventA" ? userLevel.EventAExperience : userLevel.EventBExperience;
+
         var beforeText = before != null ? $" It used to be {before:N2}." : "";
 
         var commentText = comment != null ? $"\nComment: {comment.SanitizeMD()}" : "";
 
-        return RespondAsync($"{userLevel.UserId.GetUserMention()} has {userLevel.EventExperience:N2} event experience.{beforeText}{commentText}", allowedMentions: AllowedMentions.None);
+        return RespondAsync($"{userLevel.UserId.GetUserMention()} has {current:N2} {eventName} experience.{beforeText}{commentText}", allowedMentions: AllowedMentions.None);
     }
 }

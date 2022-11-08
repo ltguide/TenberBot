@@ -77,7 +77,10 @@ public class UserLevel
     public decimal ExcludedMessageAttachments { get; set; }
 
     [Precision(20, 0)]
-    public decimal EventExperience { get; set; }
+    public decimal EventAExperience { get; set; }
+
+    [Precision(20, 0)]
+    public decimal EventBExperience { get; set; }
 
     [ForeignKey("GuildId,UserId")]
     public ServerUser ServerUser { get; set; } = null!;
@@ -108,7 +111,8 @@ public class UserLevel
         {
             LeaderboardType.Message => (MessageLevel, MessageExperience),
             LeaderboardType.Voice => (VoiceLevel, VoiceExperience),
-            LeaderboardType.Event => (-1, EventExperience),
+            LeaderboardType.EventA => (-1, EventAExperience),
+            LeaderboardType.EventB => (-1, EventBExperience),
             _ => throw new NotImplementedException(),
         };
     }
@@ -181,7 +185,7 @@ public class UserLevel
         UpdateMessageLevel();
     }
 
-    public void AddStats(IExperienceModeChannelSettings settings, MessageStats stats)
+    public void AddStats(string eventName, IExperienceModeChannelSettings settings, MessageStats stats)
     {
         var experience = 0m;
 
@@ -207,10 +211,13 @@ public class UserLevel
         }
 
 #if DEBUG
-        Console.WriteLine($"{GuildId} {UserId} AddStats EventMessage experience:{experience}");
+        Console.WriteLine($"{GuildId} {UserId} AddStats {eventName}Message experience:{experience}");
 #endif
 
-        EventExperience += experience;
+        if (eventName == "EventA")
+            EventAExperience += experience;
+        else
+            EventBExperience += experience;
     }
 
     public void AddStats(bool enabled, IExperienceModeChannelSettings settings, VoiceStats stats)
@@ -255,7 +262,7 @@ public class UserLevel
         UpdateVoiceLevel();
     }
 
-    public void AddStats(IExperienceModeChannelSettings settings, VoiceStats stats)
+    public void AddStats(string eventName, IExperienceModeChannelSettings settings, VoiceStats stats)
     {
         var experience = 0m;
 
@@ -275,10 +282,13 @@ public class UserLevel
         }
 
 #if DEBUG
-        Console.WriteLine($"{GuildId} {UserId} AddStats EventVoice experience:{experience}");
+        Console.WriteLine($"{GuildId} {UserId} AddStats {eventName}Voice experience:{experience}");
 #endif
 
-        EventExperience += experience;
+        if (eventName == "EventA")
+            EventAExperience += experience;
+        else
+            EventBExperience += experience;
     }
 
     private static int CalculateLevel(decimal experience)

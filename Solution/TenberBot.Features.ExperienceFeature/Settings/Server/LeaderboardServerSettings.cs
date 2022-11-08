@@ -5,5 +5,7 @@ namespace TenberBot.Features.ExperienceFeature.Settings.Server;
 [ServerSettings("leaderboard")]
 public class LeaderboardServerSettings
 {
-    public bool DisplayEvent { get; set; } = false;
+    public bool DisplayEventA { get; set; } = false;
+
+    public bool DisplayEventB { get; set; } = false;
 }

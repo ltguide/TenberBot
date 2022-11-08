@@ -32,6 +32,7 @@ public class GuildExperienceService : DiscordClientService, IGuildMessageService
         this.userLevelDataService = userLevelDataService;
         this.cacheService = cacheService;
     }
+
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         Client.GuildAvailable += GuildAvailable;
@@ -60,8 +61,11 @@ public class GuildExperienceService : DiscordClientService, IGuildMessageService
 
             userLevel.AddStats(mode.HasFlag(ExperienceModes.Normal), cacheService.Get<NormalExperienceModeChannelSettings>(channel), stats);
 
-            if (mode.HasFlag(ExperienceModes.Event))
-                userLevel.AddStats(cacheService.Get<EventExperienceModeChannelSettings>(channel), stats);
+            if (mode.HasFlag(ExperienceModes.EventA))
+                userLevel.AddStats("EventA", cacheService.Get<EventExperienceModeChannelSettings>(channel), stats);
+
+            else if (mode.HasFlag(ExperienceModes.EventB))
+                userLevel.AddStats("EventB", cacheService.Get<EventExperienceModeChannelSettings>(channel), stats);
 
             await userLevelDataService.Update(userLevel, null!);
         }
@@ -96,16 +100,22 @@ public class GuildExperienceService : DiscordClientService, IGuildMessageService
         return userLevel;
     }
 
-    public Task SetEventExperience(UserLevel dbUserLevel, decimal experience)
+    public Task SetEventExperience(string eventName, UserLevel dbUserLevel, decimal experience)
     {
-        dbUserLevel.EventExperience = experience;
+        if (eventName == "EventA")
+            dbUserLevel.EventAExperience = experience;
+        else
+            dbUserLevel.EventBExperience = experience;
 
         return userLevelDataService.Update(dbUserLevel, null!);
     }
 
-    public Task ResetEventExperience(ulong guildId)
+    public Task ResetEventExperience(string eventName, ulong guildId)
     {
-        return userLevelDataService.ResetEventExperience(guildId);
+        if (eventName == "EventA")
+            return userLevelDataService.ResetEventAExperience(guildId);
+
+        return userLevelDataService.ResetEventBExperience(guildId);
     }
 
     private async Task AddVoiceExperience(UserLevel userLevel, IChannel channel, UserVoiceChannel userVoiceChannel)
@@ -122,8 +132,11 @@ public class GuildExperienceService : DiscordClientService, IGuildMessageService
 
         userLevel.AddStats(mode.HasFlag(ExperienceModes.Normal), cacheService.Get<NormalExperienceModeChannelSettings>(channel), stats);
 
-        if (mode.HasFlag(ExperienceModes.Event))
-            userLevel.AddStats(cacheService.Get<EventExperienceModeChannelSettings>(channel), stats);
+        if (mode.HasFlag(ExperienceModes.EventA))
+            userLevel.AddStats("EventA", cacheService.Get<EventExperienceModeChannelSettings>(channel), stats);
+
+        else if (mode.HasFlag(ExperienceModes.EventB))
+            userLevel.AddStats("EventB", cacheService.Get<EventExperienceModeChannelSettings>(channel), stats);
 
         await userLevelDataService.Update(userLevel, null!);
     }
@@ -169,7 +182,7 @@ public class GuildExperienceService : DiscordClientService, IGuildMessageService
     {
         if (before.VoiceChannel?.Id == after.VoiceChannel?.Id)
         {
-            //Console.WriteLine($"user {user.Id} changed state {after.VoiceChannel!.Name} ({after.VoiceChannel.Id}) IsVideoing:{before.IsVideoing} IsStreaming:{before.IsStreaming} | IsVideoing:{after.IsVideoing} IsStreaming:{after.IsStreaming}");
+            //Console.WriteLine($"user {socketUser.Id} changed state {after.VoiceChannel!.Name} ({after.VoiceChannel.Id}) IsVideoing:{before.IsVideoing} IsStreaming:{before.IsStreaming} | IsVideoing:{after.IsVideoing} IsStreaming:{after.IsStreaming}");
 
             await VoiceStateUpdated(socketUser, before, after);
 
@@ -178,7 +191,7 @@ public class GuildExperienceService : DiscordClientService, IGuildMessageService
 
         if (before.VoiceChannel != null)
         {
-            //Console.WriteLine($"user {user.Id} disconnected {before.VoiceChannel.Name} ({before.VoiceChannel.Id})");
+            //Console.WriteLine($"user {socketUser.Id} disconnected {before.VoiceChannel.Name} ({before.VoiceChannel.Id})");
 
             var userVoiceChannel = await userVoiceChannelDataService.GetByIds(before.VoiceChannel.Id, socketUser.Id);
             if (userVoiceChannel != null)
@@ -193,7 +206,7 @@ public class GuildExperienceService : DiscordClientService, IGuildMessageService
 
         if (after.VoiceChannel != null)
         {
-            //Console.WriteLine($"user {user.Id} connected {after.VoiceChannel.Name} ({after.VoiceChannel.Id})");
+            //Console.WriteLine($"user {socketUser.Id} connected {after.VoiceChannel.Name} ({after.VoiceChannel.Id})");
 
             if (socketUser is not SocketGuildUser user)
                 return;
