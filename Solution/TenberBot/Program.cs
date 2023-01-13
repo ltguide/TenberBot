@@ -35,7 +35,7 @@ public class Program
                     UseInteractionSnowflakeDate = false,
                 };
 
-                config.Token = context.Configuration["app-token"];
+                config.Token = context.Configuration["app-token"] ?? "";
             })
             .UseCommandService((context, config) =>
             {

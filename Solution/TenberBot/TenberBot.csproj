@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net7.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UserSecretsId>dotnet-TenberBot-C065BCAE-F6BE-40D8-831B-1E503EDAFD5C</UserSecretsId>
@@ -14,14 +14,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Discord.Addons.Hosting" Version="5.1.0" />
-		<PackageReference Include="Discord.Net" Version="3.8.1" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
-		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
-		<PackageReference Include="NLog" Version="5.0.4" />
-		<PackageReference Include="NLog.Database" Version="5.0.4" />
-		<PackageReference Include="NLog.Extensions.Logging" Version="5.0.4" />
+		<PackageReference Include="Discord.Addons.Hosting" Version="5.2.0" />
+		<PackageReference Include="Discord.Net" Version="3.9.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="7.0.0" />
+		<PackageReference Include="NLog" Version="5.1.1" />
+		<PackageReference Include="NLog.Database" Version="5.1.1" />
+		<PackageReference Include="NLog.Extensions.Logging" Version="5.2.1" />
 		<PackageReference Include="TimeSpanParserUtil" Version="1.2.0" />
 	</ItemGroup>
 
