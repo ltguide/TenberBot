@@ -10,7 +10,6 @@
 	<PropertyGroup>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<SelfContained>false</SelfContained>
-		<OutDir>bin\$(Configuration)</OutDir>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -26,11 +25,27 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\TenberBot.Features.AuditFeature\TenberBot.Features.AuditFeature.csproj" />
+		<ProjectReference Include="..\TenberBot.Features.BotSettingFeature\TenberBot.Features.BotSettingFeature.csproj" />
+		<ProjectReference Include="..\TenberBot.Features.BotStatusFeature\TenberBot.Features.BotStatusFeature.csproj" />
+		<ProjectReference Include="..\TenberBot.Features.ConvertFeature\TenberBot.Features.ConvertFeature.csproj" />
+		<ProjectReference Include="..\TenberBot.Features.DebugFeature\TenberBot.Features.DebugFeature.csproj" />
+		<ProjectReference Include="..\TenberBot.Features.ExperienceFeature\TenberBot.Features.ExperienceFeature.csproj" />
+		<ProjectReference Include="..\TenberBot.Features.FanFictionFeature\TenberBot.Features.FanFictionFeature.csproj" />
+		<ProjectReference Include="..\TenberBot.Features.FortuneFeature\TenberBot.Features.FortuneFeature.csproj" />
+		<ProjectReference Include="..\TenberBot.Features.GreetingFeature\TenberBot.Features.GreetingFeature.csproj" />
+		<ProjectReference Include="..\TenberBot.Features.HelpFeature\TenberBot.Features.HelpFeature.csproj" />
+		<ProjectReference Include="..\TenberBot.Features.HighFiveFeature\TenberBot.Features.HighFiveFeature.csproj" />
+		<ProjectReference Include="..\TenberBot.Features.HighlightFeature\TenberBot.Features.HighlightFeature.csproj" />
+		<ProjectReference Include="..\TenberBot.Features.HugFeature\TenberBot.Features.HugFeature.csproj" />
+		<ProjectReference Include="..\TenberBot.Features.MessageTimerFeature\TenberBot.Features.MessageTimerFeature.csproj" />
+		<ProjectReference Include="..\TenberBot.Features.PatFeature\TenberBot.Features.PatFeature.csproj" />
+		<ProjectReference Include="..\TenberBot.Features.PurgeFeature\TenberBot.Features.PurgeFeature.csproj" />
+		<ProjectReference Include="..\TenberBot.Features.RandomizerFeature\TenberBot.Features.RandomizerFeature.csproj" />
+		<ProjectReference Include="..\TenberBot.Features.SprintFeature\TenberBot.Features.SprintFeature.csproj" />
+		<ProjectReference Include="..\TenberBot.Features.UserTimerFeature\TenberBot.Features.UserTimerFeature.csproj" />
+		<ProjectReference Include="..\TenberBot.Features.WordFeature\TenberBot.Features.WordFeature.csproj" />
 		<ProjectReference Include="..\TenberBot.Shared.Features\TenberBot.Shared.Features.csproj" />
 	</ItemGroup>
-
-	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
-		<OutDir>..\..\bin\$(Configuration)\TenberBot</OutDir>
-	</PropertyGroup>
 
 </Project>
