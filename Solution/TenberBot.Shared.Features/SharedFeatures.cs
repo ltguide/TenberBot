@@ -62,7 +62,7 @@ public class SharedFeatures : IFeatureStartup
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"RegisterFeature: {ex}");
+            Console.WriteLine($"RegisterFeature ({fileName}): {ex}");
         }
     }
 
@@ -99,7 +99,7 @@ public class SharedFeatures : IFeatureStartup
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"RegisterFeature: {ex}");
+            Console.WriteLine($"RegisterFeature ({assembly.FullName}): {ex}");
         }
     }
 

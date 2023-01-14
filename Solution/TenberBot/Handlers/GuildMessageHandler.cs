@@ -83,20 +83,28 @@ public class GuildMessageHandler : DiscordClientService
         if (channel is SocketThreadChannel thread)
             await cacheService.Channel(thread.ParentChannel);
 
+        bool checkInline = false;
+
         int argPos = 0;
         if (message.HasStringPrefix(settings.Prefix, ref argPos) || message.HasMentionPrefix(Client.CurrentUser, ref argPos))
-            await commandService.ExecuteAsync(context, argPos, provider);
+        {
+            var result = await commandService.ExecuteAsync(context, argPos, provider);
+            checkInline = result is SearchResult sr && sr.Error == CommandError.UnknownCommand;
+        }
 
         else if (message.Content == Client.CurrentUser.Id.GetUserMention())
             await commandService.ExecuteAsync(context, "just-bot-name", provider);
 
         else
+            checkInline = true;
+
+        if (checkInline)
         {
             if (HasInlineCommand(message, InlineCommands, settings.Prefix, out var command))
                 await commandService.ExecuteAsync(context, command, provider);
 
             if (HasInlineTriggers(message, InlineTriggers, out var commands))
-                foreach (var inlineCommand in commands.Take(5))
+                foreach (var inlineCommand in commands)
                     await commandService.ExecuteAsync(context, inlineCommand, provider);
 
             foreach (var service in GuildMessageServices)
@@ -127,11 +135,18 @@ public class GuildMessageHandler : DiscordClientService
 
     private static bool HasInlineCommand(IUserMessage message, IList<string> aliases, string prefix, out string command)
     {
-        foreach (Match match in Regex.Matches(message.Content, @$" {Regex.Escape(prefix)}([-\w]+)", RegexOptions.IgnoreCase))
+        int count = 0;
+        foreach (var match in Regex.Matches(message.Content, @$"(?:^| ){Regex.Escape(prefix)}([-\w]+)", RegexOptions.IgnoreCase).Cast<Match>())
         {
+            if (match == null)
+                break;
+
             command = match.Groups[1].Value.ToLower();
             if (aliases.Contains(command))
                 return true;
+
+            if (++count == 15)
+                break;
         }
 
         command = "";
@@ -142,10 +157,14 @@ public class GuildMessageHandler : DiscordClientService
     {
         commands = new List<string>();
 
+        int count = 0;
         foreach (var trigger in triggers)
         {
-            foreach (Match match in trigger.Key.Matches(message.Content))
+            foreach (var match in trigger.Key.Matches(message.Content).Cast<Match>())
             {
+                if (match == null)
+                    break;
+
                 var groups = match.Groups.Cast<Group>()
                     .Skip(1)
                     .Where(x => x.Value != "")
@@ -153,6 +172,9 @@ public class GuildMessageHandler : DiscordClientService
                     .ToList();
 
                 commands.Add($"{trigger.Value} {(groups.Any() ? string.Join(" ", groups) : match.Groups[0].Value)}");
+
+                if (++count == 5)
+                    break;
             }
         }
 

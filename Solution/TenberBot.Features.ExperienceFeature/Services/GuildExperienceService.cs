@@ -164,7 +164,7 @@ public class GuildExperienceService : DiscordClientService, IGuildMessageService
 
         foreach (var voiceUser in voiceUsers.Where(x => userVoiceChannels.Any(y => y.UserId == x.Id && y.ChannelId == x.VoiceChannel.Id) == false))
         {
-            Console.WriteLine($"user {voiceUser.Id} is connected {voiceUser.VoiceChannel.Name} ({voiceUser.VoiceChannel.Id}) IsVideoing:{voiceUser.IsVideoing} IsStreaming:{voiceUser.IsStreaming}");
+            //Console.WriteLine($"user {voiceUser.Id} is connected {voiceUser.VoiceChannel.Name} ({voiceUser.VoiceChannel.Id}) IsVideoing:{voiceUser.IsVideoing} IsStreaming:{voiceUser.IsStreaming}");
 
             await userVoiceChannelDataService.Add(new UserVoiceChannel
             {
