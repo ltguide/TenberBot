@@ -1,8 +1,8 @@
 ﻿using Discord;
 using Discord.Commands;
 using TenberBot.Features.HighFiveFeature.Data.Enums;
+using TenberBot.Features.HighFiveFeature.Data.InteractionParents;
 using TenberBot.Features.HighFiveFeature.Data.Services;
-using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Models;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
@@ -35,7 +35,7 @@ public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
 
         var reply = await Context.Message.ReplyAsync(embed: await highFiveDataService.GetAllAsEmbed(highFiveType.Value));
 
-        await SetParent(InteractionParentType.HighFive, reply.Id, highFiveType);
+        await SetParent(InteractionParents.Embed, reply.Id, highFiveType);
 
         var components = new ComponentBuilder()
             .WithButton("Add", $"high-five:add,{reply.Id}", ButtonStyle.Success, new Emoji("➕"))
@@ -46,7 +46,7 @@ public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
         return DeleteResult.FromSuccess();
     }
 
-    private async Task SetParent(InteractionParentType parentType, ulong messageId, Enum? reference)
+    private async Task SetParent(string parentType, ulong messageId, Enum? reference)
     {
         var previousParent = await interactionParentDataService.Set(new InteractionParent
         {

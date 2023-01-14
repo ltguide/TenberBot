@@ -5,9 +5,9 @@ using Discord.Rest;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using TenberBot.Features.MessageTimerFeature.Data.Enums;
+using TenberBot.Features.MessageTimerFeature.Data.InteractionParents;
 using TenberBot.Features.MessageTimerFeature.Data.Models;
 using TenberBot.Features.MessageTimerFeature.Data.Services;
-using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 
@@ -64,7 +64,7 @@ public class MessageTimerService : DiscordClientService
                     }
 
 
-                    var parent = await interactionParentDataService.GetByReference(InteractionParentType.MessageTimer, messageTimer.MessageTimerId.ToString());
+                    var parent = await interactionParentDataService.GetByReference(InteractionParents.Timer, messageTimer.MessageTimerId.ToString());
                     if (parent == null)
                         continue;
 

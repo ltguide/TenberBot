@@ -1,16 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Models;
 
 namespace TenberBot.Shared.Features.Data.Services;
 
 public interface IInteractionParentDataService
 {
-    Task<InteractionParent?> GetById(InteractionParentType parentType, ulong channelId, ulong? userId);
+    Task<InteractionParent?> GetById(string parentType, ulong channelId, ulong? userId);
 
-    Task<InteractionParent?> GetByMessageId(InteractionParentType parentType, ulong messageId);
+    Task<InteractionParent?> GetByMessageId(string parentType, ulong messageId);
 
-    Task<InteractionParent?> GetByReference(InteractionParentType parentType, string reference);
+    Task<InteractionParent?> GetByReference(string parentType, string reference);
 
     Task Add(InteractionParent newObject);
 
@@ -30,21 +29,21 @@ public class InteractionParentDataService : IInteractionParentDataService
         this.dbContext = dbContext;
     }
 
-    public async Task<InteractionParent?> GetById(InteractionParentType parentType, ulong channelId, ulong? userId)
+    public async Task<InteractionParent?> GetById(string parentType, ulong channelId, ulong? userId)
     {
         return await dbContext.InteractionParents
             .FirstOrDefaultAsync(x => x.InteractionParentType == parentType && x.ChannelId == channelId && x.UserId == userId)
             .ConfigureAwait(false);
     }
 
-    public async Task<InteractionParent?> GetByMessageId(InteractionParentType parentType, ulong messageId)
+    public async Task<InteractionParent?> GetByMessageId(string parentType, ulong messageId)
     {
         return await dbContext.InteractionParents
             .FirstOrDefaultAsync(x => x.InteractionParentType == parentType && x.MessageId == messageId)
             .ConfigureAwait(false);
     }
 
-    public async Task<InteractionParent?> GetByReference(InteractionParentType parentType, string reference)
+    public async Task<InteractionParent?> GetByReference(string parentType, string reference)
     {
         return await dbContext.InteractionParents
             .FirstOrDefaultAsync(x => x.InteractionParentType == parentType && x.Reference == reference)

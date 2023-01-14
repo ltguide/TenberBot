@@ -81,7 +81,7 @@ public class EventExperienceInteractionModule : InteractionModuleBase<SocketInte
     {
         if (confirm)
         {
-                await guildExperienceService.ResetEventExperience(eventName, Context.Guild.Id);
+            await guildExperienceService.ResetEventExperience(eventName, Context.Guild.Id);
 
             await RespondAsync($"All {eventName} experience has been reset.");
         }

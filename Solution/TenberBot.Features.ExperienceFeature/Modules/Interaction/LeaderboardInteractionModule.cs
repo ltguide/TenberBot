@@ -1,10 +1,10 @@
 ﻿using Discord;
 using Discord.Interactions;
 using TenberBot.Features.ExperienceFeature.Data.Enums;
+using TenberBot.Features.ExperienceFeature.Data.InteractionParents;
 using TenberBot.Features.ExperienceFeature.Data.POCO;
 using TenberBot.Features.ExperienceFeature.Data.Services;
 using TenberBot.Features.ExperienceFeature.Settings.Server;
-using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 using TenberBot.Shared.Features.Extensions.Mentions;
@@ -32,7 +32,7 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
     [ComponentInteraction("leaderboard:view-*,*")]
     public async Task View(string leaderboardType, ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Leaderboard, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Leaderboard, messageId);
         if (parent == null)
             return;
 
@@ -75,7 +75,7 @@ public class LeaderboardInteractionModule : InteractionModuleBase<SocketInteract
     [ComponentInteraction("leaderboard:page-*,*")]
     public async Task Page(string page, ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Leaderboard, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Leaderboard, messageId);
         if (parent == null)
             return;
 

@@ -1,11 +1,14 @@
 ﻿using Discord;
 using Discord.Commands;
+using TenberBot.Features.UserTimerFeature.Data.InteractionParents;
 using TenberBot.Features.UserTimerFeature.Data.Models;
 using TenberBot.Features.UserTimerFeature.Data.Services;
+using TenberBot.Features.UserTimerFeature.Data.UserStats;
 using TenberBot.Features.UserTimerFeature.Services;
 using TenberBot.Shared.Features;
-using TenberBot.Shared.Features.Data.Enums;
+using TenberBot.Shared.Features.Data.Ids;
 using TenberBot.Shared.Features.Data.Models;
+using TenberBot.Shared.Features.Data.POCO;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Results.Command;
 
@@ -58,9 +61,7 @@ public class TimerCommandModule : ModuleBase<SocketCommandContext>
 
         await userTimerDataService.Add(userTimer);
 
-        (await userStatDataService.GetOrAddByContext(Context)).TimersCreated++;
-
-        await userStatDataService.Save();
+        await userStatDataService.Update(new UserStatMod(new GuildUserIds(Context), UserStats.Created));
 
         await SendEmbed(userTimer);
 
@@ -78,7 +79,7 @@ public class TimerCommandModule : ModuleBase<SocketCommandContext>
             GuildId = Context.Guild.Id,
             ChannelId = userTimer.ChannelId,
             UserId = userTimer.UserId,
-            InteractionParentType = InteractionParentType.UserTimer,
+            InteractionParentType = InteractionParents.Timer,
             MessageId = reply.Id,
         }
         .SetReference(userTimer.UserTimerId));

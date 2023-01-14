@@ -1,10 +1,10 @@
 ﻿using Discord;
 using Discord.Interactions;
 using TenberBot.Features.HighFiveFeature.Data.Enums;
+using TenberBot.Features.HighFiveFeature.Data.InteractionParents;
 using TenberBot.Features.HighFiveFeature.Data.Models;
 using TenberBot.Features.HighFiveFeature.Data.Services;
 using TenberBot.Features.HighFiveFeature.Modals.HighFive;
-using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 using TenberBot.Shared.Features.Extensions.Strings;
@@ -29,7 +29,7 @@ public class HighFiveInteractionModule : InteractionModuleBase<SocketInteraction
     [ComponentInteraction("high-five:add,*")]
     public async Task HighFiveAdd(ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.HighFive, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 
@@ -39,7 +39,7 @@ public class HighFiveInteractionModule : InteractionModuleBase<SocketInteraction
     [ModalInteraction("high-five:add,*")]
     public async Task HighFiveAddModalResponse(ulong messageId, HighFiveAddModal modal)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.HighFive, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 
@@ -57,7 +57,7 @@ public class HighFiveInteractionModule : InteractionModuleBase<SocketInteraction
     [ComponentInteraction("high-five:delete,*")]
     public async Task HighFiveDelete(ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.HighFive, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 
@@ -67,7 +67,7 @@ public class HighFiveInteractionModule : InteractionModuleBase<SocketInteraction
     [ModalInteraction("high-five:delete,*")]
     public async Task HighFiveDeleteModalResponse(ulong messageId, HighFiveDeleteModal modal)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.HighFive, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 

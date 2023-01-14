@@ -3,7 +3,6 @@ using Discord.Addons.Hosting;
 using Discord.Addons.Hosting.Util;
 using Discord.Interactions;
 using Discord.WebSocket;
-using System.Threading.Channels;
 using TenberBot.Parameters;
 using TenberBot.Shared.Features;
 using TenberBot.Shared.Features.Services;

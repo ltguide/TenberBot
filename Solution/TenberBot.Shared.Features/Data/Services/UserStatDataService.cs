@@ -1,23 +1,18 @@
-﻿using Discord.Commands;
-using Discord.Interactions;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TenberBot.Shared.Features.Data.Models;
+using TenberBot.Shared.Features.Data.POCO;
 
 namespace TenberBot.Shared.Features.Data.Services;
 
 public interface IUserStatDataService
 {
-    Task<UserStat?> GetByContext(SocketInteractionContext context);
-    Task<UserStat?> GetByContext(SocketCommandContext context);
-    Task<UserStat?> GetByIds(ulong guildId, ulong userId);
+    Task<IDictionary<string, UserStat>> Get(UserStatMod[] userStatMods);
 
-    Task<UserStat> GetOrAddByContext(SocketInteractionContext context);
-    Task<UserStat> GetOrAddByContext(SocketCommandContext context);
-    Task<UserStat> GetOrAddByIds(ulong guildId, ulong userId);
+    Task<UserStat> Get(UserStatMod userStatMod);
 
-    Task Add(UserStat newObject);
+    Task<IDictionary<string, UserStat>> Update(UserStatMod[] userStatMods);
 
-    Task Delete(UserStat dbObject);
+    Task<UserStat> Update(UserStatMod userStatMod);
 
     Task Save();
 }
@@ -31,71 +26,74 @@ public class UserStatDataService : IUserStatDataService
         this.dbContext = dbContext;
     }
 
-    public Task<UserStat?> GetByContext(SocketInteractionContext context)
+    public async Task<IDictionary<string, UserStat>> Get(UserStatMod[] userStatMods)
     {
-        return GetByIds(context.Guild.Id, context.User.Id);
+        var results = new Dictionary<string, UserStat>();
+
+        foreach (var userStatMod in userStatMods)
+            results.Add(userStatMod.UserStatType, await Get(userStatMod).ConfigureAwait(false));
+
+        return results;
     }
 
-    public Task<UserStat?> GetByContext(SocketCommandContext context)
+    public async Task<UserStat> Get(UserStatMod userStatMod)
     {
-        return GetByIds(context.Guild.Id, context.User.Id);
-    }
-
-    public async Task<UserStat?> GetByIds(ulong guildId, ulong userId)
-    {
-        return await dbContext.UserStats
-            .FirstOrDefaultAsync(x => x.GuildId == guildId && x.UserId == userId)
+        var result = await dbContext.UserStats
+            .FirstOrDefaultAsync(x => x.GuildId == userStatMod.Ids.GuildId && x.UserId == userStatMod.Ids.UserId && x.UserStatType == userStatMod.UserStatType)
             .ConfigureAwait(false);
-    }
 
-    public Task<UserStat> GetOrAddByContext(SocketInteractionContext context)
-    {
-        return GetOrAddByIds(context.Guild.Id, context.User.Id);
-    }
-
-    public Task<UserStat> GetOrAddByContext(SocketCommandContext context)
-    {
-        return GetOrAddByIds(context.Guild.Id, context.User.Id);
-    }
-
-    public async Task<UserStat> GetOrAddByIds(ulong guildId, ulong userId)
-    {
-        var dbObject = await GetByIds(guildId, userId);
-
-        if (dbObject == null)
+        if (result == null)
         {
-            dbObject = new UserStat { GuildId = guildId, UserId = userId };
+            result = new UserStat
+            {
+                UserStatId = 0,
+                GuildId = userStatMod.Ids.GuildId,
+                UserId = userStatMod.Ids.UserId,
+                UserStatType = userStatMod.UserStatType,
+                Value = 0,
+            };
 
-            await Add(dbObject);
+            dbContext.Add(result);
         }
 
-        return dbObject;
+        return result;
     }
 
-    public async Task Add(UserStat newObject)
+    public async Task<IDictionary<string, UserStat>> Update(UserStatMod[] userStatMods)
     {
-        if (newObject == null)
-            throw new ArgumentNullException(nameof(newObject));
+        var results = new Dictionary<string, UserStat>();
 
-        newObject.UserStatId = 0;
+        foreach (var userStatMod in userStatMods)
+            results.Add(userStatMod.UserStatType, await Add(userStatMod).ConfigureAwait(false));
 
-        dbContext.Add(newObject);
+        await Save().ConfigureAwait(false);
 
-        await dbContext.SaveChangesAsync().ConfigureAwait(false);
+        return results;
     }
 
-    public async Task Delete(UserStat dbObject)
+    public async Task<UserStat> Update(UserStatMod userStatMod)
     {
-        if (dbObject == null)
-            throw new ArgumentNullException(nameof(dbObject));
+        var result = await Add(userStatMod).ConfigureAwait(false);
 
-        dbContext.Remove(dbObject);
+        await Save().ConfigureAwait(false);
 
-        await dbContext.SaveChangesAsync().ConfigureAwait(false);
+        return result;
     }
 
-    public async Task Save()
+    public async Task<UserStat> Add(UserStatMod userStatMod)
     {
-        await dbContext.SaveChangesAsync().ConfigureAwait(false);
+        var result = await Get(userStatMod).ConfigureAwait(false);
+
+        if (userStatMod.Overwrite)
+            result.Value = userStatMod.Value;
+        else
+            result.Value += userStatMod.Value;
+
+        return result;
+    }
+
+    public Task Save()
+    {
+        return dbContext.SaveChangesAsync();
     }
 }

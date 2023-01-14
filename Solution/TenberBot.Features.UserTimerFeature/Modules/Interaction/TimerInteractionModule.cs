@@ -1,9 +1,9 @@
 ﻿using Discord;
 using Discord.Interactions;
 using TenberBot.Features.UserTimerFeature.Data.Enums;
+using TenberBot.Features.UserTimerFeature.Data.InteractionParents;
 using TenberBot.Features.UserTimerFeature.Data.Models;
 using TenberBot.Features.UserTimerFeature.Data.Services;
-using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Services;
 
 namespace TenberBot.Features.UserTimerFeature.Modules.Interaction;
@@ -25,7 +25,7 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
     [ComponentInteraction("user-timer:stop,*")]
     public async Task TimerStop(ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.UserTimer, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Timer, messageId);
         if (parent == null)
             return;
 

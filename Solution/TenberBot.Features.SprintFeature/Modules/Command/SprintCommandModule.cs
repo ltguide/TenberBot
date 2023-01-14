@@ -2,13 +2,16 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using TenberBot.Features.SprintFeature.Data.Enums;
+using TenberBot.Features.SprintFeature.Data.InteractionParents;
 using TenberBot.Features.SprintFeature.Data.Models;
 using TenberBot.Features.SprintFeature.Data.Services;
+using TenberBot.Features.SprintFeature.Data.UserStats;
 using TenberBot.Features.SprintFeature.Services;
 using TenberBot.Features.SprintFeature.Settings.Channel;
 using TenberBot.Shared.Features;
-using TenberBot.Shared.Features.Data.Enums;
+using TenberBot.Shared.Features.Data.Ids;
 using TenberBot.Shared.Features.Data.Models;
+using TenberBot.Shared.Features.Data.POCO;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordRoot;
 using TenberBot.Shared.Features.Extensions.Mentions;
@@ -105,9 +108,7 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
 
         await sprintDataService.Add(sprint);
 
-        (await userStatDataService.GetOrAddByContext(Context)).SprintsCreated++;
-
-        await userStatDataService.Save();
+        await userStatDataService.Update(new UserStatMod(new GuildUserIds(Context), UserStats.Created));
 
         await SendEmbed(sprint, $"Get ready, {settings.Role}! There's a new sprint starting soon.");
 
@@ -125,7 +126,7 @@ public class SprintCommandModule : ModuleBase<SocketCommandContext>
             GuildId = Context.Guild.Id,
             ChannelId = sprint.ChannelId,
             UserId = sprint.UserId,
-            InteractionParentType = InteractionParentType.Sprint,
+            InteractionParentType = InteractionParents.Sprint,
             MessageId = reply.Id,
         }
         .SetReference(sprint.SprintId));

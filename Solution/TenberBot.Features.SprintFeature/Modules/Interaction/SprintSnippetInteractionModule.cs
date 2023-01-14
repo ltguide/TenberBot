@@ -1,10 +1,10 @@
 ﻿using Discord;
 using Discord.Interactions;
 using TenberBot.Features.SprintFeature.Data.Enums;
+using TenberBot.Features.SprintFeature.Data.InteractionParents;
 using TenberBot.Features.SprintFeature.Data.Models;
 using TenberBot.Features.SprintFeature.Data.Services;
 using TenberBot.Features.SprintFeature.Modals.SprintSnippet;
-using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 using TenberBot.Shared.Features.Extensions.Strings;
@@ -29,7 +29,7 @@ public class SprintSnippetInteractionModule : InteractionModuleBase<SocketIntera
     [ComponentInteraction("sprint-snippet:add,*")]
     public async Task SprintSnippetAdd(ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.SprintSnippet, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.SprintSnippet, messageId);
         if (parent == null)
             return;
 
@@ -39,7 +39,7 @@ public class SprintSnippetInteractionModule : InteractionModuleBase<SocketIntera
     [ModalInteraction("sprint-snippet:add,*")]
     public async Task SprintSnippetAddModalResponse(ulong messageId, SprintSnippetAddModal modal)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.SprintSnippet, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.SprintSnippet, messageId);
         if (parent == null)
             return;
 
@@ -57,7 +57,7 @@ public class SprintSnippetInteractionModule : InteractionModuleBase<SocketIntera
     [ComponentInteraction("sprint-snippet:delete,*")]
     public async Task SprintSnippetDelete(ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.SprintSnippet, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.SprintSnippet, messageId);
         if (parent == null)
             return;
 
@@ -67,7 +67,7 @@ public class SprintSnippetInteractionModule : InteractionModuleBase<SocketIntera
     [ModalInteraction("sprint-snippet:delete,*")]
     public async Task SprintSnippetDeleteModalResponse(ulong messageId, SprintSnippetDeleteModal modal)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.SprintSnippet, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.SprintSnippet, messageId);
         if (parent == null)
             return;
 

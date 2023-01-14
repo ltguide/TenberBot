@@ -1,10 +1,10 @@
 ﻿using Discord;
 using Discord.Interactions;
 using TenberBot.Features.PatFeature.Data.Enums;
+using TenberBot.Features.PatFeature.Data.InteractionParents;
 using TenberBot.Features.PatFeature.Data.Models;
 using TenberBot.Features.PatFeature.Data.Services;
 using TenberBot.Features.PatFeature.Modals.Pat;
-using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 using TenberBot.Shared.Features.Extensions.Strings;
@@ -29,7 +29,7 @@ public class PatInteractionModule : InteractionModuleBase<SocketInteractionConte
     [ComponentInteraction("pat:add,*")]
     public async Task PatAdd(ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Pat, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 
@@ -39,7 +39,7 @@ public class PatInteractionModule : InteractionModuleBase<SocketInteractionConte
     [ModalInteraction("pat:add,*")]
     public async Task PatAddModalResponse(ulong messageId, PatAddModal modal)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Pat, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 
@@ -57,7 +57,7 @@ public class PatInteractionModule : InteractionModuleBase<SocketInteractionConte
     [ComponentInteraction("pat:delete,*")]
     public async Task PatDelete(ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Pat, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 
@@ -67,7 +67,7 @@ public class PatInteractionModule : InteractionModuleBase<SocketInteractionConte
     [ModalInteraction("pat:delete,*")]
     public async Task PatDeleteModalResponse(ulong messageId, PatDeleteModal modal)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Pat, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 

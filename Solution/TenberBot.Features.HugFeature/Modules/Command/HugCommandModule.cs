@@ -5,7 +5,10 @@ using System.Text.RegularExpressions;
 using TenberBot.Features.HugFeature.Data.Enums;
 using TenberBot.Features.HugFeature.Data.Models;
 using TenberBot.Features.HugFeature.Data.Services;
+using TenberBot.Features.HugFeature.Data.UserStats;
 using TenberBot.Features.HugFeature.Data.Visuals;
+using TenberBot.Shared.Features.Data.Ids;
+using TenberBot.Shared.Features.Data.POCO;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordCommands;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
@@ -13,11 +16,16 @@ using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 namespace TenberBot.Features.HugFeature.Modules.Command;
 
 [RequireBotPermission(ChannelPermission.SendMessages)]
-public class HugCommandModule : ModuleBase<SocketCommandContext>
+public partial class HugCommandModule : ModuleBase<SocketCommandContext>
 {
-    private readonly static Regex RecipientVariables = new(@"%user%|%recipient%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-    private readonly static Regex SelfVariables = new(@"%user%|%random%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-    private readonly static Regex StatVariables = new(@"%user%|%recipient%|%count%|%s%|%es%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    [GeneratedRegex("%user%|%recipient%", RegexOptions.IgnoreCase, "en-US")]
+    private static partial Regex RecipientVariables();
+
+    [GeneratedRegex("%user%|%random%", RegexOptions.IgnoreCase, "en-US")]
+    private static partial Regex SelfVariables();
+
+    [GeneratedRegex("%user%|%recipient%|%count%|%s%|%es%", RegexOptions.IgnoreCase, "en-US")]
+    private static partial Regex StatVariables();
 
     private readonly IHugDataService hugDataService;
     private readonly IVisualDataService visualDataService;
@@ -39,7 +47,7 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
     public async Task Hug([Remainder] string? message = null)
     {
         var recipient = Context.Message.MentionedUsers.FirstOrDefault();
-        var hugType = (recipient == null || recipient == Context.User) ? Visuals.Self : Visuals.Recipient;
+        var hugType = recipient == null || recipient == Context.User ? Visuals.Self : Visuals.Recipient;
 
         var visual = await visualDataService.GetRandom(hugType);
         if (visual == null)
@@ -64,13 +72,9 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
             if (hug == null || stat == null)
                 return;
 
-            ++(await userStatDataService.GetOrAddByContext(Context)).HugsGiven;
+            var userStats = await userStatDataService.Update(new[] { new UserStatMod(new GuildUserIds(Context), UserStats.Given), new UserStatMod(new GuildUserIds(Context.Guild, recipient!), UserStats.Received) });
 
-            var received = ++(await userStatDataService.GetOrAddByIds(Context.Guild.Id, recipient!.Id)).HugsReceived;
-
-            await userStatDataService.Save();
-
-            embedBuilder = GetRecipientEmbed(recipient, hug, stat, received);
+            embedBuilder = GetRecipientEmbed(recipient!, hug, stat, userStats[UserStats.Received].Value);
         }
 
 
@@ -94,7 +98,7 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
 
     private EmbedBuilder GetRecipientEmbed(SocketUser recipient, Hug hug, Hug stat, int count)
     {
-        var primaryText = RecipientVariables.Replace(hug.Text, (match) =>
+        var primaryText = RecipientVariables().Replace(hug.Text, (match) =>
         {
             return match.Value.ToLower() switch
             {
@@ -104,7 +108,7 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
             };
         });
 
-        var statText = StatVariables.Replace(stat.Text, (match) =>
+        var statText = StatVariables().Replace(stat.Text, (match) =>
         {
             return match.Value.ToLower() switch
             {
@@ -127,7 +131,7 @@ public class HugCommandModule : ModuleBase<SocketCommandContext>
 
     private EmbedBuilder GetSelfEmbed(Hug hug)
     {
-        var hugText = SelfVariables.Replace(hug.Text, (match) =>
+        var hugText = SelfVariables().Replace(hug.Text, (match) =>
         {
             return match.Value.ToLower() switch
             {

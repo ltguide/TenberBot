@@ -1,10 +1,13 @@
 ﻿using Discord;
 using Discord.Interactions;
 using TenberBot.Features.SprintFeature.Data.Enums;
+using TenberBot.Features.SprintFeature.Data.InteractionParents;
 using TenberBot.Features.SprintFeature.Data.Models;
 using TenberBot.Features.SprintFeature.Data.Services;
+using TenberBot.Features.SprintFeature.Data.UserStats;
 using TenberBot.Features.SprintFeature.Modals.Sprint;
-using TenberBot.Shared.Features.Data.Enums;
+using TenberBot.Shared.Features.Data.Ids;
+using TenberBot.Shared.Features.Data.POCO;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 
@@ -30,7 +33,7 @@ public class SprintInteractionModule : InteractionModuleBase<SocketInteractionCo
     [ComponentInteraction("sprint:join,*")]
     public async Task SprintJoin(ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Sprint, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Sprint, messageId);
         if (parent == null)
             return;
 
@@ -47,7 +50,7 @@ public class SprintInteractionModule : InteractionModuleBase<SocketInteractionCo
     [ModalInteraction("sprint:join,*")]
     public async Task SprintJoinModalResponse(ulong messageId, SprintJoinModal modal)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Sprint, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Sprint, messageId);
         if (parent == null)
             return;
 
@@ -59,9 +62,7 @@ public class SprintInteractionModule : InteractionModuleBase<SocketInteractionCo
 
         await sprintDataService.Update(sprint, null!);
 
-        (await userStatDataService.GetOrAddByContext(Context)).SprintsJoined++;
-
-        await userStatDataService.Save();
+        await userStatDataService.Update(new UserStatMod(new GuildUserIds(Context), UserStats.Joined));
 
         await RespondAsync($"{Context.User.GetDisplayNameSanitized()} has joined the sprint!");
 
@@ -73,7 +74,7 @@ public class SprintInteractionModule : InteractionModuleBase<SocketInteractionCo
     [ComponentInteraction("sprint:stop,*")]
     public async Task SprintStop(ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Sprint, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Sprint, messageId);
         if (parent == null)
             return;
 
@@ -93,7 +94,7 @@ public class SprintInteractionModule : InteractionModuleBase<SocketInteractionCo
         if (modal.Text != "stop")
             return;
 
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Sprint, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Sprint, messageId);
         if (parent == null)
             return;
 

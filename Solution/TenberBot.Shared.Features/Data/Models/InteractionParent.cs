@@ -2,7 +2,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
-using TenberBot.Shared.Features.Data.Enums;
 
 namespace TenberBot.Shared.Features.Data.Models;
 
@@ -23,7 +22,7 @@ public class InteractionParent
 
     public ulong MessageId { get; set; }
 
-    public InteractionParentType InteractionParentType { get; set; }
+    public string InteractionParentType { get; set; } = "";
 
     public string? Reference { get; private set; }
 

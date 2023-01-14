@@ -1,10 +1,10 @@
 ﻿using Discord;
 using Discord.Interactions;
 using TenberBot.Features.GreetingFeature.Data.Enums;
+using TenberBot.Features.GreetingFeature.Data.InteractionParents;
 using TenberBot.Features.GreetingFeature.Data.Models;
 using TenberBot.Features.GreetingFeature.Data.Services;
 using TenberBot.Features.GreetingFeature.Modals.Greeting;
-using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 using TenberBot.Shared.Features.Extensions.Strings;
@@ -29,7 +29,7 @@ public class GreetingInteractionModule : InteractionModuleBase<SocketInteraction
     [ComponentInteraction("greeting:add,*")]
     public async Task GreetingAdd(ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Greeting, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 
@@ -39,7 +39,7 @@ public class GreetingInteractionModule : InteractionModuleBase<SocketInteraction
     [ModalInteraction("greeting:add,*")]
     public async Task GreetingAddModalResponse(ulong messageId, GreetingAddModal modal)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Greeting, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 
@@ -57,7 +57,7 @@ public class GreetingInteractionModule : InteractionModuleBase<SocketInteraction
     [ComponentInteraction("greeting:delete,*")]
     public async Task GreetingDelete(ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Greeting, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 
@@ -67,7 +67,7 @@ public class GreetingInteractionModule : InteractionModuleBase<SocketInteraction
     [ModalInteraction("greeting:delete,*")]
     public async Task GreetingDeleteModalResponse(ulong messageId, GreetingDeleteModal modal)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Greeting, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 

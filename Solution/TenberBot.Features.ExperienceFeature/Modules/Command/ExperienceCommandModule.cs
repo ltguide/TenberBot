@@ -1,12 +1,12 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using TenberBot.Features.ExperienceFeature.Data.InteractionParents;
 using TenberBot.Features.ExperienceFeature.Data.Models;
 using TenberBot.Features.ExperienceFeature.Data.POCO;
 using TenberBot.Features.ExperienceFeature.Data.Services;
 using TenberBot.Features.ExperienceFeature.Helpers;
 using TenberBot.Features.ExperienceFeature.Settings.Server;
-using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Models;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
@@ -87,7 +87,7 @@ public class ExperienceCommandModule : ModuleBase<SocketCommandContext>
             GuildId = Context.Guild.Id,
             ChannelId = Context.Channel.Id,
             UserId = Context.User.Id,
-            InteractionParentType = InteractionParentType.Leaderboard,
+            InteractionParentType = InteractionParents.Leaderboard,
             MessageId = reply.Id,
         }.SetReference(new LeaderboardView()));
 

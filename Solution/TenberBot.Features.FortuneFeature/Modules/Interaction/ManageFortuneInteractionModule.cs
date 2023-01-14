@@ -1,9 +1,9 @@
 ﻿using Discord;
 using Discord.Interactions;
+using TenberBot.Features.FortuneFeature.Data.InteractionParents;
 using TenberBot.Features.FortuneFeature.Data.Models;
 using TenberBot.Features.FortuneFeature.Data.Services;
 using TenberBot.Features.FortuneFeature.Modals.Fortune;
-using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 using TenberBot.Shared.Features.Extensions.Strings;
@@ -28,7 +28,7 @@ public class ManageFortuneInteractionModule : InteractionModuleBase<SocketIntera
     [ComponentInteraction("fortune:add,*")]
     public async Task FortuneAdd(ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Fortune, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 
@@ -38,7 +38,7 @@ public class ManageFortuneInteractionModule : InteractionModuleBase<SocketIntera
     [ModalInteraction("fortune:add,*")]
     public async Task FortuneAddModalResponse(ulong messageId, FortuneAddModal modal)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Fortune, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 
@@ -54,7 +54,7 @@ public class ManageFortuneInteractionModule : InteractionModuleBase<SocketIntera
     [ComponentInteraction("fortune:delete,*")]
     public async Task FortuneDelete(ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Fortune, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 
@@ -64,7 +64,7 @@ public class ManageFortuneInteractionModule : InteractionModuleBase<SocketIntera
     [ModalInteraction("fortune:delete,*")]
     public async Task FortuneDeleteModalResponse(ulong messageId, FortuneDeleteModal modal)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Fortune, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 

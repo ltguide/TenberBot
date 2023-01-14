@@ -1,6 +1,9 @@
 ﻿using Discord;
 using Discord.Commands;
+using TenberBot.Features.RandomizerFeature.Data.UserStats;
 using TenberBot.Features.RandomizerFeature.Data.Visuals;
+using TenberBot.Shared.Features.Data.Ids;
+using TenberBot.Shared.Features.Data.POCO;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 
@@ -28,7 +31,11 @@ public class RandomizedCommandModule : ModuleBase<SocketCommandContext>
     {
         var footer = "No streak 😓";
 
-        var userStats = await userStatDataService.GetOrAddByContext(Context);
+        (await userStatDataService.Get(new UserStatMod(new GuildUserIds(Context), UserStats.CoinFlipsCount))).Value++;
+
+        var previous = await userStatDataService.Get(new UserStatMod(new GuildUserIds(Context), UserStats.CoinFlipPrevious));
+        var streak = await userStatDataService.Get(new UserStatMod(new GuildUserIds(Context), UserStats.CoinFlipStreak));
+        var record = await userStatDataService.Get(new UserStatMod(new GuildUserIds(Context), UserStats.CoinFlipRecord));
 
         var flip = Random.Shared.Next(2);
         var visualType = flip == 0 ? Visuals.CoinHead : Visuals.CoinTail;
@@ -37,31 +44,30 @@ public class RandomizedCommandModule : ModuleBase<SocketCommandContext>
         if (visual == null)
             return;
 
-        if (flip != userStats.CoinFlipPrevious)
+        if (flip != previous.Value || record.Value == 0)
         {
-            if (userStats.CoinFlipPrevious != null && userStats.CoinFlipStreak > 1)
-                footer = $"Streak lost! Made it to {userStats.CoinFlipStreakText}";
+            if (record.Value != 0 && streak.Value > 1)
+                footer = $"Streak lost! Made it to {CoinFlipStreakText(streak.Value)}";
 
-            userStats.CoinFlipPrevious = flip;
-            userStats.CoinFlipStreak = 1;
+            previous.Value = flip;
+            streak.Value = 1;
+
+            if (record.Value == 0)
+                record.Value = 1;
         }
         else
         {
-            userStats.CoinFlipStreak++;
+            streak.Value++;
 
-            footer = $"Current streak is {userStats.CoinFlipStreakText} in a row.";
+            footer = $"Current streak is {CoinFlipStreakText(streak.Value)} in a row.";
 
-            if (userStats.CoinFlipStreak > userStats.CoinFlipRecord)
+            if (streak.Value > record.Value)
             {
-                userStats.CoinFlipRecord = userStats.CoinFlipStreak;
+                record.Value = streak.Value;
 
                 footer += " Your personal best!";
             }
         }
-
-        userStats.CoinFlips++;
-
-        await userStatDataService.Save();
 
         var embedBuilder = new EmbedBuilder
         {
@@ -75,6 +81,8 @@ public class RandomizedCommandModule : ModuleBase<SocketCommandContext>
             visual.AttachmentFilename,
             embed: embedBuilder.Build(),
             messageReference: Context.Message.GetReferenceTo());
+
+        await userStatDataService.Save();
     }
 
     [Command("8ball")]
@@ -112,4 +120,5 @@ Roll a die! (or multiple). Behaves like !choose if dice not specified.
 Ask the magic eight-ball. Be warned - you may not hear the answer you are wanting.
      */
 
+    private static string CoinFlipStreakText(int streak) => $"{streak} flip{(streak != 1 ? "s" : "")}";
 }

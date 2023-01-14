@@ -4,9 +4,9 @@ using Discord.Addons.Hosting.Util;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using TenberBot.Features.UserTimerFeature.Data.Enums;
+using TenberBot.Features.UserTimerFeature.Data.InteractionParents;
 using TenberBot.Features.UserTimerFeature.Data.Models;
 using TenberBot.Features.UserTimerFeature.Data.Services;
-using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 using TenberBot.Shared.Features.Extensions.Mentions;
@@ -47,7 +47,7 @@ public class UserTimerService : DiscordClientService
 
                     await userTimerDataService.Update(userTimer, new UserTimer { UserTimerStatus = status, });
 
-                    var parent = await interactionParentDataService.GetByReference(InteractionParentType.UserTimer, userTimer.UserTimerId.ToString());
+                    var parent = await interactionParentDataService.GetByReference(InteractionParents.Timer, userTimer.UserTimerId.ToString());
 
                     var channel = await Client.GetChannelAsync(userTimer.ChannelId) as SocketTextChannel;
 

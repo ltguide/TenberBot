@@ -1,9 +1,9 @@
 ﻿using Discord;
 using Discord.Interactions;
+using TenberBot.Features.BotStatusFeature.Data.InteractionParents;
 using TenberBot.Features.BotStatusFeature.Data.Models;
 using TenberBot.Features.BotStatusFeature.Data.Services;
 using TenberBot.Features.BotStatusFeature.Modals.BotStatus;
-using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 using TenberBot.Shared.Features.Extensions.Strings;
@@ -28,7 +28,7 @@ public class BotStatusInteractionModule : InteractionModuleBase<SocketInteractio
     [ComponentInteraction("bot-status:add,*")]
     public async Task BotStatusAdd(ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.BotStatus, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 
@@ -38,7 +38,7 @@ public class BotStatusInteractionModule : InteractionModuleBase<SocketInteractio
     [ModalInteraction("bot-status:add,*")]
     public async Task BotStatusAddModalResponse(ulong messageId, BotStatusAddModal modal)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.BotStatus, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 
@@ -54,7 +54,7 @@ public class BotStatusInteractionModule : InteractionModuleBase<SocketInteractio
     [ComponentInteraction("bot-status:delete,*")]
     public async Task BotStatusDelete(ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.BotStatus, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 
@@ -64,7 +64,7 @@ public class BotStatusInteractionModule : InteractionModuleBase<SocketInteractio
     [ModalInteraction("bot-status:delete,*")]
     public async Task BotStatusDeleteModalResponse(ulong messageId, BotStatusDeleteModal modal)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.BotStatus, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 

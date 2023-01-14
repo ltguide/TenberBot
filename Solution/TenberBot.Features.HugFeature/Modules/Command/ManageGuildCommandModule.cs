@@ -1,8 +1,8 @@
 ﻿using Discord;
 using Discord.Commands;
 using TenberBot.Features.HugFeature.Data.Enums;
+using TenberBot.Features.HugFeature.Data.InteractionParents;
 using TenberBot.Features.HugFeature.Data.Services;
-using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Models;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
@@ -35,7 +35,7 @@ public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
 
         var reply = await Context.Message.ReplyAsync(embed: await hugDataService.GetAllAsEmbed(hugType.Value));
 
-        await SetParent(InteractionParentType.Hug, reply.Id, hugType);
+        await SetParent(InteractionParents.Embed, reply.Id, hugType);
 
         var components = new ComponentBuilder()
             .WithButton("Add", $"hug:add,{reply.Id}", ButtonStyle.Success, new Emoji("➕"))
@@ -46,7 +46,7 @@ public class ManageGuildCommandModule : ModuleBase<SocketCommandContext>
         return DeleteResult.FromSuccess();
     }
 
-    private async Task SetParent(InteractionParentType parentType, ulong messageId, Enum? reference)
+    private async Task SetParent(string parentType, ulong messageId, Enum? reference)
     {
         var previousParent = await interactionParentDataService.Set(new InteractionParent
         {

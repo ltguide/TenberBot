@@ -1,12 +1,12 @@
 ﻿using Discord;
 using Discord.Interactions;
 using TenberBot.Features.MessageTimerFeature.Data.Enums;
+using TenberBot.Features.MessageTimerFeature.Data.InteractionParents;
 using TenberBot.Features.MessageTimerFeature.Data.Models;
 using TenberBot.Features.MessageTimerFeature.Data.Services;
 using TenberBot.Features.MessageTimerFeature.Services;
 using TenberBot.Shared.Features;
 using TenberBot.Shared.Features.Attributes.Modules;
-using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Models;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordRoot;
@@ -103,7 +103,7 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
             GuildId = Context.Guild.Id,
             ChannelId = messageTimer.ChannelId,
             UserId = messageTimer.UserId,
-            InteractionParentType = InteractionParentType.MessageTimer,
+            InteractionParentType = InteractionParents.Timer,
             MessageId = reply.Id,
         }
         .SetReference(messageTimer.MessageTimerId));
@@ -117,7 +117,7 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
     [ComponentInteraction("message-timer:stop,*")]
     public async Task TimerStop(ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.MessageTimer, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Timer, messageId);
         if (parent == null)
             return;
 

@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace TenberBot.Shared.Features.Data.Models;
 
 [Table("UserStats")]
-[Index(nameof(GuildId), nameof(UserId), IsUnique = true)]
+[Index(nameof(GuildId), nameof(UserId))]
 public class UserStat
 {
     [Key]
@@ -15,35 +15,7 @@ public class UserStat
 
     public ulong UserId { get; set; }
 
-    public int Greetings { get; set; }
+    public string UserStatType { get; set; } = "";
 
-    public int HugsGiven { get; set; }
-
-    public int HugsReceived { get; set; }
-
-    public int PatsGiven { get; set; }
-
-    public int PatsReceived { get; set; }
-
-    public int HighFivesGiven { get; set; }
-
-    public int HighFivesReceived { get; set; }
-
-    public int SprintsCreated { get; set; }
-
-    public int SprintsJoined { get; set; }
-
-    public int CoinFlips { get; set; }
-
-    public int CoinFlipStreak { get; set; }
-
-    public int? CoinFlipPrevious { get; set; }
-
-    public int CoinFlipRecord { get; set; }
-
-    public string CoinFlipStreakText => $"{CoinFlipStreak} flip{(CoinFlipStreak != 1 ? "s" : "")}";
-
-    public int TimersCreated { get; set; }
-
-    public int Fortunes { get; set; }
+    public int Value { get; set; }
 }

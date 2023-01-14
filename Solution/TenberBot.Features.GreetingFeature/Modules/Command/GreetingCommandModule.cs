@@ -3,8 +3,12 @@ using Discord.Commands;
 using System.Text.RegularExpressions;
 using TenberBot.Features.GreetingFeature.Data.Enums;
 using TenberBot.Features.GreetingFeature.Data.Services;
+using TenberBot.Features.GreetingFeature.Data.UserStats;
 using TenberBot.Features.GreetingFeature.Data.Visuals;
 using TenberBot.Shared.Features.Attributes.Modules;
+using TenberBot.Shared.Features.Data.Ids;
+using TenberBot.Shared.Features.Data.Models;
+using TenberBot.Shared.Features.Data.POCO;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordCommands;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
@@ -100,11 +104,9 @@ public class GreetingCommandModule : ModuleBase<SocketCommandContext>
         await SendRandom(GreetingType.Night);
     }
 
-    private async Task AddStat()
+    private Task<UserStat> AddStat()
     {
-        (await userStatDataService.GetOrAddByContext(Context)).Greetings++;
-
-        await userStatDataService.Save();
+        return userStatDataService.Update(new UserStatMod(new GuildUserIds(Context), UserStats.Sent));
     }
 
     private async Task<bool> SendRandom(GreetingType greetingType)

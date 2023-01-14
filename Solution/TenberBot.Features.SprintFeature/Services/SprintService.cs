@@ -4,9 +4,9 @@ using Discord.Addons.Hosting.Util;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using TenberBot.Features.SprintFeature.Data.Enums;
+using TenberBot.Features.SprintFeature.Data.InteractionParents;
 using TenberBot.Features.SprintFeature.Data.Models;
 using TenberBot.Features.SprintFeature.Data.Services;
-using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordRoot;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
@@ -47,7 +47,7 @@ public class SprintService : DiscordClientService
 
                     await sprintDataService.Update(sprint, new Sprint { SprintStatus = status, });
 
-                    var parent = await interactionParentDataService.GetById(InteractionParentType.Sprint, sprint.ChannelId, sprint.UserId);
+                    var parent = await interactionParentDataService.GetById(InteractionParents.Sprint, sprint.ChannelId, sprint.UserId);
 
                     var channel = await Client.GetChannelAsync(sprint.ChannelId) as SocketTextChannel;
 

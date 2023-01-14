@@ -5,7 +5,10 @@ using System.Text.RegularExpressions;
 using TenberBot.Features.PatFeature.Data.Enums;
 using TenberBot.Features.PatFeature.Data.Models;
 using TenberBot.Features.PatFeature.Data.Services;
+using TenberBot.Features.PatFeature.Data.UserStats;
 using TenberBot.Features.PatFeature.Data.Visuals;
+using TenberBot.Shared.Features.Data.Ids;
+using TenberBot.Shared.Features.Data.POCO;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordCommands;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
@@ -13,11 +16,16 @@ using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 namespace TenberBot.Features.PatFeature.Modules.Command;
 
 [RequireBotPermission(ChannelPermission.SendMessages)]
-public class PatCommandModule : ModuleBase<SocketCommandContext>
+public partial class PatCommandModule : ModuleBase<SocketCommandContext>
 {
-    private readonly static Regex RecipientVariables = new(@"%user%|%recipient%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-    private readonly static Regex SelfVariables = new(@"%user%|%random%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-    private readonly static Regex StatVariables = new(@"%user%|%recipient%|%count%|%s%|%es%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    [GeneratedRegex("%user%|%recipient%", RegexOptions.IgnoreCase, "en-US")]
+    private static partial Regex RecipientVariables();
+
+    [GeneratedRegex("%user%|%random%", RegexOptions.IgnoreCase, "en-US")]
+    private static partial Regex SelfVariables();
+
+    [GeneratedRegex("%user%|%recipient%|%count%|%s%|%es%", RegexOptions.IgnoreCase, "en-US")]
+    private static partial Regex StatVariables();
 
     private readonly IPatDataService patDataService;
     private readonly IVisualDataService visualDataService;
@@ -65,13 +73,9 @@ public class PatCommandModule : ModuleBase<SocketCommandContext>
             if (pat == null || stat == null)
                 return;
 
-            ++(await userStatDataService.GetOrAddByContext(Context)).PatsGiven;
+            var userStats = await userStatDataService.Update(new[] { new UserStatMod(new GuildUserIds(Context), UserStats.Given), new UserStatMod(new GuildUserIds(Context.Guild, recipient!), UserStats.Received) });
 
-            var received = ++(await userStatDataService.GetOrAddByIds(Context.Guild.Id, recipient!.Id)).PatsReceived;
-
-            await userStatDataService.Save();
-
-            embedBuilder = GetRecipientEmbed(recipient, pat, stat, received);
+            embedBuilder = GetRecipientEmbed(recipient!, pat, stat, userStats[UserStats.Received].Value);
         }
 
 
@@ -95,7 +99,7 @@ public class PatCommandModule : ModuleBase<SocketCommandContext>
 
     private EmbedBuilder GetRecipientEmbed(SocketUser recipient, Pat pat, Pat stat, int count)
     {
-        var primaryText = RecipientVariables.Replace(pat.Text, (match) =>
+        var primaryText = RecipientVariables().Replace(pat.Text, (match) =>
         {
             return match.Value.ToLower() switch
             {
@@ -105,7 +109,7 @@ public class PatCommandModule : ModuleBase<SocketCommandContext>
             };
         });
 
-        var statText = StatVariables.Replace(stat.Text, (match) =>
+        var statText = StatVariables().Replace(stat.Text, (match) =>
         {
             return match.Value.ToLower() switch
             {
@@ -128,7 +132,7 @@ public class PatCommandModule : ModuleBase<SocketCommandContext>
 
     private EmbedBuilder GetSelfEmbed(Pat pat)
     {
-        var patText = SelfVariables.Replace(pat.Text, (match) =>
+        var patText = SelfVariables().Replace(pat.Text, (match) =>
         {
             return match.Value.ToLower() switch
             {

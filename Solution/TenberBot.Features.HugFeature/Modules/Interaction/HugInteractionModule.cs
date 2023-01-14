@@ -1,10 +1,10 @@
 ﻿using Discord;
 using Discord.Interactions;
 using TenberBot.Features.HugFeature.Data.Enums;
+using TenberBot.Features.HugFeature.Data.InteractionParents;
 using TenberBot.Features.HugFeature.Data.Models;
 using TenberBot.Features.HugFeature.Data.Services;
 using TenberBot.Features.HugFeature.Modals.Hug;
-using TenberBot.Shared.Features.Data.Enums;
 using TenberBot.Shared.Features.Data.Services;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
 using TenberBot.Shared.Features.Extensions.Strings;
@@ -29,7 +29,7 @@ public class HugInteractionModule : InteractionModuleBase<SocketInteractionConte
     [ComponentInteraction("hug:add,*")]
     public async Task HugAdd(ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Hug, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 
@@ -39,7 +39,7 @@ public class HugInteractionModule : InteractionModuleBase<SocketInteractionConte
     [ModalInteraction("hug:add,*")]
     public async Task HugAddModalResponse(ulong messageId, HugAddModal modal)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Hug, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 
@@ -57,7 +57,7 @@ public class HugInteractionModule : InteractionModuleBase<SocketInteractionConte
     [ComponentInteraction("hug:delete,*")]
     public async Task HugDelete(ulong messageId)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Hug, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 
@@ -67,7 +67,7 @@ public class HugInteractionModule : InteractionModuleBase<SocketInteractionConte
     [ModalInteraction("hug:delete,*")]
     public async Task HugDeleteModalResponse(ulong messageId, HugDeleteModal modal)
     {
-        var parent = await interactionParentDataService.GetByMessageId(InteractionParentType.Hug, messageId);
+        var parent = await interactionParentDataService.GetByMessageId(InteractionParents.Embed, messageId);
         if (parent == null)
             return;
 
