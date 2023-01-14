@@ -37,7 +37,7 @@ public class AuditService : DiscordClientService
             .WithCurrentTimestamp()
             .Build();
 
-            await SendToChannel(before.VoiceChannel, embed);
+            await SendToChannel(before.VoiceChannel, embed, $"Left Voice: {socketUser.GetDisplayNameSanitized()}");
         }
 
         if (after.VoiceChannel != null)
@@ -50,18 +50,24 @@ public class AuditService : DiscordClientService
             }
             .WithCurrentTimestamp();
 
-            if (after.VoiceChannel.ConnectedUsers.Count == 1)
-                embedBuilder.WithDescription("You are the first one in here. Send out a voice ping!");
+            string preview;
 
-            await SendToChannel(after.VoiceChannel, embedBuilder.Build());
+            if (after.VoiceChannel.ConnectedUsers.Count == 1)
+                preview = "You are the first one in here. Send out a voice ping!";
+            else
+                preview = $"Joined Voice: {socketUser.GetDisplayNameSanitized()}";
+
+            await SendToChannel(after.VoiceChannel, embedBuilder.Build(), preview);
         }
     }
 
-    private async Task SendToChannel(SocketTextChannel channel, Embed embed)
+    private async Task SendToChannel(SocketTextChannel channel, Embed embed, string preview)
     {
         try
         {
-            await channel.SendMessageAsync(embed: embed);
+            var message = await channel.SendMessageAsync(preview, embed: embed);
+
+            _ = Task.Delay(TimeSpan.FromSeconds(10)).ContinueWith(_ => message.ModifyAsync(x => x.Content = ""));
         }
         catch (Exception)
         {

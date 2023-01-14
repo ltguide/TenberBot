@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using System.Diagnostics.CodeAnalysis;
 using TenberBot.Features.UserTimerFeature.Data.InteractionParents;
 using TenberBot.Features.UserTimerFeature.Data.Models;
 using TenberBot.Features.UserTimerFeature.Data.Services;
@@ -36,6 +37,7 @@ public class TimerCommandModule : ModuleBase<SocketCommandContext>
     }
 
     [Command("timer")]
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "command will not be found if static")]
     public Task<RuntimeResult> Nothing()
     {
         return Task.FromResult<RuntimeResult>(DeleteResult.FromError("Please provide a duration for the timer, e.g. `30m` or `1.5h`. You can include a message as well if you'd like."));
