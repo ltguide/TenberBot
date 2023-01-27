@@ -15,6 +15,7 @@ using TenberBot.Shared.Features.Services;
 
 namespace TenberBot.Features.MessageTimerFeature.Modules.Interaction;
 
+[Group("message-timer", "Send message on a timed delay.")]
 [DefaultMemberPermissions(GuildPermission.ManageGuild)]
 [HelpCommand(group: "Server Management")]
 [EnabledInDm(false)]
@@ -39,12 +40,38 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
         this.interactionParentDataService = interactionParentDataService;
     }
 
-    [SlashCommand("message-timer", "Send message on a timed delay.")]
-    [HelpCommand("`<channel>` `<message>` `<date-time>` `[pin]` `[url|image]`")]
-    public async Task Timer(
+    [SlashCommand("clone", "Send message on a timed delay.")]
+    [HelpCommand("`<channel>` `<date-time>` `<message-id>` `[pin]`")]
+    public async Task TimerClone(
         [ChannelTypes(ChannelType.Voice, ChannelType.Text)] IChannel channel,
-        string message,
         [Summary("date-time")] DateTime dateTime,
+        [Summary("message-id")]
+        string messageId,
+        bool pin = false)
+    {
+        var duration = dateTime.Subtract(DateTime.Now);
+
+        if (duration.TotalSeconds < 10 || duration.TotalSeconds > MaxDuration)
+        {
+            await RespondAsync("Sorry, the duration of a timer must be at least **10 seconds** and no more than **3 months**.", ephemeral: true);
+            return;
+        }
+
+        if (ulong.TryParse(messageId, out var id) == false || await Context.Channel.GetMessageAsync(id) is not IMessage message)
+        {
+            await RespondAsync("I couldn't find the message to send. Is it in this channel?", ephemeral: true);
+            return;
+        }
+
+        await ProcessTimer(channel, duration, message.Content, pin, message.Attachments.FirstOrDefault()?.Url);
+    }
+
+    [SlashCommand("new", "Send message on a timed delay.")]
+    [HelpCommand("`<channel>` `<date-time>` `<message>` `[pin]` `[url|image]`")]
+    public async Task TimerNew(
+        [ChannelTypes(ChannelType.Voice, ChannelType.Text)] IChannel channel,
+        [Summary("date-time")] DateTime dateTime,
+        string message,
         bool pin = false,
         string? url = null,
         IAttachment? image = null)
@@ -57,20 +84,22 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
             return;
         }
 
+        await ProcessTimer(channel, duration, message.Replace(@"\n", "\n"), pin, image?.Url ?? url);
+    }
+
+    private async Task ProcessTimer(IChannel channel, TimeSpan duration, string detail, bool pin, string? url)
+    {
         var messageTimer = new MessageTimer
         {
             ChannelId = Context.Channel.Id,
             UserId = Context.User.Id,
             TargetChannelId = channel.Id,
-            Detail = message.Replace(@"\n", "\n"),
+            Detail = detail,
             Pin = pin,
             Duration = SharedFeatures.BaseDuration.AddSeconds(Math.Min(MaxDuration - 1, duration.TotalSeconds)),
             StartDate = DateTime.Now,
             FinishDate = DateTime.Now.AddSeconds(duration.TotalSeconds + 1),
         };
-
-        if (image != null)
-            url = image.Url;
 
         if (url != null)
         {
@@ -109,7 +138,7 @@ public class TimerInteractionModule : InteractionModuleBase<SocketInteractionCon
         .SetReference(messageTimer.MessageTimerId));
 
         var components = new ComponentBuilder()
-            .WithButton("Cancel", $"message-timer:stop,{reply.Id}", ButtonStyle.Secondary, new Emoji("❌"));
+            .WithButton("Cancel", $"message-timer message-timer:stop,{reply.Id}", ButtonStyle.Secondary, new Emoji("❌"));
 
         await reply.ModifyAsync(x => x.Components = components.Build());
     }
