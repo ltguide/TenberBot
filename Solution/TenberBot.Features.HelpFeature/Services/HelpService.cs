@@ -6,7 +6,6 @@ using TenberBot.Features.HelpFeature.Data.POCO;
 using TenberBot.Shared.Features.Attributes.Modules;
 using TenberBot.Shared.Features.Data.POCO;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
-using TenberBot.Shared.Features.Extensions.Strings;
 using TenberBot.Shared.Features.Services;
 using TenberBot.Shared.Features.Settings.Server;
 
@@ -65,7 +64,7 @@ public class HelpService : IHelpService
 
     public async Task<MessageProperties> BuildMessage(SocketCommandContext context, int currentPage)
     {
-        var prefix = cacheService.Get<BasicServerSettings>(context.Guild).Prefix.SanitizeMD();
+        var prefix = cacheService.Get<BasicServerSettings>(context.Guild).Prefix;
 
         var commands = (await commandService.GetExecutableCommandsAsync(context, serviceProvider)).Where(x => x.Summary != null).Select(x => new HelpCommandInfo(prefix, x))
             .Concat(GetDefaultSlashCommands(context.User))

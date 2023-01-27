@@ -6,7 +6,6 @@ using TenberBot.Features.HelpFeature.Services;
 using TenberBot.Shared.Features.Attributes.Modules;
 using TenberBot.Shared.Features.Extensions.DiscordRoot;
 using TenberBot.Shared.Features.Extensions.DiscordWebSocket;
-using TenberBot.Shared.Features.Extensions.Strings;
 using TenberBot.Shared.Features.Services;
 using TenberBot.Shared.Features.Settings.Server;
 using InteractionService = Discord.Interactions.InteractionService;
@@ -53,7 +52,7 @@ public class HelpCommandModule : ModuleBase<SocketCommandContext>
     [RequireBotPermission(ChannelPermission.ManageMessages)]
     public async Task HelpEveryone()
     {
-        var prefix = cacheService.Get<BasicServerSettings>(Context.Guild).Prefix.SanitizeMD();
+        var prefix = cacheService.Get<BasicServerSettings>(Context.Guild).Prefix;
         var commands = new List<HelpCommandInfo>();
 
         foreach (var command in commandService.Commands.Where(x => x.Summary != null && x.Module.Preconditions.All(x => x is not RequireUserPermissionAttribute) && x.Preconditions.All(x => x is not RequireUserPermissionAttribute)))
